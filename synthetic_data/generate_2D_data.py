@@ -87,3 +87,5 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     plt.savefig(f"cs2d\\cs_{counter}.png")  # save the cross-section
     df.to_csv(f"cs2d\\cs_{counter}.csv")
     plt.close()
+
+    # THIS IS ONLY A CHECK
