@@ -32,18 +32,18 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.8):
 
     # Iterate through each random forest in the list
     for counter, rf in enumerate(dfs):
-        data_x = []     # Create an empty list to store data for each value of x
-        grouped = rf.groupby("x")   # Group the rows of the random forest by the value of x
+        data_z = []     # Create an empty list to store data for each value of x
+        grouped = rf.groupby("z")   # Group the rows of the random field by the value of x
 
         # Iterate through each group
         for name, group in grouped:
-            data_x.append(list(group[value_name]))  # Append the 'IC' column of the group to the data_x list
+            data_z.append(list(group[value_name]))  # Append the 'IC' column of the group to the data_x list
 
-        data_x = np.array(data_x, dtype=float)  # Convert the data_x list to a numpy array of type float
-        no, dim = data_x.shape  # Get the number of rows and columns in the data_x array
-        data_m = remove_random_columns(data_x, miss_rate)   # Call the remove_random_columns function to remove columns from data_x
+        data_z = np.array(data_z, dtype=float)  # Convert the data_x list to a numpy array of type float
+        no, dim = data_z.shape  # Get the number of rows and columns in the data_x array
+        data_m = remove_random_columns(data_z, miss_rate)   # Call the remove_random_columns function to remove columns from data_x
         missing_data.append(data_m) # Append the missing data to the missing_data list
-        full_data.append(data_x)    # Append the full data to the full_data list
+        full_data.append(data_z)    # Append the full data to the full_data list
 
     # Return the missing_data and full_data lists
     return missing_data, full_data
@@ -52,21 +52,23 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.8):
 def load_and_normalize_RFs_in_folder(directory):
     dfs = read_all_csv_files(directory)
     train_input, train_output = apply_miss_rate_per_rf(dfs)
-    train_input = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in train_input])
-    train_output = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in train_output])
+    # Careful, here is 64 rows and 256 columns
+    train_input = np.array([np.reshape(i, (64, 256)).astype(np.float32) for i in train_input])
+    train_output = np.array([np.reshape(i, (64, 256)).astype(np.float32) for i in train_output])
     maximum_value = max_IC_value
     train_output = np.array(train_output) / maximum_value
     train_input = np.array(train_input) / maximum_value
     return np.array([train_input, train_output]).astype(np.float32)
+    # train_input > the RFs with 80% missing (the input to generate later with AI)
+    # train_output > the complete RFs
 
-
-def remove_random_columns(data_x, miss_rate):
-    dim_choice = int(data_x.shape[0])
+def remove_random_columns(data_z, miss_rate):
+    dim_choice = int(data_z.shape[0])
     missing_columns_index = random.sample(range(dim_choice), int(miss_rate*dim_choice))
-    data_m = np.ones_like(data_x)
+    data_m = np.ones_like(data_z)
     for column_index in missing_columns_index:
         data_m[column_index, :] = np.zeros_like(data_m[column_index, :])
-    miss_list = np.multiply(data_x, data_m)
+    miss_list = np.multiply(data_z, data_m)
     return miss_list
 
 #####################################################################################################
@@ -87,17 +89,17 @@ print("The maximum value of the 'IC' column in the list of dataframes is:", max_
 
 missing_data, full_data = apply_miss_rate_per_rf(data)
 
-
-#print(data[1])
-#print(missing_data)
-print(full_data[0].shape)
-
-
 data_set = load_and_normalize_RFs_in_folder(directory)
 
 print('train input normalized')
-print(data_set[1])
+print(data_set[1][0].shape)
+test = data_set[1][0]
+print(test)
+# Swap the x-axis and y-axis using transpose()
 
+plt.imshow(test)
+plt.colorbar()
+plt.show()
 
 BATCH_SIZE = 1
 #AMAX = 4.5
