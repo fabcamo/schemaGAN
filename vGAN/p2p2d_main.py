@@ -113,7 +113,7 @@ from keras.models import load_model
 from numpy.random import randint
 from numpy import vstack
 
-model = load_model('sandstone_50epochs.h5')
+#model = load_model('sandstone_50epochs.h5')
 
 
 # plot source, generated and target images
