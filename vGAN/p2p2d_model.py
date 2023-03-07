@@ -34,17 +34,17 @@ import numpy as np
 from numpy import zeros
 from numpy import ones
 from numpy.random import randint
-from keras.optimizers import Adam
-from keras.initializers import RandomNormal
-from keras.models import Model
-from keras import Input
-from keras.layers import Conv2D
-from keras.layers import Conv2DTranspose
-from keras.layers import LeakyReLU
-from keras.layers import Activation
-from keras.layers import Concatenate
-from keras.layers import Dropout
-from keras.layers import BatchNormalization
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.initializers import RandomNormal
+from tensorflow.keras.models import Model
+from tensorflow.keras import Input
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Conv2DTranspose
+from tensorflow.keras.layers import LeakyReLU
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Concatenate
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import BatchNormalization
 from matplotlib import pyplot as plt
 from tensorflow.keras.utils import plot_model
 

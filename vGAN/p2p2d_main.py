@@ -8,7 +8,7 @@ Dataset link: https://drive.google.com/file/d/1HWtBaSa-LTyAMgf2uaz1T9o1sTWDBajU/
 
 """
 
-from keras.utils import normalize
+from tensorflow.keras.utils import normalize
 import os
 import glob
 import cv2

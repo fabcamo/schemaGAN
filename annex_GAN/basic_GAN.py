@@ -29,17 +29,21 @@ plt.show()
 
 # Normalize the data between 0 - 1
 all_images = all_images.astype("float32") / 255.0
+# Because it is between 0-1> we are going to use SIGMOID activation
 
 
-# we need to add an additional dimension to make it know how many channels are there
+# We need to add an additional dimension to make it know how many channels are there
 all_images = all_images.reshape(70000,28,28,1)
 input_shape = all_images[0].shape
-print(input_shape)
 
-# HYPER-PARAMETERS
+
+# HYPER-PARAMETERS ####################################################################################################
+no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
+batch_size = 32         # user defined batch size
 
 
+#### DEFINE THE FUNCTIONS #############################################################################################
 
 
 # Discriminator architecture model
@@ -73,6 +77,8 @@ def discriminator_model(input_shape):
 #test_discr = discriminator_model(input_shape)
 #print(test_discr.summary())
 
+
+
 # Generator architecture model
 def generator_model(latent_dim):
     model = Sequential()
@@ -90,17 +96,42 @@ def generator_model(latent_dim):
     # Reshape from 1D to 2D to apply Conv2D
     model.add(Reshape((7, 7, 128)))
 
-    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))  # 16x16x128
+    model.add(Conv2DTranspose(filters=128, kernel_size=(4, 4), strides=(2, 2), padding='same'))  # 16x16x128
     model.add(LeakyReLU(alpha=0.2))
 
-    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))  # 32x32x128
+    model.add(Conv2DTranspose(filters=128, kernel_size=(4, 4), strides=(2, 2), padding='same'))  # 32x32x128
     model.add(LeakyReLU(alpha=0.2))
     # generate
-    model.add(Conv2D(1, (8, 8), activation='tanh', padding='same'))  # 32x32x3
+
+    # I DON'T UNDERSTAND WHAT IS GOING ON HERE, really....
+    model.add(Conv2D(filters=1, kernel_size=(7, 7), activation='sigmoid', padding='same'))  # 32x32x3
+
+    #NOTE> MODEL NOT COMPILED
     return model  # Model not compiled as it is not directly trained like the discriminator.
     # Generator is trained via GAN combined model.
 
-    return model
+#test_gen = generator_model(128)
+#print(test_gen.summary())
 
-test_gen = generator_model(128)
-print(test_gen.summary())
+
+
+# Define the combined generator-discriminator model
+# This is done to train the generator, while keeping the discriminator constant
+# The discriminator is trained separately
+def gan_model(generator, discriminator):
+    # Make the discriminator non-trainable
+    discriminator.trainable = False
+
+    # Initiate the Sequential model
+    model.Sequential()
+    # Add the discriminator and generator
+    model.add(generator)
+    model.add(discriminator)
+    # Compile the model
+    opt = Adam(lr=0.0002, beta_1=0.5)
+    model.compile(loss='binary_crossentropy', optimizer=opt)
+
+	return model
+
+
+
