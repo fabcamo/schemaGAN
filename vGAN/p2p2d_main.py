@@ -19,8 +19,8 @@ from p2p2d_model import read_all_csv_files, apply_miss_rate_per_rf
 
 # Resizing images, if needed
 SIZE_X = 256
-SIZE_Y = 256
-path = 'D:/inpt/synthetic_data/cs2d_256'
+SIZE_Y = 64
+path = 'D:/inpt/synthetic_data/cs2d'
 # n_classes=4 #Number of classes for segmentation
 
 # Capture training image info as a list
@@ -52,11 +52,11 @@ missing_data, full_data= apply_miss_rate_per_rf(all_csv)
 
 
 
-missing_data = np.array([np.reshape(i, (256, 256)).astype(np.float32) for i in missing_data])
-full_data = np.array([np.reshape(i, (256, 256)).astype(np.float32) for i in full_data])
+missing_data = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in missing_data])
+full_data = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in full_data])
 
-tar_images = np.reshape(full_data, (1000, 256, 256, 1))
-src_images = np.reshape(missing_data, (1000, 256, 256, 1))
+tar_images = np.reshape(full_data, (1000, 256, 64, 1))
+src_images = np.reshape(missing_data, (1000, 256, 64, 1))
 
 
 print(np.unique(src_images))
@@ -120,7 +120,7 @@ print("Execution time is: ", execution_time)
 
 # Reports parameters for each batch (total 1096) for each epoch.
 # For 10 epochs we should see 10960
-g_model.save('256by256_.h5')
+g_model.save('256by64_.h5')
 #########################################
 # Test trained model on a few images...
 

@@ -81,7 +81,7 @@ def read_all_csv_files(directory):
     return dfs      # Return the list of dataframes
 
 
-def apply_miss_rate_per_rf(dfs, miss_rate=0.8):
+def apply_miss_rate_per_rf(dfs, miss_rate=0.9):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
@@ -130,27 +130,27 @@ def define_discriminator(image_shape):
     merged = Concatenate()([in_src_image, in_target_image])
 
     # C64: 4x4 kernel Stride 2x2
-    d = Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(merged)
+    d = Conv2D(filters=64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(merged)
     d = LeakyReLU(alpha=0.2)(d)
     # C128: 4x4 kernel Stride 2x2
-    d = Conv2D(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
+    d = Conv2D(filters=128, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
     # C256: 4x4 kernel Stride 2x2
-    d = Conv2D(256, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
+    d = Conv2D(filters=256, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
     # C512: 4x4 kernel Stride 2x2
     # Not in the original paper. Comment this block if you want.
-    d = Conv2D(512, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
+    d = Conv2D(filters=512, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
     # second last output layer : 4x4 kernel but Stride 1x1
-    d = Conv2D(512, (4, 4), padding='same', kernel_initializer=init)(d)
+    d = Conv2D(filters=512, kernel_size(4, 4), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
     # patch output
-    d = Conv2D(1, (4, 4), padding='same', kernel_initializer=init)(d)
+    d = Conv2D(filters=1, kernel_size=(4, 4), padding='same', kernel_initializer=init)(d)
     patch_out = Activation('sigmoid')(d)
     # define model
     model = Model([in_src_image, in_target_image], patch_out)
@@ -202,7 +202,7 @@ def decoder_block(layer_in, skip_in, n_filters, dropout=True):
 
 
 # define the standalone generator model - U-net
-def define_generator(image_shape=(256, 256, 1)):
+def define_generator(image_shape=(256, 64, 1)):
     # weight initialization
     init = RandomNormal(stddev=0.02)
     # image input
@@ -216,7 +216,7 @@ def define_generator(image_shape=(256, 256, 1)):
     e6 = define_encoder_block(e5, 512)
     e7 = define_encoder_block(e6, 512)
     # bottleneck, no batch norm and relu
-    b = Conv2D(512, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(e7)
+    b = Conv2D(filters=512, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(e7)
     b = Activation('relu')(b)
     # decoder model: CD512-CD512-CD512-C512-C256-C128-C64
     d1 = decoder_block(b, e7, 512)

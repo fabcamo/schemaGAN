@@ -1,7 +1,11 @@
+import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+
+from numpy import zeros
+from numpy.random import randn
 
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Dense, MaxPooling2D, LeakyReLU, MaxPooling2D
@@ -41,6 +45,8 @@ input_shape = all_images[0].shape
 no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
 batch_size = 32         # user defined batch size
+
+n_samples = 1
 
 
 #### DEFINE THE FUNCTIONS #############################################################################################
@@ -99,19 +105,20 @@ def generator_model(latent_dim):
     model.add(Conv2DTranspose(filters=128, kernel_size=(4, 4), strides=(2, 2), padding='same'))  # 16x16x128
     model.add(LeakyReLU(alpha=0.2))
 
+
+    # generate
     model.add(Conv2DTranspose(filters=128, kernel_size=(4, 4), strides=(2, 2), padding='same'))  # 32x32x128
     model.add(LeakyReLU(alpha=0.2))
-    # generate
-
     # I DON'T UNDERSTAND WHAT IS GOING ON HERE, really....
+    # The size (7x7) has the match the input for the no. Parameters to match the initial no. parameters....
     model.add(Conv2D(filters=1, kernel_size=(7, 7), activation='sigmoid', padding='same'))  # 32x32x3
 
     #NOTE> MODEL NOT COMPILED
     return model  # Model not compiled as it is not directly trained like the discriminator.
     # Generator is trained via GAN combined model.
 
-#test_gen = generator_model(128)
-#print(test_gen.summary())
+test_gen = generator_model(128)
+print(test_gen.summary())
 
 
 
@@ -131,7 +138,38 @@ def gan_model(generator, discriminator):
     opt = Adam(lr=0.0002, beta_1=0.5)
     model.compile(loss='binary_crossentropy', optimizer=opt)
 
-	return model
+    return model
 
 
 
+# generate points in latent space as input for the generator
+def generate_latent_points(latent_dim, n_samples):
+ # generate points in the latent space
+ x_input = randn(latent_dim * n_samples)
+ # reshape into a batch of inputs for the network
+ x_input = x_input.reshape(n_samples, latent_dim)
+ return x_input
+
+
+# use the generator to generate n fake examples, with class labels
+def generate_fake_samples(g_model, latent_dim, n_samples):
+ # generate points in latent space
+ x_input = generate_latent_points(latent_dim, n_samples)
+ # predict outputs
+ X = g_model.predict(x_input)
+ # create 'fake' class labels (0)
+ y = zeros((n_samples, 1))
+ return X, y
+
+g_model = generator_model(latent_dim)
+
+fake_image = generate_fake_samples(g_model, latent_dim, n_samples)
+print('the shape of the fake image is: ', fake_image[0].shape)
+
+fake = fake_image[0]
+fake = np.reshape(fake, (28, 28))
+print('the shape of the fake image after processing is: ', fake.shape)
+
+#print(fake)
+plt.imshow(fake)
+plt.show()
