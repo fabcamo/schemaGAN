@@ -81,7 +81,7 @@ def read_all_csv_files(directory):
     return dfs      # Return the list of dataframes
 
 
-def apply_miss_rate_per_rf(dfs, miss_rate=0.9):
+def apply_miss_rate_per_rf(dfs, miss_rate=0.8):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
@@ -180,8 +180,20 @@ def define_encoder_block(layer_in, n_filters, batchnorm=True):
         g = BatchNormalization()(g, training=True)
     # leaky relu activation
     g = LeakyReLU(alpha=0.2)(g)
+    print('shape of g in encoder block>', g.shape)
+    return g
 
-    print('in Encoder, g shape is>', g.shape)
+def define_encoder_block_mod(layer_in, n_filters, batchnorm=True):
+    # weight initialization
+    init = RandomNormal(stddev=0.02)
+    # add downsampling layer
+    g = Conv2D(n_filters, (4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(layer_in)
+    # conditionally add batch normalization
+    if batchnorm:
+        g = BatchNormalization()(g, training=True)
+    # leaky relu activation
+    g = LeakyReLU(alpha=0.2)(g)
+    print('shape of g in encoder MOD block>', g.shape)
     return g
 
 
@@ -196,18 +208,36 @@ def decoder_block(layer_in, skip_in, n_filters, dropout=True):
     # conditionally add dropout
     if dropout:
         g = Dropout(0.5)(g, training=True)
-
-    print('in Decoder, g shape is>', g.shape)
-    print('in Decoder, skip_in shape is>',skip_in.shape)
     # merge with skip connection
+    print('shape of g in Decoder block>', g.shape)
+    print('shape of skip_in in Decoder block>', skip_in.shape)
+    g = Concatenate()([g, skip_in])
+    # relu activation
+    g = Activation('relu')(g)
+    return g
+
+def decoder_block_mod(layer_in, skip_in, n_filters, dropout=True):
+    # weight initialization
+    init = RandomNormal(stddev=0.02)
+    # add upsampling layer
+    g = Conv2DTranspose(n_filters, (4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(layer_in)
+    # add batch normalization
+    g = BatchNormalization()(g, training=True)
+    # conditionally add dropout
+    if dropout:
+        g = Dropout(0.5)(g, training=True)
+    # merge with skip connection
+    print('shape of g in Decoder MOD block>', g.shape)
+    print('shape of skip_in in Decoder MOD block>', skip_in.shape)
     g = Concatenate()([g, skip_in])
     # relu activation
     g = Activation('relu')(g)
     return g
 
 
+
 # define the standalone generator model - U-net
-def define_generator(image_shape=(256, 256, 1)):
+def define_generator(image_shape=(64, 256, 1)):
     # weight initialization
     init = RandomNormal(stddev=0.02)
     # image input
@@ -218,15 +248,15 @@ def define_generator(image_shape=(256, 256, 1)):
     e3 = define_encoder_block(e2, 256)
     e4 = define_encoder_block(e3, 512)
     e5 = define_encoder_block(e4, 512)
-    e6 = define_encoder_block(e5, 512)
-    e7 = define_encoder_block(e6, 512)
+    e6 = define_encoder_block_mod(e5, 512)
+    e7 = define_encoder_block_mod(e6, 512)
     # bottleneck, no batch norm and relu
     b = Conv2D(filters=512, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(e7)
     b = Activation('relu')(b)
     # decoder model: CD512-CD512-CD512-C512-C256-C128-C64
     d1 = decoder_block(b, e7, 512)
-    d2 = decoder_block(d1, e6, 512)
-    d3 = decoder_block(d2, e5, 512)
+    d2 = decoder_block_mod(d1, e6, 512)
+    d3 = decoder_block_mod(d2, e5, 512)
     d4 = decoder_block(d3, e4, 512, dropout=False)
     d5 = decoder_block(d4, e3, 256, dropout=False)
     d6 = decoder_block(d5, e2, 128, dropout=False)
@@ -259,7 +289,6 @@ def define_gan(g_model, d_model, image_shape):
 
     print('in_src shape is>', in_src.shape)
     print('gen_out shape is>', gen_out.shape)
-
     # supply the input image and generated image as inputs to the discriminator
     dis_out = d_model([in_src, gen_out])
     # src image as input, generated image and disc. output as outputs
@@ -283,7 +312,9 @@ def generate_real_samples(dataset, n_samples, patch_shape):
     # retrieve selected images
     X1, X2 = trainA[ix], trainB[ix]
     # generate 'real' class labels (1)
-    y = ones((n_samples, patch_shape, patch_shape, 1))
+    y = ones((n_samples, patch_shape, patch_shape*4, 1))
+    print('shape of X1 is>', X1.shape)
+    print('shape of X2 is>', X2.shape)
     return [X1, X2], y
 
 
@@ -292,7 +323,8 @@ def generate_fake_samples(g_model, samples, patch_shape):
     # generate fake instance
     X = g_model.predict(samples)
     # create 'fake' class labels (0)
-    y = zeros((len(X), patch_shape, patch_shape, 1))
+    y = zeros((len(X), patch_shape, patch_shape*4, 1))
+    print('shape of X is>', X.shape)
     return X, y
 
 
@@ -338,6 +370,7 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
 def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     # determine the output square shape of the discriminator
     n_patch = d_model.output_shape[1]
+    print('n patch IS>', n_patch)
     # unpack dataset
     trainA, trainB = dataset
     # calculate the number of batches per training epoch
@@ -348,6 +381,9 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     for i in range(n_steps):
         # select a batch of real samples
         [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
+        print('shape of X_realA is>', X_realA.shape)
+        print('shape of X_realB is>', X_realB.shape)
+
         # generate a batch of fake samples
         X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
         # update discriminator for real samples

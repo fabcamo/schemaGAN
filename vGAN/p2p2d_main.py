@@ -15,11 +15,14 @@ import cv2
 import numpy as np
 from matplotlib import pyplot
 
-from p2p2d_model import read_all_csv_files, apply_miss_rate_per_rf
+from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf
+from p2p2d_model_256 import define_discriminator, define_generator, define_gan, train
 
 # Resizing images, if needed
 SIZE_X = 256
 SIZE_Y = 64
+no_rows = SIZE_Y
+no_cols = SIZE_X
 path = 'D:/inpt/synthetic_data/cs2d'
 # n_classes=4 #Number of classes for segmentation
 
@@ -52,11 +55,11 @@ missing_data, full_data= apply_miss_rate_per_rf(all_csv)
 
 
 
-missing_data = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in missing_data])
-full_data = np.array([np.reshape(i, (256, 64)).astype(np.float32) for i in full_data])
+missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
+full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
 
-tar_images = np.reshape(full_data, (1000, 256, 64, 1))
-src_images = np.reshape(missing_data, (1000, 256, 64, 1))
+tar_images = np.reshape(full_data, (1000, no_rows, no_cols, 1))
+src_images = np.reshape(missing_data, (1000, no_rows, no_cols, 1))
 
 
 print(np.unique(src_images))
@@ -75,7 +78,7 @@ pyplot.show()
 
 #######################################################
 
-from p2p2d_model import define_discriminator, define_generator, define_gan, train
+
 
 # define input shape based on the loaded dataset
 image_shape = src_images.shape[1:]
