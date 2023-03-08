@@ -61,9 +61,6 @@ full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i
 tar_images = np.reshape(full_data, (1000, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (1000, no_rows, no_cols, 1))
 
-
-print(np.unique(src_images))
-
 n_samples = 3
 for i in range(n_samples):
     pyplot.subplot(2, n_samples, 1 + i)

@@ -180,7 +180,6 @@ def define_encoder_block(layer_in, n_filters, batchnorm=True):
         g = BatchNormalization()(g, training=True)
     # leaky relu activation
     g = LeakyReLU(alpha=0.2)(g)
-    print('shape of g in encoder block>', g.shape)
     return g
 
 def define_encoder_block_mod(layer_in, n_filters, batchnorm=True):
@@ -193,7 +192,6 @@ def define_encoder_block_mod(layer_in, n_filters, batchnorm=True):
         g = BatchNormalization()(g, training=True)
     # leaky relu activation
     g = LeakyReLU(alpha=0.2)(g)
-    print('shape of g in encoder MOD block>', g.shape)
     return g
 
 
@@ -209,8 +207,6 @@ def decoder_block(layer_in, skip_in, n_filters, dropout=True):
     if dropout:
         g = Dropout(0.5)(g, training=True)
     # merge with skip connection
-    print('shape of g in Decoder block>', g.shape)
-    print('shape of skip_in in Decoder block>', skip_in.shape)
     g = Concatenate()([g, skip_in])
     # relu activation
     g = Activation('relu')(g)
@@ -227,8 +223,6 @@ def decoder_block_mod(layer_in, skip_in, n_filters, dropout=True):
     if dropout:
         g = Dropout(0.5)(g, training=True)
     # merge with skip connection
-    print('shape of g in Decoder MOD block>', g.shape)
-    print('shape of skip_in in Decoder MOD block>', skip_in.shape)
     g = Concatenate()([g, skip_in])
     # relu activation
     g = Activation('relu')(g)
@@ -286,9 +280,6 @@ def define_gan(g_model, d_model, image_shape):
     in_src = Input(shape=image_shape)
     # suppy the image as input to the generator
     gen_out = g_model(in_src)
-
-    print('in_src shape is>', in_src.shape)
-    print('gen_out shape is>', gen_out.shape)
     # supply the input image and generated image as inputs to the discriminator
     dis_out = d_model([in_src, gen_out])
     # src image as input, generated image and disc. output as outputs
@@ -313,8 +304,6 @@ def generate_real_samples(dataset, n_samples, patch_shape):
     X1, X2 = trainA[ix], trainB[ix]
     # generate 'real' class labels (1)
     y = ones((n_samples, patch_shape, patch_shape*4, 1))
-    print('shape of X1 is>', X1.shape)
-    print('shape of X2 is>', X2.shape)
     return [X1, X2], y
 
 
@@ -324,7 +313,6 @@ def generate_fake_samples(g_model, samples, patch_shape):
     X = g_model.predict(samples)
     # create 'fake' class labels (0)
     y = zeros((len(X), patch_shape, patch_shape*4, 1))
-    print('shape of X is>', X.shape)
     return X, y
 
 
@@ -370,7 +358,6 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
 def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     # determine the output square shape of the discriminator
     n_patch = d_model.output_shape[1]
-    print('n patch IS>', n_patch)
     # unpack dataset
     trainA, trainB = dataset
     # calculate the number of batches per training epoch
@@ -381,9 +368,6 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     for i in range(n_steps):
         # select a batch of real samples
         [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
-        print('shape of X_realA is>', X_realA.shape)
-        print('shape of X_realB is>', X_realB.shape)
-
         # generate a batch of fake samples
         X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
         # update discriminator for real samples
