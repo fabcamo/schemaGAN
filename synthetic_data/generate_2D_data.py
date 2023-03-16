@@ -28,7 +28,7 @@ len_scale = 32          # main length scale
 angles = 0              # angle of rotation
 seed = 20170519         # seed
 ############################################################################################################
-no_realizations = 1000    # number of realizations to generate
+no_realizations = 2    # number of realizations to generate
 
 for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     print('Generating model no.:', counter)
@@ -44,7 +44,7 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     srf_other = random_field_generator2(ndim, var, len_scale, anis, angles, mean, seed+4)
     # store the random field models inside layers
     layers = [srf_sand, srf_silt, srf_clay, srf_sand, srf_clay, srf_silt, srf_sand]
-    random.shuffle(layers)  # shuffle the order of the list of materials for each loop
+    #random.shuffle(layers)  # shuffle the order of the list of materials for each loop
 
     # transform all coordinates to a single list
     coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
@@ -59,6 +59,9 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
         top_surf, bot_surf = surfaces
         # concatenate the coordinates over a single list
         poly_points = list(top_surf) + list(bot_surf)
+        print('surface ', i, ' is> ', poly_points)
+        print('the material ', i, 'is> ', layers[i])
+
 
         # using Delunay triangulation, check if the coordinates are inside of outside the polygon
         # this will return a mask of boolean values for inside/outside points
@@ -84,6 +87,6 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     ax.set_position([0, 0, 1, 1])
     ax.imshow(df_pivot)
     plt.axis("off")
-    plt.savefig(f"cs2d\\cs_{counter}.png")  # save the cross-section
-    df.to_csv(f"cs2d\\cs_{counter}.csv")
+    plt.savefig(f"test\\cs_{counter}.png")  # save the cross-section
+    df.to_csv(f"test\\cs_{counter}.csv")
     plt.close()

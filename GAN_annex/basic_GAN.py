@@ -75,14 +75,9 @@ def discriminator_model(input_shape):
     # Define the optimizer
     opt = Adam(lr=0.0002, beta_1=0.5)
     # Compile the model
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
 
     return model
-
-
-#test_discr = discriminator_model(input_shape)
-#print(test_discr.summary())
-
 
 
 # Generator architecture model
@@ -117,15 +112,12 @@ def generator_model(latent_dim):
     return model  # Model not compiled as it is not directly trained like the discriminator.
     # Generator is trained via GAN combined model.
 
-test_gen = generator_model(128)
-print(test_gen.summary())
-
-
 
 # Define the combined generator-discriminator model
 # This is done to train the generator, while keeping the discriminator constant
 # The discriminator is trained separately
 def gan_model(generator, discriminator):
+    model = Sequential()
     # Make the discriminator non-trainable
     discriminator.trainable = False
 
@@ -144,22 +136,22 @@ def gan_model(generator, discriminator):
 
 # generate points in latent space as input for the generator
 def generate_latent_points(latent_dim, n_samples):
- # generate points in the latent space
- x_input = randn(latent_dim * n_samples)
- # reshape into a batch of inputs for the network
- x_input = x_input.reshape(n_samples, latent_dim)
- return x_input
+    # generate points in the latent space
+    x_input = randn(latent_dim * n_samples)
+    # reshape into a batch of inputs for the network
+    x_input = x_input.reshape(n_samples, latent_dim)
+    return x_input
 
 
 # use the generator to generate n fake examples, with class labels
 def generate_fake_samples(g_model, latent_dim, n_samples):
- # generate points in latent space
- x_input = generate_latent_points(latent_dim, n_samples)
- # predict outputs
- X = g_model.predict(x_input)
- # create 'fake' class labels (0)
- y = zeros((n_samples, 1))
- return X, y
+    # generate points in latent space
+    x_input = generate_latent_points(latent_dim, n_samples)
+    # predict outputs
+    X = g_model.predict(x_input)
+    # create 'fake' class labels (0)
+    y = zeros((n_samples, 1))
+    return X, y
 
 g_model = generator_model(latent_dim)
 

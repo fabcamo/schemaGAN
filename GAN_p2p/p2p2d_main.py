@@ -23,7 +23,7 @@ SIZE_X = 256
 SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X
-path = 'D:/inpt/synthetic_data/cs2d'
+path = '/scratch/cs2d'
 # n_classes=4 #Number of classes for segmentation
 
 # Capture training image info as a list

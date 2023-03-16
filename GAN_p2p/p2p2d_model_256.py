@@ -81,7 +81,7 @@ def read_all_csv_files(directory):
     return dfs      # Return the list of dataframes
 
 
-def apply_miss_rate_per_rf(dfs, miss_rate=0.8):
+def apply_miss_rate_per_rf(dfs, miss_rate=0.99):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 

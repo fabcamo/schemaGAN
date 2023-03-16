@@ -118,13 +118,6 @@ plt.show()                                      # Display the plot
 
 
 
-
-
-
-
-
-
-
 srf_test = random_field_generator(ndim, var, len_scale, anis, angles, mean)
 # Evaluate the randon field model on the coordinates
 field = srf_test((x1, y1), mesh_type='structured')

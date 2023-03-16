@@ -46,6 +46,7 @@ def generate_2D_polygons(z_max, n_layers, ndim, x_coord, z_coord):
 
     # fill the other surfaces with the random depths
     surfaces[1:-1] = [poly_points_2D(x_coord, z) for z in z_random]   # for every random Z, generate a surface
+
     return surfaces
 
 
@@ -77,6 +78,7 @@ def generate_random_surfaces(z_max, n_layers, ndim, x_coord, y_coord, z_coord):
 
     # fill the other surfaces with the random depths
     surfaces[1:-1] = [surface_points_from_depth(x_coord, y_coord, z) for z in z_random]
+
     return surfaces
 
 
