@@ -69,17 +69,11 @@ def discriminator_model(input_shape):
     # Flatten the 2D input
     model.add(Flatten())
     # Add the Dense layers
-    model.add(Dense(units=1024))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Dense(units=512))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Dense(units=256))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Dense(units=128))
-    model.add(LeakyReLU(alpha=0.2))
+    model.add(Dense(units=512, activation='leaky_relu'))
+    model.add(Dense(units=256, activation='leaky_relu'))
+    model.add(Dense(units=128, activation='leaky_relu'))
     # Add FINAL fake or real layer
     model.add(Dense(units=1, activation='sigmoid'))
-
     # Define the optimizer
     opt = Adam(lr=0.0002, beta_1=0.5)
     # Compile the model
