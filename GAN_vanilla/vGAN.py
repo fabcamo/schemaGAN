@@ -31,17 +31,19 @@ for i in range(25):
     plt.subplot(5, 5, 1 + i)        # define subplot
     plt.axis('off')                 # turn off axis
     plt.imshow(all_images[i], cmap='Greys')
+# save plot to file
+filename1 = 'real_images'
+plt.savefig(filename1)
 plt.show()                          # to show the image
-plt.clf()                           # To clear the image memory
+plt.close()
 
 
 ##### HYPER-PARAMETERS ##########################################################################################
 no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
-batch_size = 32         # user defined batch size
-n_samples = 1
-n_epochs = 100
-n_batch = 128
+n_samples = 25
+n_epochs = 2000
+n_batch = 32
 
 # Check the image size
 print('The shape of a single image is: ',all_images[0].shape)
@@ -180,15 +182,14 @@ def summarize_performance(step, g_model, latent_dim, n_samples=25):
         plt.subplot(5, 5, 1 + i)  # define subplot
         plt.axis('off')  # turn off axis
         plt.imshow(X_fakeB[i], cmap='Greys')
-    plt.show()  # to show the image
-    plt.clf()  # To clear the image memory
+    #plt.show()  # to show the image
 
     # save plot to file
-    filename1 = '/results/plot_%06d.png' % (step + 1)
+    filename1 = 'D:\\inpt\\GAN_vanilla\\results\\plot_%06d.png' % (step + 1)
     plt.savefig(filename1)
     plt.close()
     # save the generator model
-    filename2 = '/results/model_%06d.h5' % (step + 1)
+    filename2 = 'D:\\inpt\\GAN_vanilla\\results\\model_%06d.h5' % (step + 1)
     g_model.save(filename2)
     print('>Saved: %s and %s' % (filename1, filename2))
 
@@ -239,18 +240,21 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
             print('Epoch>%d, Batch %d/%d, d1=%.3f, d2=%.3f g=%.3f' %
                   (i + 1, j + 1, batch_per_epoch, d_loss_real, d_loss_fake, g_loss))
 
-            # summarize model performance
-            if (i + 1) % (batch_per_epoch * 10) == 0:
-                summarize_performance(i, generator, dataset)
+        # summarize model performance
+        summarize_every_n_epochs = 5
+        if i % summarize_every_n_epochs == 0:
+            summarize_performance(i, generator, latent_dim, n_samples=25)
     # save the generator model
-    generator.save('/results/mnist_final generator.h5')
+    generator.save('D:\\inpt\\GAN_vanilla\\results\\mnist_final_generator.h5')
+
+
+
+
 
 
 ###################################################################
 # Train the GAN
 
-# size of the latent space
-latent_dim = 100
 # create the discriminator
 discriminator = discriminator_model(input_shape)
 # create the generator
@@ -280,9 +284,9 @@ def show_plot(examples, n):
 
 
 # load model
-model = load_model('cifar_generator_250epochs.h5')  # Model trained for 100 epochs
+model = load_model('D:\\inpt\\GAN_vanilla\\results\\mnist_final_generator.h5')  # Model trained for 100 epochs
 # generate images
-latent_points = generate_noise_vectors(100, 25)  # Latent dim and n_samples
+latent_points = generate_noise_vectors(latent_dim, 25)  # Latent dim and n_samples
 # generate images
 X = model.predict(latent_points)
 # scale from [-1,1] to [0,1]
@@ -295,5 +299,3 @@ X = (X * 255).astype(np.uint8)
 # plot the result
 show_plot(X, 5)
 
-# Note: CIFAR10 classes are: airplane, automobile, bird, cat, deer, dog, frog, horse,
-# ship, truck
