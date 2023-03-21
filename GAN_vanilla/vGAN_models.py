@@ -12,7 +12,7 @@ from tensorflow.keras.optimizers import Adam
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-results_dir_path = r'D:\inpt\GAN_vanilla\results'
+results_dir_path = r'C:\inpt\GAN_vanilla\results'
 
 
 
@@ -128,11 +128,11 @@ def summarize_performance(step, g_model, latent_dim, n_samples=25):
     X_fakeB = (X_fakeB + 1) / 2.0
 
     # Plot images from the training dataset
-    for i in range(25):
-        plt.subplot(5, 5, 1 + i) # Define subplot
-        plt.axis('off') # Turn off axis
-        plt.imshow(X_fakeB[i], cmap='Greys')
-    #plt.show()  # to show the image
+    fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(8, 8))
+    for i, ax in enumerate(axes.flat):
+        ax.imshow(X_fakeB[i], cmap='gray')
+        ax.axis('off')
+    plt.subplots_adjust(wspace=0, hspace=0)
 
     # Save plot to file
     plot_filename = os.path.join(results_dir_path, 'plot_{:06d}.png'.format(step + 1))
@@ -157,6 +157,7 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
     # Define the batches for the training
     batch_per_epoch = int(dataset.shape[0] / n_batch) # How many batches per epoch [7000/128]
     half_batch = int(n_batch / 2) # Define the half batch size
+    d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list(), list(), list()
 
     # The Discriminator model is updated for a half batch of real samples
     # and a half batch of fake samples, combined into a single batch
@@ -169,11 +170,11 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
             # Get randomly selected 'real' samples
             real_image, real_label = generate_real_samples(dataset, half_batch)
             # train_on_batch allows you to update weights based on a collection of samples you provide
-            d_loss_real, _ = discriminator.train_on_batch(real_image, real_label)
+            d_loss_real, d_acc_real = discriminator.train_on_batch(real_image, real_label)
             # Generate the fake images
             fake_image, fake_label = generate_fake_samples(generator, latent_dim, half_batch)
             # Update discriminator model weights
-            d_loss_fake, _ = discriminator.train_on_batch(fake_image, fake_label)
+            d_loss_fake, d_acc_fake = discriminator.train_on_batch(fake_image, fake_label)
 
             # TRAIN THE GENERATOR:
             # Prepare points in latent space as input for the generator
@@ -189,11 +190,44 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
             print('Epoch>%d, Batch %d/%d, d1=%.3f, d2=%.3f g=%.3f' %
                   (i + 1, j + 1, batch_per_epoch, d_loss_real, d_loss_fake, g_loss))
 
+        # Storing the losses and accuracy of the iterations.
+        d1_hist.append(d_loss_real)
+        d2_hist.append(d_loss_fake)
+        d_hist = np.add(d1_hist, d2_hist).tolist()
+        g_hist.append(g_loss)
+        a1_hist.append(d_acc_real)
+        a2_hist.append(d_acc_fake)
+
         # Summarize model performance
-        summarize_every_n_epochs = 5
+        summarize_every_n_epochs = 1
         if i % summarize_every_n_epochs == 0:
             summarize_performance(i, generator, latent_dim, n_samples=25)
+
+
+
     # Save the generator model
     final_generator_path = os.path.join(results_dir_path, 'mnist_final_generator.h5')
     generator.save(final_generator_path)
+    plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
 
+
+
+
+# create a line plot of loss for the gan and save to file
+def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
+    # plot loss
+    plt.subplot(2, 1, 1)
+    plt.plot(d1_hist, label='d-real')
+    plt.plot(d2_hist, label='d-fake')
+    plt.plot(d_hist, label='d-total')
+    plt.plot(g_hist, label='gen')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plot discriminator accuracy
+    plt.subplot(2, 1, 2)
+    plt.plot(a1_hist, label='acc-real')
+    plt.plot(a2_hist, label='acc-fake')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Save plot to file
+    plot_losses = os.path.join(results_dir_path, 'plot_losses.png')
+    plt.savefig(plot_losses, bbox_inches='tight')
+    plt.close()
