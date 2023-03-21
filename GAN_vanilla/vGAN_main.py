@@ -29,7 +29,7 @@ no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
 n_samples = 25          # number of samples
 
-n_epochs = 100         # number of epochs
+n_epochs = 1         # number of epochs
 n_batch = 32            # number of samples in batch
 
 # Get the shape of the input data
@@ -54,7 +54,7 @@ gan_model = GAN_model(generator, discriminator)
 dataset = normalize_data()
 
 # Train the model
-train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs, n_batch)
+#train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs, n_batch)
 
 time_end = time.time() # End the timer
 
@@ -71,13 +71,13 @@ minutes = int((time_total % 3600) // 60)
 seconds = int(time_total % 60)
 time_str = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
 
-# Save the time to the summary file
+# Save run details to file
 with open(results_file_path, "a") as file:
     file.write("Executed on: {}\n".format(time_current))
-    file.write("Time taken: {}\n".format(time_str))
+    file.write("execution time: {}\n\n".format(time_str))
     file.write("The shape of a single input image is: {}\n".format(input_shape))
-    file.write("Number of epochs is: {}\n".format(n_epochs))
-    file.write("The total number of training images is: {}\n".format(all_images.shape))
+    file.write("The total number of training images is: {}\n".format(all_images.shape[0]))
+    file.write("Number of epochs is: {}\n\n".format(n_epochs))
 
 # Check if GPUs are available and write it to the summary
 gpus = tf.config.list_physical_devices('GPU')
@@ -89,9 +89,15 @@ else:
     with open(results_file_path, "a") as file:
         file.write("Running TensorFlow on CPU\n")
 
-print("Time taken: {}".format(time_str))
-print("Results saved to ", results_file_path)
-
+# Save GAN model summaries to file
+with open(results_file_path, "a") as file:
+    file.write(" \n")
+    file.write("Generator summary\n")
+    generator.summary(print_fn=lambda x: file.write(x + '\n'))
+    file.write(" \n\n")
+    file.write("Discriminator summary\n")
+    discriminator.summary(print_fn=lambda x: file.write(x + '\n'))
+    file.write(" \n")
 
 
 #################################################################################################################
