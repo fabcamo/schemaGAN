@@ -22,7 +22,7 @@ def read_all_csv_files(directory):
 
 
 
-def apply_miss_rate_per_rf(dfs, miss_rate):
+def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
@@ -36,8 +36,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate):
             data_z.append(list(group[value_name]))  # Append the 'IC' column of the group to the data_x list
 
         data_z = np.array(data_z, dtype=float)  # Convert the data_x list to a numpy array of type float
-        no, dim = data_z.shape  # Get the number of rows and columns in the data_x array
-        data_m = remove_random_columns(data_z, miss_rate)   # Call the remove_random_columns function to remove columns from data_x
+        data_m = remove_random_columns(data_z, miss_rate, min_distance)   # Call the remove_random_columns function to remove columns from data_x
         missing_data.append(data_m) # Append the missing data to the missing_data list
         full_data.append(data_z)    # Append the full data to the full_data list
 
@@ -49,36 +48,13 @@ def apply_miss_rate_per_rf(dfs, miss_rate):
 
 
 # Remove at random a user defined percentage of columns from the matrix
-def remove_random_columns(data_z, miss_rate):
+def remove_random_columns(data_z, miss_rate, min_distance):
     # Transpose the input data to operate on columns instead of rows
     data_z = np.transpose(data_z)
     # Choose the dimension based on the number of columns in the transposed data
-    dim_choice = int(data_z.shape[0])
 
-    # Calculate how many columns (indexes) we need according to the missing rate
-    no_missing_columns = int(miss_rate * dim_choice)
-    no_columns_to_keep = abs(no_missing_columns - dim_choice)
-
-
-    # Empty container for the missing indexes
-    columns_to_keep_index = []
-    missing_columns_index = []
-
-    # Set the min distance between random columns
-    min_distance = 2
-
-    while len(columns_to_keep_index) != no_columns_to_keep:
-        # Generate a random column index
-        rand_index = int(np.random.uniform(0, dim_choice))
-        if rand_index in columns_to_keep_index:
-            print('already in list')
-        else:
-            # check if there is enough spacing
-            if all(i not in columns_to_keep_index for i in range(rand_index - min_distance, rand_index + min_distance +1)):
-                print('**********************there is enough space')
-                columns_to_keep_index.append(rand_index)
-            else:
-                print('not enough space, retrying')
+    # Returns which columns to keep from miss_rate and min_distance
+    columns_to_keep_index = check_min_spacing(data_z, miss_rate, min_distance)
 
     # Create a matrix of ones that will be used to indicate missing data
     data_m = np.zeros_like(data_z)
@@ -97,6 +73,8 @@ def remove_random_columns(data_z, miss_rate):
 
     return miss_list
 
+
+
 # Remove a random amount of data from the bottom of each column in the matrix
 def remove_random_depths(data_z, data_m):
     data_length = data_z.shape[0]  # grab the length of the cross-section [256 columns]
@@ -113,6 +91,35 @@ def remove_random_depths(data_z, data_m):
     return data_m
 
 
+def check_min_spacing(data_z, miss_rate, min_distance):
+    all_columns = int(data_z.shape[0])  # [256]
+    # Calculate how many columns (indexes) we need according to the missing rate
+    no_missing_columns = int(miss_rate * all_columns)  # number of missing columns
+    no_columns_to_keep = abs(no_missing_columns - all_columns)  # number of columns to keep [like CPTs]
+
+    columns_to_keep_index = []  # Empty container for the missing indexes
+
+    # Loop until the columns_to_keep_index list is full according to the selected percentage
+    while len(columns_to_keep_index) != no_columns_to_keep:
+        # Generate a random column index from an uniform distribution
+        rand_index = int(np.random.uniform(0, all_columns))
+        # Define the range of indexes to check for duplicates according to the min_distance defined
+        range_to_check = range(rand_index - min_distance, rand_index + min_distance + 1)
+
+        if rand_index in columns_to_keep_index:  # Check if the rand_index is already in columns_to_keep_index
+            pass  # if it is> do nothing, restart the while-loop
+        else:
+            # Check if none of the indexes in the range are already in columns_to_keep_index list
+            if all(index not in columns_to_keep_index for index in range_to_check):
+                columns_to_keep_index.append(rand_index)  # if true, append the rand_index to the list
+            else:
+                print('No space to accommodate random index, RETRYING')
+
+    return columns_to_keep_index
+
+
+
+
 
 ########################################################################################################################
 
@@ -123,7 +130,8 @@ no_rows = SIZE_Y
 no_cols = SIZE_X
 path = 'C:\inpt\synthetic_data\cs2d_test'
 
-miss_rate = 0.9
+miss_rate = 0.95
+min_distance = 6
 
 # Capture training image info as a list
 tar_images = []
@@ -132,7 +140,7 @@ src_images = []
 
 all_csv = read_all_csv_files(path)
 no_samples = len(all_csv)
-missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate)
+missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
 
 missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
 full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
@@ -151,47 +159,4 @@ for i in range(n_samples):
     pyplot.axis('off')
     pyplot.imshow(tar_images[i], cmap='viridis')
 pyplot.show()
-
-
-
-# Remove at random a user defined percentage of columns from the matrix
-def remove_random_columns_mod(data_z, miss_rate):
-    # Transpose the input data to operate on columns instead of rows
-    data_z = np.transpose(data_z)
-    # Choose the dimension based on the number of columns in the transposed data
-    dim_choice = int(data_z.shape[0])
-
-    # Calculate how many columns (indexes) we need according to the missing rate
-    no_missing_columns = int(miss_rate * dim_choice)
-
-
-
-
-    # Randomly select a subset of columns to "remove" based on the miss_rate
-    missing_columns_index = random.sample(range(dim_choice), no_missing_columns)
-
-
-    if len(missing_columns_index) == no_missing_columns:
-        print('they match!')
-    else:
-        print('keep adding!')
-
-    # Create a matrix of ones that will be used to indicate missing data
-    data_m = np.ones_like(data_z)
-
-    # Remove a random number of rows from the bottom from each column
-    data_m = remove_random_depths(data_z, data_m)
-
-    # Set the values in data_m to 0 for the columns that were selected for removal
-    for column_index in missing_columns_index:
-        data_m[column_index, :] = np.zeros_like(data_m[column_index, :])
-
-    # Multiply the original data by the missing data indicator to create the final output
-    miss_list = np.multiply(data_z, data_m)
-    # Transpose the output back to its original orientation
-    miss_list = np.transpose(miss_list)
-
-    return miss_list
-
-
 

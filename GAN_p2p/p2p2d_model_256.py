@@ -67,7 +67,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.99):
             data_z.append(list(group[value_name]))  # Append the 'IC' column of the group to the data_x list
 
         data_z = np.array(data_z, dtype=float)  # Convert the data_x list to a numpy array of type float
-        no, dim = data_z.shape  # Get the number of rows and columns in the data_x array
+        #no, dim = data_z.shape  # Get the number of rows and columns in the data_x array
         data_m = remove_random_columns(data_z, miss_rate)   # Call the remove_random_columns function to remove columns from data_x
         missing_data.append(data_m) # Append the missing data to the missing_data list
         full_data.append(data_z)    # Append the full data to the full_data list
