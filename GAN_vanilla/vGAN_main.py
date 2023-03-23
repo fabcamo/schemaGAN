@@ -12,7 +12,7 @@ from vGAN_models import load_data, normalize_data, train, generate_noise_vectors
 
 
 # Define the PATH
-path = r'C:\inpt\GAN_vanilla\results'
+path = r'/scratch/fcamposmontero/vGAN_results'
 # Define the path and the results name file
 results_file_path = os.path.join(path, 'results_summary.txt')
 
@@ -112,7 +112,7 @@ def show_plot(examples, n):
     plt.show()
 
 # Load model
-model = load_model('C:\\inpt\\GAN_vanilla\\results\\mnist_final_generator.h5')  # Model trained for 100 epochs
+model = load_model('/scratch/fcamposmontero/vGAN_results/mnist_final_generator.h5')  # Model trained for 100 epochs
 # Generate images
 latent_points = generate_noise_vectors(latent_dim, 25)  # Latent dim and n_samples
 # Generate images

@@ -12,7 +12,7 @@ from tensorflow.keras.optimizers import Adam
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-results_dir_path = r'C:\inpt\GAN_vanilla\results'
+results_dir_path = r'/scratch/fcamposmontero/vGAN_results'
 
 
 
@@ -130,7 +130,7 @@ def summarize_performance(step, g_model, latent_dim, n_samples=25):
     # Plot images from the training dataset
     fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(8, 8))
     for i, ax in enumerate(axes.flat):
-        ax.imshow(X_fakeB[i], cmap='gray')
+        ax.imshow(X_fakeB[i], cmap='Greys')
         ax.axis('off')
     plt.subplots_adjust(wspace=0, hspace=0)
 

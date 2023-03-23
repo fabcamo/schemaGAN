@@ -1,16 +1,3 @@
-# https://youtu.be/my7LEgYTJto
-
-"""
-Generating realistic looking scientific images using Pix2Pix GAN
-
-Dataset link: https://drive.google.com/file/d/1HWtBaSa-LTyAMgf2uaz1T9o1sTWDBajU/view
-(Please read the Readme document in the dataset folder for more information. )
-
-"""
-
-from tensorflow.keras.utils import normalize
-import os
-import glob
 import cv2
 import numpy as np
 from matplotlib import pyplot
@@ -24,35 +11,19 @@ SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X
 path = '/scratch/cs2d'
+
 # n_classes=4 #Number of classes for segmentation
 
 # Capture training image info as a list
 tar_images = []
-# for directory_path in glob.glob(path):
-#     for img_path in glob.glob(os.path.join(directory_path, "*.png")):
-#         img = cv2.imread(img_path, 1)
-#         img = cv2.resize(img, (SIZE_Y, SIZE_X))
-#         tar_images.append(img)
-
-# Convert list to array for machine learning processing
-# tar_images = np.array(tar_images)
-
 
 # Capture mask/label info as a list
 src_images = []
-# for directory_path in glob.glob(path):
-#     for mask_path in glob.glob(os.path.join(directory_path, "*.png")):
-#         mask = cv2.imread(mask_path, 1)
-#         mask = cv2.resize(mask, (SIZE_Y, SIZE_X),
-#                           interpolation=cv2.INTER_NEAREST)  # Otherwise ground truth changes due to interpolation
-#         src_images.append(mask)
 
-# Convert list to array for machine learning processing
 # src_images = np.array(src_images)
 
 all_csv = read_all_csv_files(path)
 missing_data, full_data= apply_miss_rate_per_rf(all_csv)
-
 
 
 missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])

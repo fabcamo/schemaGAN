@@ -1,32 +1,3 @@
-# https://youtu.be/UcHe0xiuvpg
-# https://youtu.be/6pUSZgPJ3Yg
-# https://youtu.be/my7LEgYTJto
-"""
-pix2pix GAN model
-
-Based on the code by Jason Brownlee from his blogs on https://machinelearningmastery.com/
-I seriously urge everyone to foloow his blogs and get enlightened.
-I am adapting his code to various applications but original credit goes to Jason.
-
-
-    Original paper: https://arxiv.org/pdf/1611.07004.pdf
-    Github for original paper: https://phillipi.github.io/pix2pix/
-
-
-Generator:
-The encoder-decoder architecture consists of:
-encoder:
-C64-C128-C256-C512-C512-C512-C512-C512
-decoder:
-CD512-CD512-CD512-C512-C256-C128-C64
-
-
-Discriminator
-C64-C128-C256-C512
-After the last layer, a convolution is applied to map to
-a 1-dimensional output, followed by a Sigmoid function.
-"""
-#
 import os
 import random
 import pandas as pd
@@ -49,23 +20,6 @@ from matplotlib import pyplot as plt
 from tensorflow.keras.utils import plot_model
 
 
-#############################################################################
-# Define generator, discriminator, gan and other helper functions
-# We will use functional way of defining model and not sequential
-# as we have multiple inputs; both images and corresponding labels.
-########################################################################
-
-# Since pix2pix is a conditional GAN, it takes 2 inputs - image and corresponding label
-# For pix2pix the label will be another image.
-
-# define the standalone discriminator model
-# Given an input image, the Discriminator outputs the likelihood of the image being real.
-# Binary classification - true or false (1 or 0). So using sigmoid activation.
-# Think of discriminator as a binary classifier that is classifying images as real/fake.
-
-# From the paper C64-C128-C256-C512
-# After the last layer, conv to 1-dimensional output, followed by a Sigmoid function.
-
 # read all csv data
 def read_all_csv_files(directory):
     directory = os.path.join(directory)    # Join the directory path with the os path separator
@@ -85,7 +39,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.9):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
-    # Iterate through each random forest in the list
+    # Iterate through each random field in the list
     for counter, rf in enumerate(dfs):
         data_z = []     # Create an empty list to store data for each value of x
         grouped = rf.groupby("z")   # Group the rows of the random field by the value of x

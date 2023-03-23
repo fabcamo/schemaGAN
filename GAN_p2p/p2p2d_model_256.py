@@ -1,32 +1,3 @@
-# https://youtu.be/UcHe0xiuvpg
-# https://youtu.be/6pUSZgPJ3Yg
-# https://youtu.be/my7LEgYTJto
-"""
-pix2pix GAN model
-
-Based on the code by Jason Brownlee from his blogs on https://machinelearningmastery.com/
-I seriously urge everyone to foloow his blogs and get enlightened.
-I am adapting his code to various applications but original credit goes to Jason.
-
-
-    Original paper: https://arxiv.org/pdf/1611.07004.pdf
-    Github for original paper: https://phillipi.github.io/pix2pix/
-
-
-Generator:
-The encoder-decoder architecture consists of:
-encoder:
-C64-C128-C256-C512-C512-C512-C512-C512
-decoder:
-CD512-CD512-CD512-C512-C256-C128-C64
-
-
-Discriminator
-C64-C128-C256-C512
-After the last layer, a convolution is applied to map to
-a 1-dimensional output, followed by a Sigmoid function.
-"""
-#
 import os
 import random
 import pandas as pd
@@ -47,6 +18,7 @@ from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import BatchNormalization
 from matplotlib import pyplot as plt
 from tensorflow.keras.utils import plot_model
+
 
 
 #############################################################################
@@ -85,7 +57,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.99):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
-    # Iterate through each random forest in the list
+    # Iterate through each random field in the list
     for counter, rf in enumerate(dfs):
         data_z = []     # Create an empty list to store data for each value of x
         grouped = rf.groupby("z")   # Group the rows of the random field by the value of x
@@ -104,17 +76,32 @@ def apply_miss_rate_per_rf(dfs, miss_rate=0.99):
     return missing_data, full_data
 
 
+
+
 def remove_random_columns(data_z, miss_rate):
+    # Transpose the input data to operate on columns instead of rows
     data_z = np.transpose(data_z)
+    # Choose the dimension based on the number of columns in the transposed data
     dim_choice = int(data_z.shape[0])
-    missing_columns_index = random.sample(range(dim_choice), int(miss_rate*dim_choice))
+    # Randomly select a subset of columns to "remove" based on the miss_rate
+    missing_columns_index = random.sample(range(dim_choice), int(miss_rate * dim_choice))
+    # Create a matrix of ones that will be used to indicate missing data
     data_m = np.ones_like(data_z)
+
+    # Set the values in data_m to 0 for the columns that were selected for removal
     for column_index in missing_columns_index:
         data_m[column_index, :] = np.zeros_like(data_m[column_index, :])
+
+    # Remove a random number of rows from the bottom from each column
+    data_m = remove_random_depths(data_z, data_m)
+
+    # Multiply the original data by the missing data indicator to create the final output
     miss_list = np.multiply(data_z, data_m)
+    # Transpose the output back to its original orientation
     miss_list = np.transpose(miss_list)
 
     return miss_list
+
 
 
 def define_discriminator(image_shape):
@@ -263,9 +250,6 @@ def define_generator(image_shape=(64, 256, 1)):
     model = Model(in_image, out_image)
     return model
 
-
-# gen_model = define_generator((256,256,3))
-# plot_model(gen_model, to_file='gen_model.png', show_shapes=True)
 
 
 # define the combined generator and discriminator model, for updating the generator

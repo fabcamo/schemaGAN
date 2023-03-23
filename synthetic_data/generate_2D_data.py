@@ -10,7 +10,7 @@ from layers_functions.rf_polygons import generate_2D_polygons
 ##### MAIN VARIABLES ######################################################################################
 n_layers = 5            # no. of layers
 x_max = 256             # length (x) of the model
-z_max = 64              # depth (z) of the model
+z_max = 32              # depth (z) of the model
 # Model coordinates
 x_coord = np.linspace(0, x_max, x_max, dtype=int)       # array of x coordinates
 z_coord = np.linspace(0, z_max, z_max, dtype=int)       # array of z coordinates
@@ -83,7 +83,7 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     plt.clf()   # clear the current figure
     df_pivot = df.pivot(index="z", columns="x", values="IC")
 
-    fig, ax = plt.subplots(figsize=(2.56, 0.64))
+    fig, ax = plt.subplots(figsize=(x_max/100, z_max/100))
     ax.set_position([0, 0, 1, 1])
     ax.imshow(df_pivot)
     plt.axis("off")
