@@ -1,0 +1,58 @@
+Executed on: 22/03/2023 10:34:31
+execution time: 06:55:12
+
+The shape of a single input image is: (28, 28)
+The total number of training images is: 70000
+Number of epochs is: 100
+
+Running TensorFlow with 1 GPU(s)
+ 
+Generator summary
+Model: "sequential_1"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ dense_4 (Dense)             (None, 128)               16512     
+                                                                 
+ dense_5 (Dense)             (None, 256)               33024     
+                                                                 
+ dense_6 (Dense)             (None, 512)               131584    
+                                                                 
+ dense_7 (Dense)             (None, 784)               402192    
+                                                                 
+ reshape (Reshape)           (None, 28, 28, 1)         0         
+                                                                 
+=================================================================
+Total params: 583,312
+Trainable params: 583,312
+Non-trainable params: 0
+_________________________________________________________________
+ 
+
+Discriminator summary
+Model: "sequential"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ flatten (Flatten)           (None, 784)               0         
+                                                                 
+ dense (Dense)               (None, 512)               401920    
+                                                                 
+ dropout (Dropout)           (None, 512)               0         
+                                                                 
+ dense_1 (Dense)             (None, 256)               131328    
+                                                                 
+ dropout_1 (Dropout)         (None, 256)               0         
+                                                                 
+ dense_2 (Dense)             (None, 128)               32896     
+                                                                 
+ dropout_2 (Dropout)         (None, 128)               0         
+                                                                 
+ dense_3 (Dense)             (None, 1)                 129       
+                                                                 
+=================================================================
+Total params: 566,273
+Trainable params: 0
+Non-trainable params: 566,273
+_________________________________________________________________
+ 
