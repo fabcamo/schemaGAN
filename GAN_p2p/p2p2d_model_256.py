@@ -463,7 +463,7 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
 
     # Save the generator model
     final_generator_path = 'final_generator.h5'
-    generator.save(final_generator_path)
+    g_model.save(final_generator_path)
     plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
 
 

@@ -95,16 +95,11 @@ stop1 = datetime.now()
 execution_time = stop1 - start1
 print("Execution time is: ", execution_time)
 
-# Reports parameters for each batch (total 1096) for each epoch.
-# For 10 epochs we should see 10960
-g_model.save('final_model.h5')
+
 #########################################
 # Test trained model on a few images...
 
-
-
 #model = load_model('sandstone_50epochs.h5')
-
 
 # plot source, generated and target images
 def plot_images(src_img, gen_img, tar_img):
