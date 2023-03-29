@@ -10,7 +10,7 @@ from layers_functions.rf_polygons import generate_2D_polygons
 ##### MAIN VARIABLES ######################################################################################
 n_layers = 5            # no. of layers
 x_max = 256             # length (x) of the model
-z_max = 32              # depth (z) of the model
+z_max = 64              # depth (z) of the model
 # Model coordinates
 x_coord = np.linspace(0, x_max, x_max, dtype=int)       # array of x coordinates
 z_coord = np.linspace(0, z_max, z_max, dtype=int)       # array of z coordinates
@@ -28,10 +28,10 @@ len_scale = 32          # main length scale
 angles = 0              # angle of rotation
 seed = 20170519         # seed
 ############################################################################################################
-no_realizations = 2    # number of realizations to generate
+no_realizations = 10    # number of realizations to generate
 
 for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
-    print('Generating model no.:', counter)
+    print('Generating model no.:', counter+1)
     random.seed(seed)
 
     # generate the random polygons within the model
@@ -59,8 +59,6 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
         top_surf, bot_surf = surfaces
         # concatenate the coordinates over a single list
         poly_points = list(top_surf) + list(bot_surf)
-        print('surface ', i, ' is> ', poly_points)
-        print('the material ', i, 'is> ', layers[i])
 
 
         # using Delunay triangulation, check if the coordinates are inside of outside the polygon

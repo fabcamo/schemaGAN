@@ -13,10 +13,10 @@ SIZE_X = 256
 SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X
-path = 'D:\\inpt\\synthetic_data\\test'
+path = 'C:\\inpt\\synthetic_data\\test'
 
-miss_rate = 0.90
-min_distance = 6
+miss_rate = 0.95
+min_distance = 10
 
 # n_classes=4 #Number of classes for segmentation
 
@@ -30,13 +30,13 @@ src_images = []
 
 all_csv = read_all_csv_files(path)
 missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
-
+no_samples = len(all_csv)
 
 missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
 full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
 
-tar_images = np.reshape(full_data, (5, no_rows, no_cols, 1))
-src_images = np.reshape(missing_data, (5, no_rows, no_cols, 1))
+tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
+src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
 n_samples = 3
 for i in range(n_samples):
@@ -86,7 +86,7 @@ dataset = preprocess_data(data)
 
 start1 = datetime.now()
 
-train(d_model, g_model, gan_model, dataset, n_epochs=50, n_batch=1)
+train(d_model, g_model, gan_model, dataset, n_epochs=10, n_batch=1)
 # Reports parameters for each batch (total 1600) for each epoch.
 # For 10 epochs we should see 16000
 
@@ -97,7 +97,7 @@ print("Execution time is: ", execution_time)
 
 # Reports parameters for each batch (total 1096) for each epoch.
 # For 10 epochs we should see 10960
-g_model.save('256by64_.h5')
+g_model.save('final_model.h5')
 #########################################
 # Test trained model on a few images...
 

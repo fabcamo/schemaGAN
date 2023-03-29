@@ -194,7 +194,7 @@ def define_discriminator(image_shape):
     # The loss for the discriminator is weighted by 50% for each model update.
 
     opt = Adam(lr=0.0002, beta_1=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt, loss_weights=[0.5])
+    model.compile(loss='binary_crossentropy', optimizer=opt, loss_weights=[0.5], metrics=['mean_squared_error'])
     return model
 
 
@@ -318,6 +318,7 @@ def define_gan(g_model, d_model, image_shape):
     # compile model
     opt = Adam(lr=0.0002, beta_1=0.5)
 
+    # IMPORTAT TO UNDERSTAND THISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
     # Total loss is the weighted sum of adversarial loss (BCE) and L1 loss (MAE)
     # Authors suggested weighting BCE vs L1 as 1:100.
     model.compile(loss=['binary_crossentropy', 'mae'],
@@ -352,6 +353,7 @@ def generate_fake_samples(g_model, samples, patch_shape):
 # the generator and the discriminator. Therefore, it makes sense to periodically
 # save the generator model and check how good the generated image looks.
 def summarize_performance(step, g_model, dataset, n_samples=3):
+    print('... Saving a summary')
     # select a sample of input images
     [X_realA, X_realB], _ = generate_real_samples(dataset, n_samples, 1)
     # generate a batch of fake samples
@@ -360,28 +362,52 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
     X_realA = (X_realA + 1) / 2.0
     X_realB = (X_realB + 1) / 2.0
     X_fakeB = (X_fakeB + 1) / 2.0
+
     # plot real source images
     for i in range(n_samples):
-        plt.subplot(3, n_samples, 1 + i)
-        plt.axis('off')
+        ax = plt.subplot(3, n_samples, 1 + i)
+        # plt.axis('off')
         plt.imshow(X_realA[i])
+        if i == 0:
+            plt.ylabel('Real Source', fontsize=8)
+        ax.tick_params(axis='both', which='major', labelsize=6)
+        ax.set_xticks([0, 64, 128, 192, 256])
+        ax.set_xticklabels(['0', '64', '128', '192', '256'], fontsize=6)
+        ax.set_yticks([0, 32, 64])
+        ax.set_yticklabels(['0', '32', '64'], fontsize=6)
+
     # plot generated target image
     for i in range(n_samples):
-        plt.subplot(3, n_samples, 1 + n_samples + i)
-        plt.axis('off')
+        ax = plt.subplot(3, n_samples, 1 + n_samples + i)
+        # plt.axis('off')
         plt.imshow(X_fakeB[i])
+        if i == 0:
+            plt.ylabel('Generated Target', fontsize=8)
+        ax.tick_params(axis='both', which='major', labelsize=6)
+        ax.set_xticks([0, 64, 128, 192, 256])
+        ax.set_xticklabels(['0', '64', '128', '192', '256'], fontsize=6)
+        ax.set_yticks([0, 32, 64])
+        ax.set_yticklabels(['0', '32', '64'], fontsize=6)
+
     # plot real target image
     for i in range(n_samples):
-        plt.subplot(3, n_samples, 1 + n_samples * 2 + i)
-        plt.axis('off')
+        ax = plt.subplot(3, n_samples, 1 + n_samples * 2 + i)
+        # plt.axis('off')
         plt.imshow(X_realB[i])
-    # save plot to file
+        if i == 0:
+            plt.ylabel('Real Target', fontsize=8)
+        ax.tick_params(axis='both', which='major', labelsize=6)
+        ax.set_xticks([0, 64, 128, 192, 256])
+        ax.set_xticklabels(['0', '64', '128', '192', '256'], fontsize=6)
+        ax.set_yticks([0, 32, 64])
+        ax.set_yticklabels(['0', '32', '64'], fontsize=6)
+
     filename1 = 'plot_%06d.png' % (step + 1)
     plt.savefig(filename1)
     plt.close()
     # save the generator model
     filename2 = 'model_%06d.h5' % (step + 1)
-    g_model.save(filename2)
+    #g_model.save(filename2)
     print('>Saved: %s and %s' % (filename1, filename2))
 
 
@@ -395,20 +421,105 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     bat_per_epo = int(len(trainA) / n_batch)
     # calculate the number of training iterations
     n_steps = bat_per_epo * n_epochs
+
+    d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list(), list(), list()
+
+    # Manually enumerate epochs and batches
+    for i in range(n_epochs):
+        # Enumerate batches over the training set
+        for j in range(bat_per_epo):
+            # TRAIN THE DISCRIMINATOR
+            # select a batch of real samples
+            [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
+            # update discriminator for real samples
+            d_loss_real, d_acc_real = d_model.train_on_batch([X_realA, X_realB], y_real)
+            # generate a batch of fake samples
+            X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
+            # update discriminator for generated samples
+            d_loss_fake, d_acc_fake = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
+
+            # TRAIN THE GENERATOR
+            # update the generator
+            g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
+
+            # summarize performance
+            # Print losses on this batch
+            print('Epoch>%d, Batch %d/%d, d1=%.3f, d2=%.3f g=%.3f' %
+                  (i + 1, j + 1, bat_per_epo, d_loss_real, d_loss_fake, g_loss))
+
+            # Storing the losses and accuracy of the iterations.
+            d1_hist.append(d_loss_real)
+            d2_hist.append(d_loss_fake)
+            d_hist = np.add(d1_hist, d2_hist).tolist()
+            g_hist.append(g_loss)
+            a1_hist.append(d_acc_real)
+            a2_hist.append(d_acc_fake)
+
+        # summarize model performance
+        summarize_every_n_epochs = 5
+        if i % summarize_every_n_epochs == 0:
+            summarize_performance(i, g_model, dataset)
+            plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
+
+    # Save the generator model
+    final_generator_path = 'final_generator.h5'
+    generator.save(final_generator_path)
+    plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
+
+
+'''
+
     # manually enumerate epochs
     for i in range(n_steps):
+        # TRAIN THE DISCRIMINATOR
         # select a batch of real samples
         [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
+        # update discriminator for real samples
+        d_loss_real, d_acc_real = d_model.train_on_batch([X_realA, X_realB], y_real)
         # generate a batch of fake samples
         X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
-        # update discriminator for real samples
-        d_loss1 = d_model.train_on_batch([X_realA, X_realB], y_real)
         # update discriminator for generated samples
-        d_loss2 = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
+        d_loss_fake, d_acc_fake = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
+
+        # TRAIN THE GENERATOR
         # update the generator
         g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
         # summarize performance
-        print('Training>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i + 1, d_loss1, d_loss2, g_loss))
+        print('Training>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i + 1, d_loss_real, d_loss_fake, g_loss))
+
+        # Storing the losses and accuracy of the iterations.
+        d1_hist.append(d_loss_real)
+        d2_hist.append(d_loss_fake)
+        d_hist = np.add(d1_hist, d2_hist).tolist()
+        g_hist.append(g_loss)
+        a1_hist.append(d_acc_real)
+        a2_hist.append(d_acc_fake)
+
+
         # summarize model performance
         if (i + 1) % (bat_per_epo * 10) == 0:
             summarize_performance(i, g_model, dataset)
+            plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
+
+
+'''
+
+# create a line plot of loss for the gan and save to file
+def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
+    # plot loss
+    plt.subplot(2, 1, 1)
+    plt.plot(d1_hist, label='d-real')
+    plt.plot(d2_hist, label='d-fake')
+    plt.plot(d_hist, label='d-total')
+    plt.plot(g_hist, label='gen')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plot discriminator accuracy
+    plt.subplot(2, 1, 2)
+    plt.plot(a1_hist, label='acc-real')
+    plt.plot(a2_hist, label='acc-fake')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Save plot to file
+    plot_losses = 'plot_losses.png'
+
+    plt.savefig(plot_losses, bbox_inches='tight')
+    plt.close()
