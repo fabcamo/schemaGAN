@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from layers_functions.pert import pert
 # Generate random matrix
 matrix = np.random.uniform(0, 1, size=(64, 512))
 
 # Define sinusoidal paths for split
 x = np.linspace(0, matrix.shape[1], num=1000)
 
-amplitude = 25
-period = 500
+amplitude = 10
+period = 200
 phase_shift = 0
 vertical_shift = [0, 40, 60]  # different vertical shifts for the three lines
 
