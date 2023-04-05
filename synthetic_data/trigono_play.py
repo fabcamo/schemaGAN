@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from layers_functions.pert import pert
 # Generate random matrix
-matrix = np.random.uniform(0, 1, size=(64, 512))
+matrix = np.zeros((64, 512))
 
 # Define sinusoidal paths for split
 x = np.linspace(0, matrix.shape[1], num=1000)
@@ -24,11 +24,11 @@ below_list = []
 for row in range(matrix.shape[0]):
     for col in range(matrix.shape[1]):
         if row <= y1[col]:
-            above_list.append([row, col])
+            above_list.append([col, row])
         elif row <= y2[col]:
-            between_list.append([row, col])
+            between_list.append([col, row])
         else:
-            below_list.append([row, col])
+            below_list.append([col, row])
 
 # Store lists in a list of lists
 lists = [above_list, between_list, below_list]
@@ -37,7 +37,7 @@ lists = [above_list, between_list, below_list]
 new_matrix = np.zeros_like(matrix)
 for i, lst in enumerate(lists):
     for coords in lst:
-        new_matrix[coords[0], coords[1]] = i
+        new_matrix[coords[1], coords[0]] = i
 
 plt.imshow(new_matrix, cmap='viridis')
 plt.show()

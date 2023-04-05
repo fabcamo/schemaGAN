@@ -35,7 +35,7 @@ matrix = np.zeros((z_max, x_max))
 coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
 values = np.zeros(coords_to_list.shape[0])
 
-amplitude = 10
+amplitude = 60
 period = 200
 phase_shift = 0
 vertical_shift = 30
@@ -49,14 +49,14 @@ below_list = []
 for row in range(matrix.shape[0]):
     for col in range(matrix.shape[1]):
         if row <= y[col]:
-            above_list.append([row,col])
+            above_list.append([col,row])
         else:
-            below_list.append([row,col])
+            below_list.append([col,row])
 
 # Store lists in a list of lists
-lists = [above_list, below_list]
 above_array = np.array(above_list)
 below_array = np.array(below_list)
+lists = [above_array, below_array]
 
 # generate the random field models for different materials
 srf_sand = random_field_generator(0.3, 1.5, aniso_x, aniso_z, ndim, seed+1)
@@ -69,15 +69,22 @@ layers = [srf_sand, srf_clay]
 layer_IC_1 = layers[0](above_array.T)
 layer_IC_2 = layers[1](below_array.T)
 
-mask = np.isin(coords_to_list, above_array)
+# store the results in a dataframe
+df = pd.DataFrame({"x": xs.ravel(), "z": zs.ravel(), "IC": values.ravel()})
+grouped = df.groupby('x')
 
+
+    ##### PLOT AND SAVE THE RESULTS ########################################################################
+df_pivot = df.pivot(index="z", columns="x", values="IC")
+plt.imshow(df_pivot, cmap='viridis')
+plt.show()
 
 
 # Plot new matrix as image
 new_matrix = np.zeros_like(matrix)
 for i, lst in enumerate(lists):
     for coords in lst:
-        new_matrix[coords[0], coords[1]] = i
+        new_matrix[coords[1], coords[0]] = i
 
 plt.imshow(new_matrix, cmap='viridis')
 plt.show()

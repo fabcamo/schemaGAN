@@ -48,6 +48,8 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
 
     # transform all coordinates to a single list
     coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
+    print('coords to list')
+    print(coords_to_list)
     # create a list filled with zeros of the same size as all the coordinates
     values = np.zeros(coords_to_list.shape[0])
     # create an empty container for the random layer coordinates
@@ -66,6 +68,8 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
         mask = Delaunay(poly_points, qhull_options = "QJ").find_simplex(coords_to_list) >= 0
         # run the list of coordinates through the mask and store the true points
         layer_coordinates = coords_to_list[mask]
+        print('layer coordinates')
+        print(layer_coordinates)
 
         # evaluate the corresponding SRF to the current polygon
         layer_IC = layers[i](layer_coordinates.T)
