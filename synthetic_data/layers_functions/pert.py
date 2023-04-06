@@ -1,7 +1,7 @@
 from random import betavariate
 import matplotlib.pyplot as plt
 
-def pert(low, peak, high, *, lamb=4):
+def pert(low, peak, high, *, lamb=10):
     r = high - low
     alpha = 1 + lamb * (peak - low) / r
     beta = 1 + lamb * (high - peak) / r

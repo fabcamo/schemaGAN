@@ -10,7 +10,7 @@ x = np.linspace(0, matrix.shape[1], num=1000)
 amplitude = 10
 period = 200
 phase_shift = 0
-vertical_shift = [0, 40, 60]  # different vertical shifts for the three lines
+vertical_shift = [50, 55, 20]  # different vertical shifts for the three lines
 
 y1 = amplitude * np.sin(2 * np.pi * (x - phase_shift) / period) + vertical_shift[0]
 y2 = amplitude * np.sin(2 * np.pi * (x - phase_shift) / period) + vertical_shift[1]

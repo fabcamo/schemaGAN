@@ -1,44 +1,65 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
+
 from layers_functions.pert import pert
+from layers_functions.layer_boundary import layer_boundary
 
-# Generate random matrix
-matrix = np.random.uniform(0, 1, size=(64, 512))
-matrix = np.zeros((64,512))
-# Define sinusoidal path for split
-x = np.linspace(0, matrix.shape[1], num=1000)
-
-
-# Set the amplitude, period, phase shift, and vertical shift of the sine function
-# IF AMPLITUDE IS LOW> PERIOD WHATEVER
-# IF AMPLITUDE IS HIGH> PERIOD HIGH
-
-amplitude = 50
-#amplitude = pert(2,10,90)
-
-period = 200
-#period = pert(200, 1000, 6000)
-print('period> ', period)
-
-phase_shift = 600
-#phase_shift = np.random.uniform(low=0, high=500)
-print('phase shift> ', phase_shift)
-
-vertical_shift = 30
+x_max = 512             # length (x) of the model
+z_max = 64              # depth (z) of the model
+# Model coordinates
+x_coord = np.arange(0, x_max, 1)       # array of x coordinates
+z_coord = np.arange(0, z_max, 1)       # array of z coordinates
+xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates x,z
 
 
-y = amplitude * np.sin(2 * np.pi * (x - phase_shift) / period) + vertical_shift
+matrix = np.zeros((z_max, x_max))
+coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
+values = np.zeros(coords_to_list.shape[0])
 
-# Create mask to split matrix into two layers
-mask = np.zeros_like(matrix, dtype=int)
-for i in range(matrix.shape[0]):
-    for j in range(matrix.shape[1]):
-        if i <= y[int(j * 1000 / matrix.shape[1])]:
-            mask[i,j] = 1
-        else:
-            mask[i,j] = 2
+# Plot new matrix as image
+fig, axs = plt.subplots(nrows=10, ncols=5, figsize=(20, 40))
 
-# Apply mask to matrix
-masked_matrix = np.ma.masked_where(mask == 0, mask)
-plt.imshow(masked_matrix, cmap='rainbow', interpolation='nearest')
+for i in range(50):
+    # Generate new y value for each plot
+    y1 = layer_boundary(x_coord)
+    y2 = layer_boundary(x_coord)
+    y3 = layer_boundary(x_coord)
+    y4 = layer_boundary(x_coord)
+    boundaries = [y1, y2, y3, y4]
+    boundaries = sorted(boundaries, key=lambda x: x[0])
+
+    area_1 = []
+    area_2 = []
+    area_3 = []
+    area_4 = []
+    area_5 = []
+
+    for row in range(matrix.shape[0]):
+        for col in range(matrix.shape[1]):
+            if row <= boundaries[0][col]:
+                area_1.append([col, row])
+            elif row <= boundaries[1][col]:
+                area_2.append([col, row])
+            elif row <= boundaries[2][col]:
+                area_3.append([col, row])
+            elif row <= boundaries[3][col]:
+                area_4.append([col, row])
+            else:
+                area_5.append([col, row])
+
+    # Store lists in a list of lists
+    lists = [area_1, area_2, area_3, area_4, area_5]
+
+    # Sort the lists based on their first element in ascending order
+
+    new_matrix = np.zeros_like(matrix)
+    for j, lst in enumerate(lists):
+        for coords in lst:
+            new_matrix[coords[1], coords[0]] = j
+
+    ax = axs[i // 5, i % 5]
+    ax.imshow(new_matrix, cmap='viridis')
+
+plt.tight_layout()
 plt.show()

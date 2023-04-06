@@ -6,6 +6,7 @@ from scipy.spatial import Delaunay
 
 from layers_functions.rf_model import random_field_generator, random_field_generator2
 from layers_functions.rf_2D_polygons import generate_2D_polygons
+from layers_functions.pert import pert
 
 x_max = 512             # length (x) of the model
 z_max = 64              # depth (z) of the model
@@ -46,11 +47,12 @@ print('coords to list')
 print(coords_to_list)
 values = np.zeros(coords_to_list.shape[0])
 
-amplitude = 20
-period = 800
-phase_shift = 0
+amplitude = pert(2,10,90)
+period = pert(200, 1000, 6000)
+phase_shift = np.random.uniform(low=0, high=500)
 vertical_shift = 30
-y = amplitude * np.sin(2 * np.pi * (x_coord - phase_shift) / period) + vertical_shift
+func = random.choice([np.sin, np.cos])
+y = amplitude * func(2 * np.pi * (x_coord - phase_shift) / period) + vertical_shift
 
 above_list = []
 below_list = []
@@ -67,24 +69,9 @@ for row in range(matrix.shape[0]):
 
 # Store lists in a list of lists
 above_array = np.array(above_list)
-print('above array')
-print(above_array)
 below_array = np.array(below_list)
-print('below array')
-print(below_array)
+
 lists = [above_array, below_array]
-
-
-
-'''
-mask = (coords_to_list[:, None] == lists[0]).all(2).any(1)
-print('True elements in mask> ', np.count_nonzero(mask))
-layer_coordinates = coords_to_list[mask]
-layer_IC = layers[0](layer_coordinates.T)
-values[mask] = layer_IC
-print('values>')
-print(values)
-'''
 
 
 new_matrix = np.zeros_like(matrix)
