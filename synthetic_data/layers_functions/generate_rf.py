@@ -1,14 +1,19 @@
 import gstools as gs
 import numpy as np
+import random
 
 
 # This is not going to change for our project
 ndim = 2
+
+
 ########################################################################################################################
+# Define the Random Field parameters for each material
+# > The mean and std defined per material according to Robertson
+# > The other parameters defined at random
 # Robertson, P.K., 1990. Soil classification using the cone penetration test. Canadian Geotechnical Journal, 27(1): 151-158.
 # Robertson, P.K., 2009a. Interpretation of cone penetration tests – a unified approach. Canadian Geotechnical Journal, 46:1337-1355.
 # Robertson, P. K., Cabal, K. (2022). Guide to Cone Penetration Testing (7th ed.). Gregg Drilling LLC.
-
 
 
 # RF-IC values for clay
@@ -17,11 +22,12 @@ def soil_behaviour_clay():
     max_IC = 3.6
     mean = (min_IC + max_IC) / 2
     std_value = (max_IC - min_IC) / 6
-    aniso_x = np.random.randint(20,80)  # anisotropy in X
-    aniso_z = aniso_x / np.random.randint(2, 10)  # anisotropy in Z
+    aniso_x = np.random.randint(10,40)  # anisotropy in X
+    aniso_z = aniso_x / np.random.randint(4, 10)  # anisotropy in Z
     angle_factor = np.random.triangular(20, 80, 100)
     angles = np.pi / angle_factor  # angle of rotation
     return std_value, mean, aniso_x, aniso_z, angles
+
 
 # RF-IC values for clayey silt to silty clay
 def soil_behaviour_siltmix():
@@ -29,11 +35,12 @@ def soil_behaviour_siltmix():
     max_IC = 2.95
     mean = (min_IC + max_IC) / 2
     std_value = (max_IC - min_IC) / 6
-    aniso_x = np.random.randint(20,80)  # anisotropy in X
-    aniso_z = aniso_x / np.random.randint(2, 10)  # anisotropy in Z
+    aniso_x = np.random.randint(10,40)  # anisotropy in X
+    aniso_z = aniso_x / np.random.randint(4, 10)  # anisotropy in Z
     angle_factor = np.random.triangular(20, 80, 100)
     angles = np.pi / angle_factor  # angle of rotation
     return std_value, mean, aniso_x, aniso_z, angles
+
 
 # RF-IC values for silty sand to sandy silt
 def soil_behaviour_sandmix():
@@ -41,11 +48,12 @@ def soil_behaviour_sandmix():
     max_IC = 2.6
     mean = (min_IC + max_IC) / 2
     std_value = (max_IC - min_IC) / 6
-    aniso_x = np.random.randint(20,80)  # anisotropy in X
-    aniso_z = aniso_x / np.random.randint(2, 10)  # anisotropy in Z
+    aniso_x = np.random.randint(10,40)  # anisotropy in X
+    aniso_z = aniso_x / np.random.randint(4, 10)  # anisotropy in Z
     angle_factor = np.random.triangular(20, 80, 100)
     angles = np.pi / angle_factor  # angle of rotation
     return std_value, mean, aniso_x, aniso_z, angles
+
 
 # RF-IC values for sand
 def soil_behaviour_sand():
@@ -53,8 +61,8 @@ def soil_behaviour_sand():
     max_IC = 2.05
     mean = (min_IC + max_IC) / 2
     std_value = (max_IC - min_IC) / 6
-    aniso_x = np.random.randint(20,80)  # anisotropy in X
-    aniso_z = aniso_x / np.random.randint(2, 10)  # anisotropy in Z
+    aniso_x = np.random.randint(10,40)  # anisotropy in X
+    aniso_z = aniso_x / np.random.randint(4, 10)  # anisotropy in Z
     angle_factor = np.random.triangular(20, 80, 100)
     angles = np.pi / angle_factor  # angle of rotation
     return std_value, mean, aniso_x, aniso_z, angles
@@ -66,8 +74,8 @@ def soil_behaviour_organic():
     max_IC = 4.2
     mean = (min_IC + max_IC) / 2
     std_value = (max_IC - min_IC) / 6
-    aniso_x = np.random.randint(20,80)  # anisotropy in X
-    aniso_z = aniso_x / np.random.randint(2, 10)  # anisotropy in Z
+    aniso_x = np.random.randint(10,40)  # anisotropy in X
+    aniso_z = aniso_x / np.random.randint(4, 10)  # anisotropy in Z
     angle_factor = np.random.triangular(20, 80, 100)
     angles = np.pi / angle_factor  # angle of rotation
     return std_value, mean, aniso_x, aniso_z, angles
@@ -86,12 +94,24 @@ def random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed):
 
 
 # generate the random field models for different materials
-def generate_rf_group(aniso_x, aniso_z, angles, seed):
+def generate_rf_group(seed):
 
-    srf_sand = random_field_generator(0.3, 1.5, aniso_x, aniso_z, angles, seed+1)
-    srf_clay = random_field_generator(0.3, 2.1, aniso_x, aniso_z, angles, seed+2)
-    srf_silt = random_field_generator(0.5, 3.2, aniso_x, aniso_z, angles, seed+3)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_clay()
+    srf_clay = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+1)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_siltmix()
+    srf_siltmix = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+2)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sandmix()
+    srf_sandmix = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+3)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sand()
+    srf_sand = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+4)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_organic()
+    srf_organic = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+5)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_clay()
+    srf_clay2 = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+6)
+    std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sand()
+    srf_sand2 = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+7)
+
     # store the random field models inside layers
-    layers = [srf_sand, srf_silt, srf_clay, srf_sand, srf_clay, srf_silt, srf_sand]
+    layers = [srf_clay, srf_siltmix, srf_sandmix, srf_sand, srf_organic, srf_clay2, srf_sand2]
 
     return layers
