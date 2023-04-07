@@ -26,6 +26,8 @@ def pert(low, peak, high, *, lamb=10):
 
 
 ########################################################################################################################
+# To plot the Pert graph
+'''
 low = 400
 peak = 1000
 high = 10000
@@ -37,3 +39,4 @@ plt.title('Histogram of PERT Distribution')
 plt.xlabel('Values')
 plt.ylabel('Frequency')
 plt.show()
+'''

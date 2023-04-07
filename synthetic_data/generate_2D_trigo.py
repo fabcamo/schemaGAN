@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from layers_functions.layer_boundary import layer_boundary
-from layers_functions.generate_rf import random_field_generator, generate_rf_group
+from layers_functions.generate_rf import generate_rf_group
 
 
 x_max = 512             # length (x) of the model
@@ -15,8 +15,8 @@ xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates
 
 
 ##### RANDOM FIELD PARAMETERS ##############################################################################
-std_value = 0.3
-mean = 2.1
+std_value = 0.3         # standard deviation value
+mean = 2.1              # mean
 aniso_x = 40            # anisotropy in X
 aniso_z = 20            # anisotropy in Z
 angles = 0              # angle of rotation
@@ -34,30 +34,37 @@ matrix = np.zeros((z_max, x_max))
 coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
 values = np.zeros(coords_to_list.shape[0])
 
+# Generate new y value for each plot
+y1 = layer_boundary(x_coord)
+y2 = layer_boundary(x_coord)
+y3 = layer_boundary(x_coord)
+y4 = layer_boundary(x_coord)
+boundaries = [y1, y2, y3, y4]
+boundaries = sorted(boundaries, key=lambda x: x[0])
 
-y = layer_boundary(x_coord)
-
-above_list = []
-below_list = []
+area_1 = []
+area_2 = []
+area_3 = []
+area_4 = []
+area_5 = []
 
 # Create mask to split matrix into two layers
 for row in range(matrix.shape[0]):
     for col in range(matrix.shape[1]):
-        if row <= y[col]:
-            above_list.append([col,row])
+        if row <= boundaries[0][col]:
+            area_1.append([col, row])
+        elif row <= boundaries[1][col]:
+            area_2.append([col, row])
+        elif row <= boundaries[2][col]:
+            area_3.append([col, row])
+        elif row <= boundaries[3][col]:
+            area_4.append([col, row])
         else:
-            below_list.append([col,row])
-
-
+            area_5.append([col, row])
 
 # Store lists in a list of lists
-above_array = np.array(above_list)
-below_array = np.array(below_list)
+lists = [area_1, area_2, area_3, area_4, area_5]
 
-lists = [above_array, below_array]
-
-
-new_matrix = np.zeros_like(matrix)
 for i, lst in enumerate(lists):
     mask = (coords_to_list[:, None] == lists[i]).all(2).any(1)
     layer_coordinates = coords_to_list[mask]
