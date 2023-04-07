@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
-from layers_functions.pert import pert
 from layers_functions.layer_boundary import layer_boundary
 
 x_max = 512             # length (x) of the model
@@ -16,6 +14,8 @@ xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates
 matrix = np.zeros((z_max, x_max))
 coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
 values = np.zeros(coords_to_list.shape[0])
+
+
 
 # Plot new matrix as image
 fig, axs = plt.subplots(nrows=10, ncols=5, figsize=(20, 40))
