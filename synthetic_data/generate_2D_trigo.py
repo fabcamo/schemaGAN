@@ -1,4 +1,5 @@
 import numpy as np
+from datetime import datetime
 import random
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ z_coord = np.arange(0, z_max, 1)       # array of z coordinates
 xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates x,z
 
 ############################################################################################################
+start1 = datetime.now()
 counter = 0
 while counter < no_realizations:
     try:
@@ -91,4 +93,10 @@ while counter < no_realizations:
     except Exception as e:
         print(f"Error in generating model no. {counter + 1}: {e}")
         continue
+
+
+stop1 = datetime.now()
+# Execution time of the model
+execution_time = stop1 - start1
+print("Execution time is: ", execution_time)
 
