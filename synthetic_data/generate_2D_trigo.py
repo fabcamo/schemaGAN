@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
 
-
+##### MAIN DIMENSION VARIABLES ######################################################################################
 x_max = 512             # length (x) of the model
 z_max = 64              # depth (z) of the model
 # Model coordinates
@@ -16,10 +16,13 @@ xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates
 
 ##### RANDOM FIELD PARAMETERS ##############################################################################
 std_value = 0.3         # standard deviation value
-mean = 2.1              # mean
-aniso_x = 40            # anisotropy in X
-aniso_z = 20            # anisotropy in Z
-angles = 0              # angle of rotation
+mean = 3              # mean
+aniso_x = np.random.randint(20,80)            # anisotropy in X
+print(aniso_x)
+aniso_z = aniso_x / np.random.randint(2, 10)         # anisotropy in Z
+print(aniso_z)
+angle_factor = np.random.triangular(20,80,100)
+angles = np.pi/angle_factor          # angle of rotation
 seed = 20230406         # seed
 
 ############################################################################################################
