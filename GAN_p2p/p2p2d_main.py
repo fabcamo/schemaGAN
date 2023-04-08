@@ -9,12 +9,14 @@ from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf
 from p2p2d_model_256 import define_discriminator, define_generator, define_gan, train
 
 # Resizing images, if needed
-SIZE_X = 256
+SIZE_X = 512
 SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X
 path = 'C:\\inpt\\synthetic_data\\test'
 
+#miss_rate = 0.9868
+#min_distance = 51
 miss_rate = 0.95
 min_distance = 10
 

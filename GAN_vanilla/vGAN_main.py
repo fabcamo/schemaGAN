@@ -12,7 +12,7 @@ from vGAN_models import load_data, normalize_data, train, generate_noise_vectors
 
 
 # Define the PATH
-path = r'D:\inpt\GAN_vanilla\results'
+path = r'C:\inpt\GAN_vanilla\results\tets'
 # Define the path and the results name file
 results_file_path = os.path.join(path, 'results_summary.txt')
 
@@ -29,8 +29,8 @@ no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
 n_samples = 25          # number of samples
 
-n_epochs = 100         # number of epochs
-n_batch = 32            # number of samples in batch
+n_epochs = 5         # number of epochs
+n_batch = 32         # number of samples in batch
 
 # Get the shape of the input data
 all_images, all_labels = load_data()
@@ -112,7 +112,7 @@ def show_plot(examples, n):
     plt.show()
 
 # Load model
-model = load_model('D:\\inpt\\GAN_vanilla\\results\\mnist_final_generator.h5')  # Model trained for 100 epochs
+model = load_model('C:\\inpt\\GAN_vanilla\\results\\tets\\mnist_final_generator.h5')  # Model trained for 100 epochs
 # Generate images
 latent_points = generate_noise_vectors(latent_dim, 25)  # Latent dim and n_samples
 # Generate images

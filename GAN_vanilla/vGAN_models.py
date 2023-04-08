@@ -12,7 +12,7 @@ from tensorflow.keras.optimizers import Adam
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-results_dir_path = r'D:\inpt\GAN_vanilla\results'
+results_dir_path = r'C:\inpt\GAN_vanilla\results\tets'
 
 
 
@@ -157,13 +157,15 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
     # Define the batches for the training
     batch_per_epoch = int(dataset.shape[0] / n_batch) # How many batches per epoch [7000/128]
     half_batch = int(n_batch / 2) # Define the half batch size
-    d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list(), list(), list()
+    d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list()
 
     # The Discriminator model is updated for a half batch of real samples
     # and a half batch of fake samples, combined into a single batch
 
     # Manually enumerate epochs and batches
     for i in range(n_epochs):
+        g_loss_all = 0.0
+        d_loss_all = 0.0
         # Enumerate batches over the training set
         for j in range(batch_per_epoch):
             # TRAIN THE DISCRIMINATOR: on real and fake images, separately (half batch each)
@@ -175,6 +177,7 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
             fake_image, fake_label = generate_fake_samples(generator, latent_dim, half_batch)
             # Update discriminator model weights
             d_loss_fake, d_acc_fake = discriminator.train_on_batch(fake_image, fake_label)
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
             # TRAIN THE GENERATOR:
             # Prepare points in latent space as input for the generator
@@ -187,14 +190,20 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
             g_loss = gan.train_on_batch(noise, noise_fake_label)
 
             # Print losses on this batch
-            print('Epoch>%d, Batch %d/%d, d1=%.3f, d2=%.3f g=%.3f' %
-                  (i + 1, j + 1, batch_per_epoch, d_loss_real, d_loss_fake, g_loss))
+            print('Epoch>%d, Batch %d/%d, d=%.3f, g=%.3f' %
+                  (i + 1, j + 1, batch_per_epoch, d_loss, g_loss))
+
+            g_loss_all += g_loss
+            d_loss_all += d_loss
+
+        epoch_loss_g = g_loss_all / j  # total generator loss for the epoch
+        epoch_loss_d = d_loss_all / j  # total discriminator loss for the epoch
+        g_hist.append(epoch_loss_g)
+        d_hist.append(epoch_loss_d)
 
         # Storing the losses and accuracy of the iterations.
-        d1_hist.append(d_loss_real)
-        d2_hist.append(d_loss_fake)
-        d_hist = np.add(d1_hist, d2_hist).tolist()
-        g_hist.append(g_loss)
+        #d_hist.append(d_loss)
+        #g_hist.append(g_loss)
         a1_hist.append(d_acc_real)
         a2_hist.append(d_acc_fake)
 
@@ -208,25 +217,27 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
     # Save the generator model
     final_generator_path = os.path.join(results_dir_path, 'mnist_final_generator.h5')
     generator.save(final_generator_path)
-    plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
+    plot_history(d_hist, g_hist, a1_hist, a2_hist)
 
 
 
 
 # create a line plot of loss for the gan and save to file
-def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
+def plot_history(d_hist, g_hist, a1_hist, a2_hist):
     # plot loss
     plt.subplot(2, 1, 1)
-    plt.plot(d1_hist, label='d-real')
-    plt.plot(d2_hist, label='d-fake')
     plt.plot(d_hist, label='d-total')
     plt.plot(g_hist, label='gen')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
     # plot discriminator accuracy
     plt.subplot(2, 1, 2)
     plt.plot(a1_hist, label='acc-real')
     plt.plot(a2_hist, label='acc-fake')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
     # Save plot to file
     plot_losses = os.path.join(results_dir_path, 'plot_losses.png')
     plt.savefig(plot_losses, bbox_inches='tight')
