@@ -240,5 +240,5 @@ def plot_history(d_hist, g_hist, a1_hist, a2_hist):
     plt.ylabel('Accuracy')
     # Save plot to file
     plot_losses = os.path.join(results_dir_path, 'plot_losses.png')
-    plt.savefig(plot_losses, bbox_inches='tight')
+    plt.savefig(plot_losses)
     plt.close()
