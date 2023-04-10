@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from numpy.random import randint
 from numpy import vstack
 
-from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf
+from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
 from p2p2d_model_256 import define_discriminator, define_generator, define_gan, train
 
 # Resizing images, if needed
@@ -72,16 +72,6 @@ data = [src_images, tar_images]
 # Preprocess data to change input range to values between -1 and 1
 # This is because the generator uses tanh activation in the output layer
 # And tanh ranges between -1 and 1
-def preprocess_data(data):
-    # load compressed arrays
-    # unpack arrays
-    X1, X2 = data[0], data[1]
-    # scale from [0,255] to [-1,1]
-    X1 = (X1 - 127.5) / 127.5
-    X2 = (X2 - 127.5) / 127.5
-    return [X1, X2]
-
-
 dataset = preprocess_data(data)
 
 
@@ -130,15 +120,6 @@ src_image, tar_image = X1[ix], X2[ix]
 gen_image = model.predict(src_image)
 # plot all three images
 plot_images(src_image, gen_image, tar_image)
-
-###########################################
-test_src_img = cv2.imread("sandstone/test_mask.tif", 1)
-test_src_img = cv2.resize(test_src_img, (SIZE_Y, SIZE_X), interpolation=cv2.INTER_NEAREST)
-test_src_img = (test_src_img - 127.5) / 127.5
-test_src_img = np.expand_dims(test_src_img, axis=0)
-
-# generate image from source
-gen_test_image = model.predict(test_src_img)
 
 # pyplot.imshow(test_src_img[0, :,:,0], cmap='gray')
 plt.imshow(gen_test_image[0, :, :, 0], cmap='gray')

@@ -348,6 +348,17 @@ def generate_fake_samples(g_model, samples, patch_shape):
     return X, y
 
 
+def preprocess_data(data):
+    # load compressed arrays
+    # unpack arrays
+    X1, X2 = data[0], data[1]
+    # scale from [0,255] to [-1,1]
+    X1 = (X1 - 127.5) / 127.5
+    X2 = (X2 - 127.5) / 127.5
+    return [X1, X2]
+
+
+
 # generate samples and save as a plot and save the model
 # GAN models do not converge, we just want to find a good balance between
 # the generator and the discriminator. Therefore, it makes sense to periodically
@@ -523,3 +534,22 @@ def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
 
     plt.savefig(plot_losses, bbox_inches='tight')
     plt.close()
+
+
+# Plot the input, generated and original images
+def plot_images(src_img, gen_img, tar_img):
+    images = np.vstack((src_img, gen_img, tar_img))
+    # scale from [-1,1] to [0,1]
+    images = (images + 1) / 2.0
+    titles = ['Input', 'Output-Generated', 'Original']
+    # plot images row by row
+    for i in range(len(images)):
+        # define subplot
+        plt.subplot(1, 3, 1 + i)
+        # turn off axis
+        plt.axis('off')
+        # plot raw pixel data
+        plt.imshow(images[i,:,:,0], cmap='viridis')
+        # show title
+        plt.title(titles[i])
+    plt.show()
