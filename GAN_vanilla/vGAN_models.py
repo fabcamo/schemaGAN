@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from numpy.random import randint, randn
 
 from tensorflow.keras.layers import Dense, LeakyReLU, Dropout
@@ -13,7 +14,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 results_dir_path = r'C:\inpt\GAN_vanilla\results\tets'
-
+#results_dir_path = r'/scratch/fcamposmontero/vGAN_results'
 
 
 
@@ -158,6 +159,8 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
     batch_per_epoch = int(dataset.shape[0] / n_batch) # How many batches per epoch [7000/128]
     half_batch = int(n_batch / 2) # Define the half batch size
     d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list()
+    d_epoch_hist, g_epoch_hist, a1_epoch_hist, a2_epoch_hist = list(), list(), list(), list()
+    iterations = n_epochs * batch_per_epoch
 
     # The Discriminator model is updated for a half batch of real samples
     # and a half batch of fake samples, combined into a single batch
@@ -166,6 +169,8 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
     for i in range(n_epochs):
         g_loss_all = 0.0
         d_loss_all = 0.0
+        acc_real_all = 0.0
+        acc_fake_all = 0.0
         # Enumerate batches over the training set
         for j in range(batch_per_epoch):
             # TRAIN THE DISCRIMINATOR: on real and fake images, separately (half batch each)
@@ -191,54 +196,110 @@ def train(generator, discriminator, gan, dataset, latent_dim, n_epochs, n_batch)
 
             # Print losses on this batch
             print('Epoch>%d, Batch %d/%d, d=%.3f, g=%.3f' %
-                  (i + 1, j + 1, batch_per_epoch, d_loss, g_loss))
+                  (i+1, j+1, batch_per_epoch, d_loss, g_loss))
+
+
+            d_hist.append(d_loss)
+            g_hist.append(g_loss)
+            a1_hist.append(d_acc_real)
+            a2_hist.append(d_acc_fake)
 
             g_loss_all += g_loss
             d_loss_all += d_loss
+            acc_real_all += d_acc_real
+            acc_fake_all += d_acc_fake
 
         epoch_loss_g = g_loss_all / j  # total generator loss for the epoch
         epoch_loss_d = d_loss_all / j  # total discriminator loss for the epoch
-        g_hist.append(epoch_loss_g)
-        d_hist.append(epoch_loss_d)
-
-        # Storing the losses and accuracy of the iterations.
-        #d_hist.append(d_loss)
-        #g_hist.append(g_loss)
-        a1_hist.append(d_acc_real)
-        a2_hist.append(d_acc_fake)
+        epoch_acc_real = acc_real_all / j
+        epoch_acc_fake = acc_fake_all / j
+        g_epoch_hist.append(epoch_loss_g)
+        d_epoch_hist.append(epoch_loss_d)
+        a1_epoch_hist.append(epoch_acc_real)
+        a2_epoch_hist.append(epoch_acc_fake)
 
         # Summarize model performance
         summarize_every_n_epochs = 1
         if i % summarize_every_n_epochs == 0:
             summarize_performance(i, generator, latent_dim, n_samples=25)
+            plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
+                         a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, i, n_epochs, iterations)
+
 
 
 
     # Save the generator model
     final_generator_path = os.path.join(results_dir_path, 'mnist_final_generator.h5')
     generator.save(final_generator_path)
-    plot_history(d_hist, g_hist, a1_hist, a2_hist)
-
-
+    plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
+                         a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, i, n_epochs, iterations)
+    # Save results to dataframe and CSV file
+    df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'acc_real': a1_hist, 'acc_fake': a2_hist})
+    csv_file = os.path.join(results_dir_path, 'results_loss.csv')
+    df.to_csv(csv_file, index=False)
 
 
 # create a line plot of loss for the gan and save to file
-def plot_history(d_hist, g_hist, a1_hist, a2_hist):
-    # plot loss
-    plt.subplot(2, 1, 1)
-    plt.plot(d_hist, label='d-total')
-    plt.plot(g_hist, label='gen')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, step, n_epochs, iterations):
+    # create figure for loss
+    plt.figure(figsize=(10, 4))
+    plt.plot(d_hist, label='disc', color='black')
+    plt.plot(g_hist, label='gen', color='darkgray')
+    plt.legend(loc='upper right')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    # plot discriminator accuracy
-    plt.subplot(2, 1, 2)
-    plt.plot(a1_hist, label='acc-real')
-    plt.plot(a2_hist, label='acc-fake')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # set x-axis limits
+    plt.xlim([0, iterations])
+    # Save plot to file
+    plot_loss = os.path.join(results_dir_path, 'plot_loss_{:06d}.png'.format(step + 1))
+    plt.savefig(plot_loss)
+    plt.close()
+
+    # create figure for loss per epoch
+    plt.figure(figsize=(10, 4))
+    plt.plot(d_epoch_hist, label='disc', color='black')
+    plt.plot(g_epoch_hist, label='gen', color='darkgray')
+    plt.legend(loc='upper right')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    # set x-axis limits
+    plt.xlim([0, n_epochs])
+    # Save plot to file
+    plot_loss = os.path.join(results_dir_path, 'plot_loss_epoch_{:06d}.png'.format(step + 1))
+    plt.savefig(plot_loss)
+    plt.close()
+
+    # create figure for accuracy
+    plt.figure(figsize=(10, 4))
+    plt.plot(a1_hist, label='acc-real', color='black', alpha=0.8)
+    plt.plot(a2_hist, label='acc-fake', color='darkgray', alpha=0.8)
+    plt.legend(loc='upper right')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
+    # set x-axis limits
+    plt.xlim([0, iterations])
+    # set y-axis limits
+    plt.ylim([0, 1])
     # Save plot to file
-    plot_losses = os.path.join(results_dir_path, 'plot_losses.png')
-    plt.savefig(plot_losses)
+    plot_acc = os.path.join(results_dir_path, 'plot_acc_{:06d}.png'.format(step + 1))
+    plt.savefig(plot_acc)
     plt.close()
+
+    # create figure for accuracy per epoch
+    plt.figure(figsize=(10, 4))
+    plt.plot(a1_epoch_hist, label='acc-real', color='black', alpha=0.8)
+    plt.plot(a2_epoch_hist, label='acc-fake', color='darkgray', alpha=0.8)
+    plt.legend(loc='upper right')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    # set x-axis limits
+    plt.xlim([0, n_epochs])
+    # set y-axis limits
+    plt.ylim([0, 1])
+    # Save plot to file
+    plot_acc = os.path.join(results_dir_path, 'plot_acc_epoch_{:06d}.png'.format(step + 1))
+    plt.savefig(plot_acc)
+    plt.close()
+
+
+

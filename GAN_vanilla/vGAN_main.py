@@ -13,6 +13,8 @@ from vGAN_models import load_data, normalize_data, train, generate_noise_vectors
 
 # Define the PATH
 path = r'C:\inpt\GAN_vanilla\results\tets'
+#path = r'/scratch/fcamposmontero/vGAN_results'
+
 # Define the path and the results name file
 results_file_path = os.path.join(path, 'results_summary.txt')
 
@@ -29,8 +31,8 @@ no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
 n_samples = 25          # number of samples
 
-n_epochs = 5         # number of epochs
-n_batch = 32         # number of samples in batch
+n_epochs = 20         # number of epochs
+n_batch = 128         # number of samples in batch
 
 # Get the shape of the input data
 all_images, all_labels = load_data()
@@ -113,6 +115,8 @@ def show_plot(examples, n):
 
 # Load model
 model = load_model('C:\\inpt\\GAN_vanilla\\results\\tets\\mnist_final_generator.h5')  # Model trained for 100 epochs
+#model = load_model('/scratch/fcamposmontero/vGAN_results/mnist_final_generator.h5')  # Model trained for 100 epochs
+
 # Generate images
 latent_points = generate_noise_vectors(latent_dim, 25)  # Latent dim and n_samples
 # Generate images
@@ -121,6 +125,13 @@ X = model.predict(latent_points)
 X = (X + 1) / 2.0
 
 X = (X * 255).astype(np.uint8)
-# Plot the result
-show_plot(X, 5)
 
+# Save the image
+final_plot = os.path.join(path, 'final_results.png')
+plt.figure(figsize=(10, 10))
+for i in range(X.shape[0]):
+    plt.subplot(5, 5, i+1)
+    plt.imshow(X[i])
+    plt.axis('off')
+plt.savefig(final_plot)
+plt.close()
