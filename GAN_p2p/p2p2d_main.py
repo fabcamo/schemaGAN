@@ -98,6 +98,7 @@ model = load_model('final_generator.h5')
 [X1, X2] = dataset
 # select random example
 ix = randint(0, len(X1), 1)
+print(ix)
 src_image, tar_image = X1[ix], X2[ix]
 # generate image from source
 gen_image = model.predict(src_image)

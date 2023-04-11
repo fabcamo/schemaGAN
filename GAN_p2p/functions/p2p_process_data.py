@@ -127,3 +127,9 @@ def preprocess_data(data):
     X1 = (X1 - 127.5) / 127.5
     X2 = (X2 - 127.5) / 127.5
     return [X1, X2]
+
+# Reverse the data normalization to read IC values
+def reverse_normalization(X):
+    # Scale from [-1,1] to [0,255]
+    X = (X * 127.5) + 127.5
+    return X
