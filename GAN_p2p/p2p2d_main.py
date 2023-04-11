@@ -9,7 +9,7 @@ from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf, preproce
 from p2p2d_model_256 import define_discriminator, define_generator, define_gan, train
 
 # Resizing images, if needed
-SIZE_X = 512
+SIZE_X = 256
 SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X

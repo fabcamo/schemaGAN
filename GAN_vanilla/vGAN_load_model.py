@@ -51,7 +51,7 @@ def save_plot(examples, n):
 	plt.show()
 
 # load model
-model = load_model('C:\\inpt\\GAN_vanilla\\results\\tets\\mnist_final_generator.h5')
+model = load_model('C:\\inpt\\GAN_vanilla\\results\\results_1266e\\model_001271.h5')
 # generate images
 #Generate 16 images, each image provide a vector of size 100 as input
 latent_points = generate_latent_points(128, 16)
