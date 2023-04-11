@@ -536,10 +536,29 @@ def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
 
 # Plot the input, generated and original images
 def plot_images(src_img, gen_img, tar_img):
+    images = np.vstack((src_img, gen_img, tar_img))
+    # scale from [-1,1] to [0,1]
+    images = (images + 1) / 2.0
+    titles = ['Input', 'Output-Generated', 'Original']
+    ranges_vmin_vmax = [[1.6, 4], [1.6, 4], [1.6, 4], [0, 2]]
+    # plot images row by row
+    for i in range(len(images)):
+        # define subplot
+        plt.subplot(1, 3, 1 + i)
+        # turn off axis
+        plt.axis('off')
+        # plot raw pixel data
+        plt.imshow(images[i,:,:,0], cmap='viridis')
+        # show title
+        plt.title(titles[i])
+    plt.show()
+
+# Plot the input, generated and original images
+def plot_images_with_error(src_img, gen_img, tar_img):
     images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
     # scale from [-1,1] to [0,1]
     images = (images + 1) / 2.0
-    titles = ['Input', 'Output-Generated', 'Original', 'error']
+    titles = ['Input', 'Output-Generated', 'Original', 'Error']
     ranges_vmin_vmax = [[1.6, 4], [1.6, 4], [1.6, 4], [0, 2]]
     # plot images row by row
     for i in range(len(images)):
