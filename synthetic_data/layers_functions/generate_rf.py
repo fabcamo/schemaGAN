@@ -1,6 +1,5 @@
 import gstools as gs
 import numpy as np
-import random
 
 
 # This is not going to change for our project
@@ -83,7 +82,7 @@ def soil_behaviour_organic():
 
 
 # Function to generate the random fields using the Gaussian model
-def random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed):
+def rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed):
     len_scale = np.array([aniso_x, aniso_z])
     var = std_value**2
 
@@ -97,19 +96,19 @@ def random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed):
 def generate_rf_group(seed):
 
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_clay()
-    srf_clay = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+1)
+    srf_clay = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 1)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_siltmix()
-    srf_siltmix = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+2)
+    srf_siltmix = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 2)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sandmix()
-    srf_sandmix = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+3)
+    srf_sandmix = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 3)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sand()
-    srf_sand = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+4)
+    srf_sand = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 4)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_organic()
-    srf_organic = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+5)
+    srf_organic = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 5)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_clay()
-    srf_clay2 = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+6)
+    srf_clay2 = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 6)
     std_value, mean, aniso_x, aniso_z, angles = soil_behaviour_sand()
-    srf_sand2 = random_field_generator(std_value, mean, aniso_x, aniso_z, angles, seed+7)
+    srf_sand2 = rf_generator(std_value, mean, aniso_x, aniso_z, angles, seed + 7)
 
     # store the random field models inside layers
     layers = [srf_clay, srf_siltmix, srf_sandmix, srf_sand, srf_organic, srf_clay2, srf_sand2]

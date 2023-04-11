@@ -1,5 +1,4 @@
 import os
-import random
 import pandas as pd
 import numpy as np
 from numpy import zeros
@@ -18,14 +17,11 @@ from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import BatchNormalization
 from matplotlib import pyplot as plt
 
-
-
-
-#############################################################################
+########################################################################################################################
 # Define generator, discriminator, gan and other helper functions
 # We will use functional way of defining model and not sequential
 # as we have multiple inputs; both images and corresponding labels.
-########################################################################
+########################################################################################################################
 
 # Since pix2pix is a conditional GAN, it takes 2 inputs - image and corresponding label
 # For pix2pix the label will be another image.
@@ -37,6 +33,8 @@ from matplotlib import pyplot as plt
 
 # From the paper C64-C128-C256-C512
 # After the last layer, conv to 1-dimensional output, followed by a Sigmoid function.
+########################################################################################################################
+
 
 # read all csv data to train on
 def read_all_csv_files(directory):
@@ -538,18 +536,19 @@ def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
 
 # Plot the input, generated and original images
 def plot_images(src_img, gen_img, tar_img):
-    images = np.vstack((src_img, gen_img, tar_img))
+    images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
     # scale from [-1,1] to [0,1]
     images = (images + 1) / 2.0
-    titles = ['Input', 'Output-Generated', 'Original']
+    titles = ['Input', 'Output-Generated', 'Original', 'error']
+    ranges_vmin_vmax = [[1.6, 4], [1.6, 4], [1.6, 4], [0, 2]]
     # plot images row by row
     for i in range(len(images)):
         # define subplot
-        plt.subplot(1, 3, 1 + i)
+        plt.subplot(1, 4, 1 + i)
         # turn off axis
         plt.axis('off')
         # plot raw pixel data
-        plt.imshow(images[i,:,:,0], cmap='viridis')
+        plt.imshow(images[i,:,:,0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
         # show title
         plt.title(titles[i])
     plt.show()

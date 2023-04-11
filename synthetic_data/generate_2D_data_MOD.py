@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import random
 from scipy.spatial import Delaunay
 
-from layers_functions.generate_rf import random_field_generator
+from layers_functions.generate_rf import rf_generator
 from layers_functions.rf_2D_polygons import generate_2D_polygons
 
 ##### MAIN VARIABLES ######################################################################################
@@ -38,9 +38,9 @@ for counter, seed in enumerate(range(seed, seed + no_realizations, 1)):
     surfaces = generate_2D_polygons(z_max, n_layers, ndim, x_coord, z_coord)
 
     # generate the random field models for different materials
-    srf_sand = random_field_generator(0.3, 1.5, aniso_x, aniso_z, ndim, seed+1)
-    srf_clay = random_field_generator(0.3, 2.1, aniso_x, aniso_z, ndim, seed+2)
-    srf_silt = random_field_generator(0.5, 3.2, aniso_x, aniso_z, ndim, seed+3)
+    srf_sand = rf_generator(0.3, 1.5, aniso_x, aniso_z, ndim, seed + 1)
+    srf_clay = rf_generator(0.3, 2.1, aniso_x, aniso_z, ndim, seed + 2)
+    srf_silt = rf_generator(0.5, 3.2, aniso_x, aniso_z, ndim, seed + 3)
     # store the random field models inside layers
     layers = [srf_sand, srf_silt, srf_clay, srf_sand, srf_clay, srf_silt, srf_sand]
     #random.shuffle(layers)  # shuffle the order of the list of materials for each loop
