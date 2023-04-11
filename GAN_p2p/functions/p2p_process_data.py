@@ -1,28 +1,10 @@
 import os
-import random
-import pandas as pd
 import numpy as np
-from numpy import zeros
-from numpy import ones
-from numpy.random import randint
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.initializers import RandomNormal
-from tensorflow.keras.models import Model
-from tensorflow.keras import Input
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import Conv2DTranspose
-from tensorflow.keras.layers import LeakyReLU
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Concatenate
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import BatchNormalization
-from matplotlib import pyplot as plt
+import pandas as pd
 
 
 
-
-
-# read all csv data to train on
+# Read all csv data to train on
 def read_all_csv_files(directory):
     directory = os.path.join(directory)    # Join the directory path with the os path separator
     csv_data = []    # Create an empty list to store the read dataframes
@@ -35,6 +17,7 @@ def read_all_csv_files(directory):
                 csv_data.append(df)  # Append the dataframe to the list of dataframes
 
     return csv_data      # Return the list of dataframes
+
 
 
 # Create the conditional input CPT-like data
@@ -60,6 +43,8 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     return missing_data, full_data
 
 
+
+
 # Remove at random a user defined percentage of columns from the matrix
 def remove_random_columns(data_z, miss_rate, min_distance):
     # Transpose the input data to operate on columns instead of rows
@@ -83,6 +68,7 @@ def remove_random_columns(data_z, miss_rate, min_distance):
     miss_list = np.transpose(miss_list)
 
     return miss_list
+
 
 
 # Select the columns to keep for each cross-section
@@ -114,6 +100,7 @@ def check_min_spacing(data_z, miss_rate, min_distance):
     return columns_to_keep_index
 
 
+
 # Remove a random amount of data from the bottom of each column in the matrix
 def remove_random_depths(data_z, data_m):
     data_length = data_z.shape[0]  # grab the length of the cross-section [256 columns]
@@ -129,3 +116,14 @@ def remove_random_depths(data_z, data_m):
 
     return data_m
 
+
+
+# Normalize data
+def preprocess_data(data):
+    # load compressed arrays
+    # unpack arrays
+    X1, X2 = data[0], data[1]
+    # scale from [0,255] to [-1,1]
+    X1 = (X1 - 127.5) / 127.5
+    X2 = (X2 - 127.5) / 127.5
+    return [X1, X2]

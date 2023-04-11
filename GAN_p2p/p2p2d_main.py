@@ -1,12 +1,16 @@
-import cv2
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.random import randint
-from numpy import vstack
+from tensorflow.keras.models import load_model
 
-from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
-from p2p2d_model_256 import define_discriminator, define_generator, define_gan, train
+from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
+from functions.p2p_discriminator_architecture import define_discriminator
+from functions.p2p_generator_architecture import define_generator
+from functions.p2p_gan_architecture import define_gan
+from functions.p2p_train_architecture import train
+from functions.p2p_summary import plot_images
+
 
 # Resizing images, if needed
 SIZE_X = 256
@@ -20,7 +24,6 @@ path = 'C:\\inpt\\synthetic_data\\test'
 miss_rate = 0.95
 min_distance = 10
 
-# n_classes=4 #Number of classes for segmentation
 
 # Capture training image info as a list
 tar_images = []
@@ -78,7 +81,7 @@ dataset = preprocess_data(data)
 
 start1 = datetime.now()
 
-train(d_model, g_model, gan_model, dataset, n_epochs=10, n_batch=1)
+train(d_model, g_model, gan_model, dataset, n_epochs=2, n_batch=1)
 # Reports parameters for each batch (total 1600) for each epoch.
 # For 10 epochs we should see 16000
 
@@ -90,27 +93,7 @@ print("Execution time is: ", execution_time)
 
 #########################################
 # Test trained model on a few images...
-
-#model = load_model('sandstone_50epochs.h5')
-
-# plot source, generated and target images
-def plot_images(src_img, gen_img, tar_img):
-    images = vstack((src_img, gen_img, tar_img))
-    # scale from [-1,1] to [0,1]
-    images = (images + 1) / 2.0
-    titles = ['Input-segm-img', 'Output-Generated', 'Original']
-    # plot images row by row
-    for i in range(len(images)):
-        # define subplot
-        plt.subplot(1, 3, 1 + i)
-        # turn off axis
-        plt.axis('off')
-        # plot raw pixel data
-        plt.imshow(images[i, :, :, 0], cmap='gray')
-        # show title
-        plt.title(titles[i])
-    plt.show()
-
+model = load_model('final_generator.h5')
 
 [X1, X2] = dataset
 # select random example
@@ -120,6 +103,3 @@ src_image, tar_image = X1[ix], X2[ix]
 gen_image = model.predict(src_image)
 # plot all three images
 plot_images(src_image, gen_image, tar_image)
-
-# pyplot.imshow(test_src_img[0, :,:,0], cmap='gray')
-plt.imshow(gen_test_image[0, :, :, 0], cmap='gray')

@@ -476,42 +476,6 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
 
 
-'''
-
-    # manually enumerate epochs
-    for i in range(n_steps):
-        # TRAIN THE DISCRIMINATOR
-        # select a batch of real samples
-        [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
-        # update discriminator for real samples
-        d_loss_real, d_acc_real = d_model.train_on_batch([X_realA, X_realB], y_real)
-        # generate a batch of fake samples
-        X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
-        # update discriminator for generated samples
-        d_loss_fake, d_acc_fake = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
-
-        # TRAIN THE GENERATOR
-        # update the generator
-        g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
-        # summarize performance
-        print('Training>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i + 1, d_loss_real, d_loss_fake, g_loss))
-
-        # Storing the losses and accuracy of the iterations.
-        d1_hist.append(d_loss_real)
-        d2_hist.append(d_loss_fake)
-        d_hist = np.add(d1_hist, d2_hist).tolist()
-        g_hist.append(g_loss)
-        a1_hist.append(d_acc_real)
-        a2_hist.append(d_acc_fake)
-
-
-        # summarize model performance
-        if (i + 1) % (bat_per_epo * 10) == 0:
-            summarize_performance(i, g_model, dataset)
-            plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist)
-
-
-'''
 
 # create a line plot of loss for the gan and save to file
 def plot_history(d1_hist, d2_hist, d_hist, g_hist, a1_hist, a2_hist):
@@ -552,6 +516,7 @@ def plot_images(src_img, gen_img, tar_img):
         # show title
         plt.title(titles[i])
     plt.show()
+
 
 # Plot the input, generated and original images
 def plot_images_with_error(src_img, gen_img, tar_img):

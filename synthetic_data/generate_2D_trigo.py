@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
 
-seed = 20230406         # seed
-no_realizations = 10     # number of realizations to generate
+seed = 20230411         # seed
+no_realizations = 100     # number of realizations to generate
 
 ##### MAIN DIMENSION VARIABLES ######################################################################################
-x_max = 512             # length (x) of the model
+x_max = 256             # length (x) of the model
 z_max = 64              # depth (z) of the model
 # Model coordinates
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates

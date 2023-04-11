@@ -2,7 +2,7 @@ from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 import numpy as np
 
-from p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data, plot_images
+from GAN_p2p.functions.OLD_p2p2d_model_256 import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data, plot_images
 from numpy.random import randn
 
 # Path the the data
