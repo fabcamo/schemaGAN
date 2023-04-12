@@ -70,7 +70,7 @@ def decoder_block_mod(layer_in, skip_in, n_filters, dropout=True):
 
 
 # define the standalone generator model - U-net
-def define_generator(image_shape=(64, 256, 1)):
+def define_generator(image_shape=(32, 512, 1)):
     # weight initialization
     init = RandomNormal(stddev=0.02)
     # image input
@@ -80,23 +80,24 @@ def define_generator(image_shape=(64, 256, 1)):
     e2 = define_encoder_block(e1, 128)
     e3 = define_encoder_block(e2, 256)
     e4 = define_encoder_block(e3, 512)
-    e5 = define_encoder_block(e4, 512)
+    e5 = define_encoder_block_mod(e4, 512)
     e6 = define_encoder_block_mod(e5, 512)
     e7 = define_encoder_block_mod(e6, 512)
+    e8 = define_encoder_block_mod(e7, 512)
     # bottleneck, no batch norm and relu
-    b = Conv2D(filters=512, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(e7)
+    b = Conv2D(filters=512, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(e8)
     b = Activation('relu')(b)
     # decoder model: CD512-CD512-CD512-C512-C256-C128-C64
-    d1 = decoder_block(b, e7, 512)
-    d2 = decoder_block_mod(d1, e6, 512)
-    d3 = decoder_block_mod(d2, e5, 512)
-    d4 = decoder_block(d3, e4, 512, dropout=False)
-    d5 = decoder_block(d4, e3, 256, dropout=False)
-    d6 = decoder_block(d5, e2, 128, dropout=False)
-    d7 = decoder_block(d6, e1, 64, dropout=False)
+    d1 = decoder_block(b, e8, 512)
+    d2 = decoder_block_mod(d1, e7, 512)
+    d3 = decoder_block_mod(d2, e6, 512)
+    d4 = decoder_block_mod(d3, e5, 512)
+    d5 = decoder_block_mod(d4, e4, 512, dropout=False)
+    d6 = decoder_block(d5, e3, 256, dropout=False)
+    d7 = decoder_block(d6, e2, 128, dropout=False)
+    d8 = decoder_block(d7, e1, 64, dropout=False)
     # output
-    g = Conv2DTranspose(image_shape[2], (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(
-        d7)  # Modified
+    g = Conv2DTranspose(image_shape[2], (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(d8)  # Modified
     out_image = Activation('tanh')(g)  # Generates images in the range -1 to 1. So change inputs also to -1 to 1
     # define model
     model = Model(in_image, out_image)

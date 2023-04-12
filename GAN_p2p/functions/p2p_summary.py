@@ -167,7 +167,7 @@ def plot_images(src_img, gen_img, tar_img):
     ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2]]
 
     # Create a figure with a size of 10 inches by 4 inches
-    fig = plt.figure(figsize=(15, 5))
+    fig = plt.figure(figsize=(15, 10))
 
     # plot images row by row
     for i in range(len(images)):
@@ -214,12 +214,12 @@ def plot_images_error(src_img, gen_img, tar_img):
     ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2], [0.0, 0.021]]
 
     # Create a figure with a size of 10 inches by 4 inches
-    fig = plt.figure(figsize=(15, 5))
+    fig = plt.figure(figsize=(10, 16))
 
     # plot images row by row
     for i in range(len(images)):
         # define subplot
-        ax = fig.add_subplot(1, 4, 1 + i)
+        ax = fig.add_subplot(4, 1, 1 + i)
         im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
         # set title with fontsize
         ax.set_title(titles[i], fontsize=10)

@@ -7,11 +7,11 @@ from functions.p2p_summary import plot_images, plot_images_error
 from numpy.random import randn
 
 # Path the the data
-path = 'C:\\inpt\\GAN_p2p\\test'
+path = 'C:\\inpt\\synthetic_data\\512x32'
 
 # Images size
-SIZE_X = 256
-SIZE_Y = 64
+SIZE_X = 512
+SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 
@@ -43,7 +43,8 @@ for i in range(n_samples):
     plt.subplot(2, n_samples, 1 + n_samples + i)
     plt.axis('off')
     plt.imshow(tar_images[i], cmap='viridis')
-plt.show()
+#plt.show()
+plt.close()
 
 # Create the array of source and target images
 data = [src_images, tar_images]
@@ -52,7 +53,7 @@ data = [src_images, tar_images]
 dataset = preprocess_data(data)
 
 # Load the model
-model = load_model('C:\\inpt\\GAN_p2p\\results\\r03_256,64_5\\model_050000.h5')
+model = load_model('C:\\inpt\\GAN_p2p\\results\\test\\model_000002.h5')
 
 # X1 as input images and X2 as original images
 [X1, X2] = dataset
@@ -67,5 +68,6 @@ gen_image = model.predict(src_image)
 
 # plot all three images> Input, generated and original
 plot_images_error(src_image, gen_image, tar_image)
+plt.show()
 
 

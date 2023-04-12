@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 
 
 # Generate a sine or cosine line as a layer boundary
-def layer_boundary(x_coord):
-
-    amplitude = pert(2,5,60)
-    period = pert(400, 1000, 10000)
-    phase_shift = np.random.uniform(low=0, high=500)
-    vertical_shift = np.random.uniform(low=0, high=60)
+def layer_boundary(x_coord, z_max):
+    x_max = len(x_coord)
+    amplitude = pert(2, 5, z_max)
+    period = pert(x_max, 1000, 10000)
+    phase_shift = np.random.uniform(low=0, high=x_max)
+    vertical_shift = np.random.uniform(low=0, high=z_max)
     func = random.choice([np.sin, np.cos])
     y = amplitude * func(2 * np.pi * (x_coord - phase_shift) / period) + vertical_shift
 

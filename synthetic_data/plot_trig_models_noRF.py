@@ -20,10 +20,10 @@ fig, axs = plt.subplots(nrows=10, ncols=3, figsize=(20, 40))
 
 for i in range(50):
     # Generate new y value for each plot
-    y1 = layer_boundary(x_coord)
-    y2 = layer_boundary(x_coord)
-    y3 = layer_boundary(x_coord)
-    y4 = layer_boundary(x_coord)
+    y1 = layer_boundary(x_coord, z_max)
+    y2 = layer_boundary(x_coord, z_max)
+    y3 = layer_boundary(x_coord, z_max)
+    y4 = layer_boundary(x_coord, z_max)
     boundaries = [y1, y2, y3, y4]
     boundaries = sorted(boundaries, key=lambda x: x[0])
 

@@ -1,24 +1,28 @@
+import os
 import numpy as np
-from datetime import datetime
-import random
 import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
 
-seed = 20230411         # seed
+path = 'C:\\inpt\\synthetic_data\\512x32'
+
+seed = 20230412        # seed
 no_realizations = 100     # number of realizations to generate
 
+
 ##### MAIN DIMENSION VARIABLES ######################################################################################
-x_max = 256             # length (x) of the model
-z_max = 64              # depth (z) of the model
+x_max = 512             # length (x) of the model
+z_max = 32              # depth (z) of the model
 # Model coordinates
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates
 z_coord = np.arange(0, z_max, 1)       # array of z coordinates
 xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates x,z
-
 ############################################################################################################
+
+
 start1 = datetime.now()
 counter = 0
 while counter < no_realizations:
@@ -28,17 +32,17 @@ while counter < no_realizations:
 
         # store the random field models inside layers
         layers = generate_rf_group(seed)
-        random.shuffle(layers)
+        np.random.shuffle(layers)
         # set up the geometry
         matrix = np.zeros((z_max, x_max))
         coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
         values = np.zeros(coords_to_list.shape[0])
 
         # Generate new y value for each plot
-        y1 = layer_boundary(x_coord)
-        y2 = layer_boundary(x_coord)
-        y3 = layer_boundary(x_coord)
-        y4 = layer_boundary(x_coord)
+        y1 = layer_boundary(x_coord, z_max)
+        y2 = layer_boundary(x_coord, z_max)
+        y3 = layer_boundary(x_coord, z_max)
+        y4 = layer_boundary(x_coord, z_max)
         boundaries = [y1, y2, y3, y4]
         boundaries = sorted(boundaries, key=lambda x: x[0])
 
@@ -84,8 +88,11 @@ while counter < no_realizations:
         ax.set_position([0, 0, 1, 1])
         ax.imshow(df_pivot)
         plt.axis("off")
-        plt.savefig(f"test\\cs_{counter}.png")  # save the cross-section
-        df.to_csv(f"test\\cs_{counter}.csv")
+        filename = f"cs_{counter}"
+        fig_path = os.path.join(path, f"{filename}.png")
+        csv_path = os.path.join(path, f"{filename}.csv")
+        plt.savefig(fig_path)
+        df.to_csv(csv_path)
         plt.close()
 
         counter += 1

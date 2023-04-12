@@ -12,14 +12,16 @@ from functions.p2p_gan_architecture import define_gan
 from functions.p2p_train_architecture import train
 
 
+
+
 # Resizing images, if needed
-SIZE_X = 256
-SIZE_Y = 64
+SIZE_X = 512
+SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 
 # Define the paths
-path = 'C:\\inpt\\synthetic_data\\test'
+path = 'C:\\inpt\\synthetic_data\\512x32'
 path_results = r'C:\inpt\GAN_p2p\results\test'
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
@@ -64,7 +66,10 @@ image_shape = src_images.shape[1:]
 
 # define the models
 d_model = define_discriminator(image_shape)
+print(d_model.summary())
 g_model = define_generator(image_shape)
+print(g_model.summary())
+
 # define the composite model
 gan_model = define_gan(g_model, d_model, image_shape)
 
