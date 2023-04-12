@@ -60,4 +60,3 @@ X = model.predict(latent_points)
 # plot the result
 save_plot(X, 4)  #Plot 4x4 grid (Change to 5 if generating 25 images)
 
-#"""

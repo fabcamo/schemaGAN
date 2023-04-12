@@ -1,15 +1,15 @@
+import os
+import time
 from datetime import datetime
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
-from numpy.random import randint
-from tensorflow.keras.models import load_model
 
 from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
 from functions.p2p_discriminator_architecture import define_discriminator
 from functions.p2p_generator_architecture import define_generator
 from functions.p2p_gan_architecture import define_gan
 from functions.p2p_train_architecture import train
-from functions.p2p_summary import plot_images
 
 
 # Resizing images, if needed
@@ -17,13 +17,24 @@ SIZE_X = 256
 SIZE_Y = 64
 no_rows = SIZE_Y
 no_cols = SIZE_X
+
+# Define the paths
 path = 'C:\\inpt\\synthetic_data\\test'
+path_results = r'C:\inpt\GAN_p2p\results\test'
+results_dir_path = os.path.join(path_results, 'results_summary.txt')
+
+# Check the time and start the timers
+time_current = time.strftime("%d/%m/%Y %H:%M:%S")
+
+
 
 #miss_rate = 0.9868
 #min_distance = 51
 miss_rate = 0.95
 min_distance = 10
 
+# Number of epochs
+n_epochs = 4
 
 # Capture training image info as a list
 tar_images = []
@@ -43,24 +54,14 @@ full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
-n_samples = 3
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + i)
-    plt.axis('off')
-    plt.imshow(src_images[i], cmap='viridis')
-# plot target image
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + n_samples + i)
-    plt.axis('off')
-    plt.imshow(tar_images[i], cmap='viridis')
-plt.show()
-
-#######################################################
-
 
 
 # define input shape based on the loaded dataset
 image_shape = src_images.shape[1:]
+
+
+
+
 # define the models
 d_model = define_discriminator(image_shape)
 g_model = define_generator(image_shape)
@@ -77,30 +78,80 @@ data = [src_images, tar_images]
 # And tanh ranges between -1 and 1
 dataset = preprocess_data(data)
 
+#################################################################################################################
+#   TRAIN THE GAN
+#################################################################################################################
 
+time_start = time.time() # start the timer
 
-start1 = datetime.now()
-
-train(d_model, g_model, gan_model, dataset, n_epochs=2, n_batch=1)
+train(d_model, g_model, gan_model, dataset, n_epochs, n_batch=1)
 # Reports parameters for each batch (total 1600) for each epoch.
 # For 10 epochs we should see 16000
 
-stop1 = datetime.now()
+time_end = time.time() # End the timer
 # Execution time of the model
-execution_time = stop1 - start1
+execution_time = abs(time_start - time_end) # Calculate the run time
 print("Execution time is: ", execution_time)
 
 
-#########################################
-# Test trained model on a few images...
-model = load_model('final_generator.h5')
 
-[X1, X2] = dataset
-# select random example
-ix = randint(0, len(X1), 1)
-print(ix)
-src_image, tar_image = X1[ix], X2[ix]
-# generate image from source
-gen_image = model.predict(src_image)
-# plot all three images
-plot_images(src_image, gen_image, tar_image)
+
+#################################################################################################################
+#   GENERATE THE SUMMARY OF THE MODEL
+#################################################################################################################
+# Format time taken to run into> Hours : Minutes : Seconds
+hours = int(execution_time // 3600)
+minutes = int((execution_time % 3600) // 60)
+seconds = int(execution_time % 60)
+time_str = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+
+# Save run details to file
+with open(results_dir_path, "a") as file:
+    file.write("Executed on: {}\n".format(time_current))
+    file.write("execution time: {}\n\n".format(time_str))
+    file.write("The shape of a single input image is: {}\n".format(image_shape))
+    file.write("The total number of training images is: {}\n".format(src_images.shape[0]))
+    file.write("Number of epochs is: {}\n\n".format(n_epochs))
+
+# Check if GPUs are available and write it to the summary
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    num_gpus = len(gpus)
+    with open(results_dir_path, "a") as file:
+        file.write("Running TensorFlow with {} GPU(s)\n".format(num_gpus))
+else:
+    with open(results_dir_path, "a") as file:
+        file.write("Running TensorFlow on CPU\n")
+
+# Save GAN model summaries to file
+with open(results_dir_path, "a") as file:
+    file.write(" \n")
+    file.write("Generator summary\n")
+    g_model.summary(print_fn=lambda x: file.write(x + '\n'))
+    file.write(" \n\n")
+    file.write("Discriminator summary\n")
+    d_model.summary(print_fn=lambda x: file.write(x + '\n'))
+    file.write(" \n")
+
+
+
+
+
+
+
+
+'''
+# To print a sample of the input and the original
+n_samples = 3
+for i in range(n_samples):
+    plt.subplot(2, n_samples, 1 + i)
+    plt.axis('off')
+    plt.imshow(src_images[i], cmap='viridis')
+# plot target image
+for i in range(n_samples):
+    plt.subplot(2, n_samples, 1 + n_samples + i)
+    plt.axis('off')
+    plt.imshow(tar_images[i], cmap='viridis')
+plt.show()
+
+'''
