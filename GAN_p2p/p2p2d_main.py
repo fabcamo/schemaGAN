@@ -6,7 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
-from functions.p2p_discriminator_architecture import define_discriminator
+from functions.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
 from functions.p2p_generator_architecture import define_generator
 from functions.p2p_gan_architecture import define_gan
 from functions.p2p_train_architecture import train
@@ -36,7 +36,7 @@ miss_rate = 0.95
 min_distance = 10
 
 # Number of epochs
-n_epochs = 4
+n_epochs = 100
 
 # Capture training image info as a list
 tar_images = []
@@ -65,10 +65,9 @@ image_shape = src_images.shape[1:]
 
 
 # define the models
-d_model = define_discriminator(image_shape)
+d_model = define_discriminator_512x32(image_shape)
 print(d_model.summary())
 g_model = define_generator(image_shape)
-print(g_model.summary())
 
 # define the composite model
 gan_model = define_gan(g_model, d_model, image_shape)

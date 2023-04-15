@@ -48,8 +48,8 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
             g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
 
             # Print losses on this batch
-            print('Epoch>%d, Batch %d/%d, d=%.3f, g=%.3f' %
-                  (i + 1, j + 1, bat_per_epo, d_loss, g_loss))
+            print('Epoch>%d, Batch %d/%d, d=%.3f, g=%.3f, d=%.3f, d=%.3f' %
+                  (i + 1, j + 1, bat_per_epo, d_loss, g_loss, d_acc_real, d_acc_fake))
 
             # Storing the losses and accuracy of the iterations.
             d_hist.append(d_loss)
