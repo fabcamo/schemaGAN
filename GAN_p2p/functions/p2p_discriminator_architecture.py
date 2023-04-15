@@ -66,27 +66,28 @@ def define_discriminator_512x32(image_shape):
     # concatenate images, channel-wise
     merged = Concatenate()([in_src_image, in_target_image])
 
-    # C64: 4x4 kernel Stride 2x2
+    # Starting from 32x512
+
+    # C64: 4x4 kernel Stride 2x2> 16x256
     d = Conv2D(filters=64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(merged)
     d = LeakyReLU(alpha=0.2)(d)
-    # C128: 4x4 kernel Stride 1x2
+    # C128: 4x4 kernel Stride 1x2> 16x128
     d = Conv2D(filters=128, kernel_size=(4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
-    # C256: 4x4 kernel Stride 1x2
+    # C256: 4x4 kernel Stride 1x2> 16x64
     d = Conv2D(filters=256, kernel_size=(4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
-    # C512: 4x4 kernel Stride 1x2
-    # Not in the original paper. Comment this block if you want.
+    # C512: 4x4 kernel Stride 1x2> 16x32
     d = Conv2D(filters=512, kernel_size=(4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
-    # C512: 4x4 kernel Stride 1x2
+    # C512: 4x4 kernel Stride 1x2> 16x16
     d = Conv2D(filters=512, kernel_size=(4, 4), strides=(1, 2), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)
-    # second last output layer : 4x4 kernel but Stride 1x1
+    # second last output layer : 4x4 kernel but Stride 1x1> 16x16
     d = Conv2D(filters=512, kernel_size=(4, 4), padding='same', kernel_initializer=init)(d)
     d = BatchNormalization()(d)
     d = LeakyReLU(alpha=0.2)(d)

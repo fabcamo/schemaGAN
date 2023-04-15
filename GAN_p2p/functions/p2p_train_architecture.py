@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 from functions.p2p_summary import summarize_performance, plot_history
 from functions.p2p_generate_samples import generate_real_samples, generate_fake_samples
 
-results_dir_path = r'C:\inpt\GAN_p2p\results\test'
+results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results'
+#results_dir_path = r'C:\inpt\GAN_p2p\results\test'
+#results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
 
 
 
@@ -86,6 +88,8 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
                  a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, i, n_epochs, iterations)
     # Save results to dataframe and CSV file
     df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'acc_real': a1_hist, 'acc_fake': a2_hist})
+
+    #csv_file = r'/scratch/fcamposmontero/p2p_512x32_results/results_loss.csv'
     csv_file = os.path.join(results_dir_path, 'results_loss.csv')
     df.to_csv(csv_file, index=False)
 

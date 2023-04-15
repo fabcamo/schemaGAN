@@ -21,8 +21,16 @@ no_rows = SIZE_Y
 no_cols = SIZE_X
 
 # Define the paths
-path = 'C:\\inpt\\synthetic_data\\512x32'
-path_results = r'C:\inpt\GAN_p2p\results\test'
+#path = r'/scratch/fcamposmontero/512x32_test'
+#path_results = r'/scratch/fcamposmontero/p2p_512x32_results_test'
+
+path = r'/scratch/fcamposmontero/512x32/training'
+path_results = r'/scratch/fcamposmontero/p2p_512x32_results'
+
+#path = 'C:\\inpt\\synthetic_data\\512x32'
+#path_results = r'C:\inpt\GAN_p2p\results\test'
+
+#results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results/results_summary.txt'
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
 # Check the time and start the timers
@@ -66,7 +74,6 @@ image_shape = src_images.shape[1:]
 
 # define the models
 d_model = define_discriminator_512x32(image_shape)
-print(d_model.summary())
 g_model = define_generator(image_shape)
 
 # define the composite model

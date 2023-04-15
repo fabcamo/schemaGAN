@@ -7,7 +7,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
 from functions.p2p_process_data import reverse_normalization
 
-results_dir_path = r'C:\inpt\GAN_p2p\results\test'
+results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results'
+#results_dir_path = r'C:\inpt\GAN_p2p\results\test'
+#results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
 
 
 # Save the generator model and check how good the generated image looks.
@@ -201,6 +203,7 @@ def plot_images(src_img, gen_img, tar_img):
 
 
 def plot_images_error(src_img, gen_img, tar_img):
+
     images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
     test = np.abs(gen_img-tar_img)
     print(np.min(test))
@@ -208,19 +211,21 @@ def plot_images_error(src_img, gen_img, tar_img):
 
     # Scale from [-1,1] to [0,255]
     images = reverse_normalization(images)
-
+    print('genimage>', images[1])
+    print('tarimage>', images[2])
+    print('gen-tar>', np.abs(images[1]-images[2]))
     # Set plot titles
     titles = ['Input', 'Output-Generated', 'Original', 'Error']
-    ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2], [0.0, 0.021]]
+    ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2]]
 
     # Create a figure with a size of 10 inches by 4 inches
-    fig = plt.figure(figsize=(10, 16))
+    fig = plt.figure(figsize=(10, 15))
 
     # plot images row by row
     for i in range(len(images)):
         # define subplot
         ax = fig.add_subplot(4, 1, 1 + i)
-        im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
+        im = ax.imshow(images[i, :, :, 0], cmap='viridis')
         # set title with fontsize
         ax.set_title(titles[i], fontsize=10)
         # set tick_params with fontsize
