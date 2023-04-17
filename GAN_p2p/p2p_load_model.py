@@ -16,8 +16,8 @@ no_rows = SIZE_Y
 no_cols = SIZE_X
 
 # Choose missing rate
-miss_rate = 0.95
-min_distance = 10
+miss_rate = 0.90
+min_distance = 6
 
 # Load the data
 all_csv = read_all_csv_files(path)
@@ -43,7 +43,7 @@ for i in range(n_samples):
     plt.subplot(2, n_samples, 1 + n_samples + i)
     plt.axis('off')
     plt.imshow(tar_images[i], cmap='viridis')
-#plt.show()
+plt.show()
 plt.close()
 
 # Create the array of source and target images

@@ -5,11 +5,11 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
-from functions.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
-from functions.p2p_generator_architecture import define_generator
-from functions.p2p_gan_architecture import define_gan
-from functions.p2p_train_architecture import train
+from functions10.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
+from functions10.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
+from functions10.p2p_generator_architecture import define_generator
+from functions10.p2p_gan_architecture import define_gan
+from functions10.p2p_train_architecture import train
 
 
 
@@ -21,11 +21,11 @@ no_rows = SIZE_Y
 no_cols = SIZE_X
 
 # Define the paths
-#path = r'/scratch/fcamposmontero/512x32_test'
-#path_results = r'/scratch/fcamposmontero/p2p_512x32_results_test'
+path = r'/scratch/fcamposmontero/512x32_reduced'
+path_results = r'/scratch/fcamposmontero/p2p_512x32_results10'
 
-path = r'/scratch/fcamposmontero/512x32/training'
-path_results = r'/scratch/fcamposmontero/p2p_512x32_results'
+#path = r'/scratch/fcamposmontero/512x32/training'
+#path_results = r'/scratch/fcamposmontero/p2p_512x32_results'
 
 #path = 'C:\\inpt\\synthetic_data\\512x32'
 #path_results = r'C:\inpt\GAN_p2p\results\test'
@@ -40,19 +40,17 @@ time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
 #miss_rate = 0.9868
 #min_distance = 51
-miss_rate = 0.95
-min_distance = 10
+miss_rate = 0.90
+min_distance = 6
 
 # Number of epochs
-n_epochs = 100
+n_epochs = 500
 
 # Capture training image info as a list
 tar_images = []
 
 # Capture mask/label info as a list
 src_images = []
-
-# src_images = np.array(src_images)
 
 all_csv = read_all_csv_files(path)
 missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
@@ -123,6 +121,8 @@ with open(results_dir_path, "a") as file:
     file.write("The shape of a single input image is: {}\n".format(image_shape))
     file.write("The total number of training images is: {}\n".format(src_images.shape[0]))
     file.write("Number of epochs is: {}\n\n".format(n_epochs))
+    file.write("Missing rate: {}\n\n".format(miss_rate))
+    file.write("Minimum distance: {}\n\n".format(min_distance))
 
 # Check if GPUs are available and write it to the summary
 gpus = tf.config.list_physical_devices('GPU')

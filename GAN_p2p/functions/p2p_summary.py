@@ -4,10 +4,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
-from functions.p2p_process_data import reverse_normalization
+from functions10.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
+from functions10.p2p_process_data import reverse_normalization
 
-results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results'
+results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results10'
 #results_dir_path = r'C:\inpt\GAN_p2p\results\test'
 #results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
 
