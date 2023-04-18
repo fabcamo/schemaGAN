@@ -4,8 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from functions10.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
-from functions10.p2p_process_data import reverse_normalization
+from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
+from functions.p2p_process_data import reverse_normalization
 
 results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results10'
 #results_dir_path = r'C:\inpt\GAN_p2p\results\test'
@@ -84,7 +84,7 @@ def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, a1_hist, a2_hist, a
     plt.plot(a2_hist, label='acc-fake', color='darkgray', alpha=0.8)
     plt.legend(loc='upper right')
     plt.xlabel('Iteration')
-    plt.ylabel('Accuracy')
+    plt.ylabel('MAE')
     # set x-axis limits
     plt.xlim([0, iterations])
     # set y-axis limits
@@ -204,19 +204,14 @@ def plot_images(src_img, gen_img, tar_img):
 
 def plot_images_error(src_img, gen_img, tar_img):
 
+
     images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
-    test = np.abs(gen_img-tar_img)
-    print(np.min(test))
-    print(np.max(test))
 
     # Scale from [-1,1] to [0,255]
     images = reverse_normalization(images)
-    print('genimage>', images[1])
-    print('tarimage>', images[2])
-    print('gen-tar>', np.abs(images[1]-images[2]))
     # Set plot titles
-    titles = ['Input', 'Output-Generated', 'Original', 'Error']
-    ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2]]
+    titles = ['Input', 'Output-Generated', 'Original', 'MAE']
+    ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2], [110, 130]]
 
     # Create a figure with a size of 10 inches by 4 inches
     fig = plt.figure(figsize=(10, 15))

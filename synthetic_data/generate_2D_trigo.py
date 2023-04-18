@@ -7,7 +7,7 @@ from datetime import datetime
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
 
-path = 'C:\\inpt\\synthetic_data\\512x32'
+path = 'C:\\inpt\\synthetic_data\\ppt'
 
 seed = 20230412        # seed
 no_realizations = 100     # number of realizations to generate
@@ -15,7 +15,7 @@ no_realizations = 100     # number of realizations to generate
 
 ##### MAIN DIMENSION VARIABLES ######################################################################################
 x_max = 512             # length (x) of the model
-z_max = 32              # depth (z) of the model
+z_max = 64              # depth (z) of the model
 # Model coordinates
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates
 z_coord = np.arange(0, z_max, 1)       # array of z coordinates

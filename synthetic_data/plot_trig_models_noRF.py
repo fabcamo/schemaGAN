@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from layers_functions.layer_boundary import layer_boundary
 
 x_max = 512             # length (x) of the model
-z_max = 32              # depth (z) of the model
+z_max = 64              # depth (z) of the model
 # Model coordinates
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates
 z_coord = np.arange(0, z_max, 1)       # array of z coordinates
@@ -16,7 +16,7 @@ coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
 values = np.zeros(coords_to_list.shape[0])
 
 # Plot new matrix as image
-fig, axs = plt.subplots(nrows=10, ncols=3, figsize=(20, 40))
+fig, axs = plt.subplots(nrows=10, ncols=3, figsize=(10, 20))
 
 for i in range(50):
     # Generate new y value for each plot
@@ -60,4 +60,6 @@ for i in range(50):
     ax.imshow(new_matrix, cmap='viridis')
 
 plt.tight_layout()
+for ax in axs.flat:
+    ax.axis('off')
 plt.show()

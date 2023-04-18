@@ -35,19 +35,6 @@ full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
-# Plot the original data and the resulting CPT-like data
-n_samples = 1
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + i)
-    plt.axis('off')
-    plt.imshow(src_images[i], cmap='viridis')
-# plot target image
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + n_samples + i)
-    plt.axis('off')
-    plt.imshow(tar_images[i], cmap='viridis')
-plt.show()
-plt.close()
 
 # Create the array of source and target images
 data = [src_images, tar_images]
@@ -69,14 +56,9 @@ src_image, tar_image = X1[ix], X2[ix]
 # generate image from source
 gen_image = model.predict(src_image)
 
-print(np.abs(tar_image-gen_image))
 
 # plot all three images> Input, generated and original
 plot_images_error(src_image, gen_image, tar_image)
 plt.show()
-
-
-
-
 
 

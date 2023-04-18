@@ -5,11 +5,11 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from functions10.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
-from functions10.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
-from functions10.p2p_generator_architecture import define_generator
-from functions10.p2p_gan_architecture import define_gan
-from functions10.p2p_train_architecture import train
+from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data
+from functions.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
+from functions.p2p_generator_architecture import define_generator
+from functions.p2p_gan_architecture import define_gan
+from functions.p2p_train_architecture import train
 
 
 

@@ -121,6 +121,13 @@ def generate_fake_samples(generator, latent_dim, how_many):
     labels = np.zeros((how_many, 1)) # Create the labels as> 0 as these samples are fake.
     return fake_images, labels
 
+# Generate noise and plot it as an image
+noise = generate_noise_vectors(100, 1) # Generating a single noise vector
+plt.imshow(noise.reshape(10, 10), cmap='gray')
+plt.axis('off')
+plt.show()
+
+
 # Pull the images and models for every 'X' amount of epochs
 def summarize_performance(step, g_model, latent_dim, n_samples=25):
     # Generate a batch of fake samples
