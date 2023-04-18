@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
-from functions.p2p_process_data import reverse_normalization
+from functions.p2p_process_data import reverse_normalization, reverse_IC_normalization
 
-results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results10'
+results_dir_path = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
 #results_dir_path = r'C:\inpt\GAN_p2p\results\test'
 #results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
 
@@ -123,7 +123,7 @@ def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, a1_hist, a2_hist, a
     ax1.set_xlim([0, iterations])
     ax2.set_xlabel('Epochs')
     ax2.set_xlim([0, n_epochs])
-    ax1.set_ylabel('Accuracy')
+    ax1.set_ylabel('MAE')
     ax1.set_ylim([0, 1])
     ax1.legend(loc='upper right')
     ax2.legend(loc='lower right')
@@ -162,7 +162,7 @@ def plot_images(src_img, gen_img, tar_img):
     images = np.vstack((src_img, gen_img, tar_img))
 
     # Scale from [-1,1] to [0,255]
-    images = reverse_normalization(images)
+    images = reverse_IC_normalization(images)
 
     # Set plot titles
     titles = ['Input', 'Output-Generated', 'Original']
@@ -176,7 +176,8 @@ def plot_images(src_img, gen_img, tar_img):
         # define subplot
         ax = fig.add_subplot(1, 3, 1 + i)
         # plot raw pixel data
-        im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
+        #im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
+        im = ax.imshow(images[i, :, :, 0], cmap='viridis')
         # set title with fontsize
         ax.set_title(titles[i], fontsize=10)
         # set tick_params with fontsize
@@ -208,7 +209,7 @@ def plot_images_error(src_img, gen_img, tar_img):
     images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
 
     # Scale from [-1,1] to [0,255]
-    images = reverse_normalization(images)
+    images = reverse_IC_normalization(images)
     # Set plot titles
     titles = ['Input', 'Output-Generated', 'Original', 'MAE']
     ranges_vmin_vmax = [[1.3, 4.2], [1.3, 4.2], [1.3, 4.2], [110, 130]]

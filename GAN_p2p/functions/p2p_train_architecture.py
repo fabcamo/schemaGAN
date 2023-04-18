@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from functions.p2p_summary import summarize_performance, plot_history
 from functions.p2p_generate_samples import generate_real_samples, generate_fake_samples
 
-results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results10'
+results_dir_path = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
 #results_dir_path = r'C:\inpt\GAN_p2p\results\test'
 #results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
 

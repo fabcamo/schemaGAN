@@ -21,7 +21,6 @@ def generate_real_samples_fix(dataset, n_samples, patch_shape):
     # choose a fixed instance
     np.random.seed(11)
     ix = np.random.randint(0, trainA.shape[0], n_samples)
-    print('ix is>', ix)
     # retrieve selected images
     X1, X2 = trainA[ix], trainB[ix]
     # generate 'real' class labels (1)
