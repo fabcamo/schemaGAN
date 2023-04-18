@@ -118,15 +118,44 @@ def remove_random_depths(data_z, data_m):
 
 
 
-# Normalize data
+# Normalize data from [0 - 255] to [-1 - 1]
 def preprocess_data(data):
-    # load compressed arrays
-    # unpack arrays
+    # Load compressed arrays and unpack them
     X1, X2 = data[0], data[1]
+
     # scale from [0,255] to [-1,1]
     X1 = (X1 - 127.5) / 127.5
     X2 = (X2 - 127.5) / 127.5
     return [X1, X2]
+
+# Normalize data from [0 - MaxIC] to [-1 - 1]
+def IC_normalization(data):
+    # Define what is the MAX and MIN value of IC in the source and target images
+    max_IC_value = 4.3      # biggest IC value expected
+    min_IC_value = 0        # it's not really zero, but when deleting data it will be
+
+    # Load the compressed arrays and unpack them
+    src_data = data[0]
+    tar_data = data[1]
+
+    # Scale the data
+    data_range = max_IC_value - min_IC_value
+    src_normalized = 2 * (src_data / data_range) - 1
+    tar_normalized = 2 * (tar_data / data_range) - 1
+
+    return [src_normalized, tar_normalized]
+
+
+def reverse_IC_normalization(data):
+    # Define what is the MAX and MIN value of IC in the source and target images
+    max_IC_value = 4.3  # biggest IC value expected
+    min_IC_value = 0  # it's not really zero, but when deleting data it will be
+
+    # Rescale the data
+    data_range = max_IC_value - min_IC_value
+    X = (data + 1) * (data_range / 2) + min_IC_value
+
+    return X
 
 # Reverse the data normalization to read IC values
 def reverse_normalization(X):

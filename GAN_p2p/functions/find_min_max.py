@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from p2p_process_data import read_all_csv_files
 
@@ -30,3 +31,32 @@ print("Max value:", max_value)
 print("Min value:", min_value)
 
 
+def IC_normalization(data):
+    max_IC_value = 4.3
+    min_IC_value = 0  # it's not really zero, but when deleting data it will be
+    data_range = max_IC_value - min_IC_value
+    X1_normalized = 2 * (data / data_range) - 1
+    trg_normalized = 2 * (data / data_range) - 1
+
+    return X1_normalized
+
+test_data = np.array([0, 0.8, 1.1, 1.5, 3.2, 4.3])
+print('test data is>', test_data)
+
+results = IC_normalization(test_data)
+print('normalized data is>', results)
+
+
+def reverse_IC_normalization(data):
+    # Define what is the MAX and MIN value of IC in the source and target images
+    max_IC_value = 4.3  # biggest IC value expected
+    min_IC_value = 0  # it's not really zero, but when deleting data it will be
+
+    # Rescale the data
+    data_range = max_IC_value - min_IC_value
+    X = (data + 1) * (data_range / 2) + min_IC_value
+
+    return X
+
+backtonormal = reverse_IC_normalization(results)
+print('going back to the original', backtonormal)
