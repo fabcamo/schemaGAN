@@ -48,7 +48,7 @@ def define_discriminator(image_shape):
     # with a small learning rate and 0.5 beta.
     # The loss for the discriminator is weighted by 50% for each model update.
 
-    opt = Adam(lr=0.0002, beta_1=0.5)
+    opt = Adam(learning_rate=0.0002, beta_1=0.5)
     model.compile(loss='binary_crossentropy', optimizer=opt, loss_weights=[0.5], metrics=['mean_squared_error'])
     return model
 
@@ -101,6 +101,6 @@ def define_discriminator_512x32(image_shape):
     # with a small learning rate and 0.5 beta.
     # The loss for the discriminator is weighted by 50% for each model update.
 
-    opt = Adam(lr=0.0002, beta_1=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt, loss_weights=[0.5], metrics=['mean_squared_error'])
+    opt = Adam(learning_rate=0.0002, beta_1=0.5)
+    model.compile(loss='binary_crossentropy', optimizer=opt, loss_weights=[0.5], metrics=['mae', 'accuracy'])
     return model

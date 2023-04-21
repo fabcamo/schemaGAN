@@ -18,25 +18,25 @@ SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 
-# Define the paths
-path = r'/scratch/fcamposmontero/databases/512x32_2k'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
+#################################################################################################################
+#   PATHS
+#################################################################################################################
+# For DelftBlue un-comment this...
+#path_data = r'/scratch/fcamposmontero/databases/512x32_2k'
+#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
 
-#path = r'/scratch/fcamposmontero/512x32/training'
-#path_results = r'/scratch/fcamposmontero/p2p_512x32_results'
+# For local run un-comment this...
+path_data = 'C:\\inpt\\synthetic_data\\512x32'
+path_results = r'C:\inpt\GAN_p2p\results\test'
 
-#path = 'C:\\inpt\\synthetic_data\\512x32'
-#path_results = r'C:\inpt\GAN_p2p\results\test'
-
-#results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results/results_summary.txt'
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
 # Check the time and start the timers
 time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
-#################################################################################################################
+########################################################################################################################
 #   CHOOSE THE EPOCHS AND MISSING RATE
-#################################################################################################################
+########################################################################################################################
 
 #miss_rate = 0.9868
 #min_distance = 51
@@ -44,12 +44,12 @@ miss_rate = 0.95
 min_distance = 10
 
 # Number of epochs
-n_epochs = 200
+n_epochs = 4
 
 
-#################################################################################################################
+########################################################################################################################
 #   PROCESS THE DATA AND DEFINE THE MODELS
-#################################################################################################################
+########################################################################################################################
 
 # Capture training image info as a list
 tar_images = []
@@ -57,7 +57,7 @@ tar_images = []
 # Capture mask/label info as a list
 src_images = []
 
-all_csv = read_all_csv_files(path)
+all_csv = read_all_csv_files(path_data)
 missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
 no_samples = len(all_csv)
 

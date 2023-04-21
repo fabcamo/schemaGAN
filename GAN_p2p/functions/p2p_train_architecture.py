@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 from functions.p2p_summary import summarize_performance, plot_history
 from functions.p2p_generate_samples import generate_real_samples, generate_fake_samples
 
-results_dir_path = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
-#results_dir_path = r'C:\inpt\GAN_p2p\results\test'
-#results_dir_path = r'/scratch/fcamposmontero/p2p_512x32_results_test'
+# For DelftBlue, un-comment this...
+#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
+
+# For local run, un-comment this...
+path_results = r'C:\inpt\GAN_p2p\results\test'
 
 
 
@@ -25,12 +27,12 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     iterations = bat_per_epo * n_epochs
 
     # Create empty containers for the losses and accuracy
-    d_hist, g_hist, a1_hist, a2_hist = list(), list(), list(), list()
-    d_epoch_hist, g_epoch_hist, a1_epoch_hist, a2_epoch_hist = list(), list(), list(), list()
+    d_hist, g_hist, maeR_hist, maeF_hist, accR_hist, accF_hist = list(), list(), list(), list(), list(), list()
+    d_epoch_hist, g_epoch_hist, maeR_epoch_hist, maeF_epoch_hist, accR_epoch_hist, accF_epoch_hist = list(), list(), list(), list(), list(), list()
 
     # Manually enumerate epochs and batches
     for i in range(n_epochs):
-        g_loss_all, d_loss_all, acc_real_all, acc_fake_all = 0.0, 0.0, 0.0, 0.0
+        g_loss_all, d_loss_all, mae_real_all, mae_fake_all, acc_real_all, acc_fake_all = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
         # Enumerate batches over the training set
         for j in range(bat_per_epo):
@@ -38,11 +40,11 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
             # select a batch of real samples
             [X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
             # update discriminator for real samples
-            d_loss_real, d_acc_real = d_model.train_on_batch([X_realA, X_realB], y_real)
+            d_loss_real, d_mae_real, d_acc_real = d_model.train_on_batch([X_realA, X_realB], y_real)
             # generate a batch of fake samples
             X_fakeB, y_fake = generate_fake_samples(g_model, X_realA, n_patch)
             # update discriminator for generated samples
-            d_loss_fake, d_acc_fake = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
+            d_loss_fake, d_mae_fake, d_acc_fake = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
             # TRAIN THE GENERATOR
@@ -50,47 +52,59 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
             g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
 
             # Print losses on this batch
-            print('Epoch>%d, Batch %d/%d, d=%.3f, g=%.3f, d=%.3f, d=%.3f' %
-                  (i + 1, j + 1, bat_per_epo, d_loss, g_loss, d_acc_real, d_acc_fake))
+            print('Epoch>%d, Batch %d/%d, Dloss=%.3f, Gloss=%.3f, DmaeReal=%.3f, DmaeFake=%.3f' %
+                  (i + 1, j + 1, bat_per_epo, d_loss, g_loss, d_mae_real, d_mae_fake))
 
             # Storing the losses and accuracy of the iterations.
             d_hist.append(d_loss)
             g_hist.append(g_loss)
-            a1_hist.append(d_acc_real)
-            a2_hist.append(d_acc_fake)
+            maeR_hist.append(d_mae_real)
+            maeF_hist.append(d_mae_fake)
+            accR_hist.append(d_acc_real)
+            accF_hist.append(d_acc_fake)
 
             g_loss_all += g_loss
             d_loss_all += d_loss
+            mae_real_all += d_mae_real
+            mae_fake_all += d_mae_fake
             acc_real_all += d_acc_real
             acc_fake_all += d_acc_fake
 
         epoch_loss_g = g_loss_all / j  # total generator loss for the epoch
         epoch_loss_d = d_loss_all / j  # total discriminator loss for the epoch
+        epoch_mae_real = mae_real_all / j
+        epoch_mae_fake = mae_fake_all / j
         epoch_acc_real = acc_real_all / j
         epoch_acc_fake = acc_fake_all / j
         g_epoch_hist.append(epoch_loss_g)
         d_epoch_hist.append(epoch_loss_d)
-        a1_epoch_hist.append(epoch_acc_real)
-        a2_epoch_hist.append(epoch_acc_fake)
+        maeR_epoch_hist.append(epoch_mae_real)
+        maeF_epoch_hist.append(epoch_mae_fake)
+        accR_epoch_hist.append(epoch_acc_real)
+        accF_epoch_hist.append(epoch_acc_fake)
 
         # Summarize model performance
         summarize_every_n_epochs = 1
         if i % summarize_every_n_epochs == 0:
             summarize_performance(i, g_model, dataset)
             plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
-                         a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, i, n_epochs, iterations)
+                         maeR_hist, maeF_hist, maeR_epoch_hist, maeF_epoch_hist,
+                         accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist, i, n_epochs, iterations)
 
 
     # Save the generator model
-    final_generator_path = os.path.join(results_dir_path, 'final_generator.h5')
+    final_generator_path = os.path.join(path_results, 'final_generator.h5')
     g_model.save(final_generator_path)
     plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
-                 a1_hist, a2_hist, a1_epoch_hist, a2_epoch_hist, i, n_epochs, iterations)
+                 maeR_hist, maeF_hist, maeR_epoch_hist, maeF_epoch_hist,
+                 accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist, i, n_epochs, iterations)
+
     # Save results to dataframe and CSV file
-    df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'acc_real': a1_hist, 'acc_fake': a2_hist})
+    df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'mae_real': maeR_hist,
+                       'mae_fake': maeF_hist, 'acc_real': accR_hist, 'acc_fake': accF_hist})
 
     #csv_file = r'/scratch/fcamposmontero/p2p_512x32_results/results_loss.csv'
-    csv_file = os.path.join(results_dir_path, 'results_loss.csv')
+    csv_file = os.path.join(path_results, 'results_loss.csv')
     df.to_csv(csv_file, index=False)
 
 
