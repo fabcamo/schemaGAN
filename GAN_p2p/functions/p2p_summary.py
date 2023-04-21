@@ -22,15 +22,15 @@ def summarize_performance(step, g_model, dataset, n_samples=1):
     [src_image, tar_image], _ = generate_real_samples_fix(dataset, 1, 1)
     gen_image, _ = generate_fake_samples(g_model, src_image, 1)
     plot_images_error(src_image, gen_image, tar_image)
-    plot_filename1 = os.path.join(path_results, 'res_{:06d}.png'.format(step + 1))
-    plt.savefig(plot_filename1)
+    plot_results_name = os.path.join(path_results, 'res_{:06d}.png'.format(step + 1))
+    plt.savefig(plot_results_name)
     plt.close()
 
     # save the generator model
     os.path.join(path_results, 'model_%06d.h5' % (step + 1))
     model_name = os.path.join(path_results, 'model_%06d.h5' % (step + 1))
     g_model.save(model_name)
-    print('>Saved: %s and %s' % (plot_filename1, model_name))
+    print('>Saved: %s and %s' % (plot_results_name, model_name))
 
 
 

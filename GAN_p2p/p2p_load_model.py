@@ -53,19 +53,18 @@ plt.close()
 data = [src_images, tar_images]
 
 # Pre-process the data> normalize
-#dataset = preprocess_data(data)    # old one
 dataset = IC_normalization(data)    # new one
 
 # Load the model
 model = load_model('C:\\inpt\\GAN_p2p\\results\\r05_512x32_10\\generators\\model_000099.h5')
 
 # X1 as input images and X2 as original images
-[X1, X2] = dataset
+[input_img, orig_img] = dataset
 
 # select random example from all the validation images
 #ix = np.random.randint(0, len(X1), size=1)    # Use this one to get a cross-section at random
 ix = np.array([cross_section_number])         # Use this one to get a specific cross-section
-src_image, tar_image = X1[ix], X2[ix]
+src_image, tar_image = input_img[ix], orig_img[ix]
 
 # generate image from source
 gen_image = model.predict(src_image)
