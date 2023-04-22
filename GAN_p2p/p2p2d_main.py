@@ -115,7 +115,7 @@ time_str = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
 # Save run details to file
 with open(results_dir_path, "a") as file:
     file.write("Executed on: {}\n".format(time_current))
-    file.write("execution time: {}\n\n".format(time_str))
+    file.write("Execution time: {}\n\n".format(time_str))
     file.write("The shape of a single input image is: {}\n".format(image_shape))
     file.write("The total number of training images is: {}\n".format(src_images.shape[0]))
     file.write("Number of epochs is: {}\n\n".format(n_epochs))

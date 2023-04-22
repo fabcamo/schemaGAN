@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,11 +7,20 @@ from datetime import datetime
 
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
+from layers_functions.split_data import split_data
 
-path = 'C:\\inpt\\synthetic_data\\ppt'
+# Check the time and start the timers
+time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
-seed = 20230412        # seed
-no_realizations = 100     # number of realizations to generate
+output_folder = 'C:\\inpt\\synthetic_data\\512x32'
+
+# Generate a random seed using NumPy
+seed = np.random.randint(20220412, 20230412)
+# Set the seed for NumPy's random number generator
+np.random.seed(seed)
+
+no_realizations = 10     # number of realizations to generate
+train_size = 0.9
 
 
 ##### MAIN DIMENSION VARIABLES ######################################################################################
@@ -23,7 +33,7 @@ xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates
 ############################################################################################################
 
 
-start1 = datetime.now()
+time_start = time.time() # start the timer
 counter = 0
 while counter < no_realizations:
     try:
@@ -89,8 +99,8 @@ while counter < no_realizations:
         ax.imshow(df_pivot)
         plt.axis("off")
         filename = f"cs_{counter}"
-        fig_path = os.path.join(path, f"{filename}.png")
-        csv_path = os.path.join(path, f"{filename}.csv")
+        fig_path = os.path.join(output_folder, f"{filename}.png")
+        csv_path = os.path.join(output_folder, f"{filename}.csv")
         plt.savefig(fig_path)
         df.to_csv(csv_path)
         plt.close()
@@ -102,8 +112,32 @@ while counter < no_realizations:
         continue
 
 
-stop1 = datetime.now()
-# Execution time of the model
-execution_time = stop1 - start1
-print("Execution time is: ", execution_time)
+# Split the data into train and validation
+split_data(output_folder, os.path.join(output_folder, "train"),
+           os.path.join(output_folder, "./validation"), train_size)
 
+time_end = time.time() # End the timer
+# Execution time of the model
+execution_time = abs(time_start - time_end) # Calculate the run time
+# Format time taken to run into> Hours : Minutes : Seconds
+hours = int(execution_time // 3600)
+minutes = int((execution_time % 3600) // 60)
+seconds = int(execution_time % 60)
+time_str = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+
+# Save the seed to a text file in the specified path
+file_path = os.path.join(output_folder, 'random_seed.txt')
+with open(file_path, 'w') as f:
+    f.write("Executed on: {}\n".format(time_current))
+    f.write("Execution time: {}\n\n".format(time_str))
+    f.write("Seed: {}\n\n".format(seed))
+    f.write("No. of realizations: {}\n\n".format(no_realizations))
+
+
+# Once the files are moved to the train and validation folders, delete them from output
+file_list = os.listdir(output_folder)   # Get a list of all files in the folder
+# Iterate through the files and delete the CSV files
+for file_name in file_list:
+    if file_name.endswith('.csv'):
+        file_path = os.path.join(output_folder, file_name)
+        os.remove(file_path)
