@@ -2,8 +2,8 @@ import os
 import shutil
 import numpy as np
 
-
-# Split data into train and validation set.
+# Split data into train and validation set
+# From Bruno's randomlayers
 def split_data(data_path, train_folder, validation_folder, train_size, shuffle=True):
 
     if not os.path.isdir(train_folder):

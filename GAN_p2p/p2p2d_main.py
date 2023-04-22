@@ -1,33 +1,24 @@
 import os
 import time
-from datetime import datetime
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
-from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data, IC_normalization
-from functions.p2p_discriminator_architecture import define_discriminator_512x32, define_discriminator
+from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
+from functions.p2p_discriminator_architecture import define_discriminator_512x32
 from functions.p2p_generator_architecture import define_generator
 from functions.p2p_gan_architecture import define_gan
 from functions.p2p_train_architecture import train
-
-
-# Resizing images, if needed
-SIZE_X = 512
-SIZE_Y = 32
-no_rows = SIZE_Y
-no_cols = SIZE_X
 
 ########################################################################################################################
 #   PATHS
 ########################################################################################################################
 # For DelftBlue un-comment this...
-#path_data = r'/scratch/fcamposmontero/databases/512x32_2k'
-#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
+path_data = r'/scratch/fcamposmontero/databases/512x32/train'
+path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
 
 # For local run un-comment this...
-path_data = 'C:\\inpt\\synthetic_data\\512x32'
-path_results = r'C:\inpt\GAN_p2p\results\test'
+#path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
+#path_results = r'C:\inpt\GAN_p2p\results\test'
 
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
@@ -35,8 +26,14 @@ results_dir_path = os.path.join(path_results, 'results_summary.txt')
 time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
 ########################################################################################################################
-#   CHOOSE THE EPOCHS AND MISSING RATE
+#   CHOOSE THE  GEOMETRY, EPOCHS AND MISSING RATE
 ########################################################################################################################
+
+# Resizing images, if needed
+SIZE_X = 512
+SIZE_Y = 32
+no_rows = SIZE_Y
+no_cols = SIZE_X
 
 #miss_rate = 0.9868
 #min_distance = 51
@@ -51,61 +48,52 @@ n_epochs = 4
 #   PROCESS THE DATA AND DEFINE THE MODELS
 ########################################################################################################################
 
-# Capture training image info as a list
+# Create empty containers for the target and source images
 tar_images = []
-
-# Capture mask/label info as a list
 src_images = []
 
+# Read all the CSV files (cross-sections)
 all_csv = read_all_csv_files(path_data)
+# Generate the CPT-like data from the cross-sections
 missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
 no_samples = len(all_csv)
 
+# Reshape into matrix of the appropriate size for the cross-section
 missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
 full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
-
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
-# define input shape based on the loaded dataset
+# Define input shape based on the loaded dataset
 image_shape = src_images.shape[1:]
 
-# define the models
+# Define the models
 d_model = define_discriminator_512x32(image_shape)
 g_model = define_generator(image_shape)
-
-# define the composite model
 gan_model = define_gan(g_model, d_model, image_shape)
 
-# Define data
-# load and prepare training images
+# Format the data to use in the models
 data = [src_images, tar_images]
 
-# Preprocess data to change input range to values between -1 and 1
-# This is because the generator uses tanh activation in the output layer
-# And tanh ranges between -1 and 1
-#dataset = preprocess_data(data)
+# Normalize the data to [-1 to 1]
 dataset = IC_normalization(data)
 
 
-#################################################################################################################
+########################################################################################################################
 #   TRAIN THE GAN
-#################################################################################################################
+########################################################################################################################
+time_start = time.time()    # Start the timer
 
-time_start = time.time() # start the timer
-
+# Call the train function
 train(d_model, g_model, gan_model, dataset, n_epochs, n_batch=1)
-# Reports parameters for each batch (total 1600) for each epoch.
-# For 10 epochs we should see 16000
 
-time_end = time.time() # End the timer
-# Execution time of the model
+time_end = time.time()      # End the timer
 execution_time = abs(time_start - time_end) # Calculate the run time
 
 
-#################################################################################################################
+########################################################################################################################
 #   GENERATE THE SUMMARY OF THE MODEL
-#################################################################################################################
+########################################################################################################################
 # Format time taken to run into> Hours : Minutes : Seconds
 hours = int(execution_time // 3600)
 minutes = int((execution_time % 3600) // 60)

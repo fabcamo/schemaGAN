@@ -19,13 +19,13 @@ seed = np.random.randint(20220412, 20230412)
 # Set the seed for NumPy's random number generator
 np.random.seed(seed)
 
-no_realizations = 10     # number of realizations to generate
+no_realizations = 200     # number of realizations to generate
 train_size = 0.9
 
 
 ##### MAIN DIMENSION VARIABLES ######################################################################################
 x_max = 512             # length (x) of the model
-z_max = 64              # depth (z) of the model
+z_max = 32              # depth (z) of the model
 # Model coordinates
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates
 z_coord = np.arange(0, z_max, 1)       # array of z coordinates

@@ -52,7 +52,7 @@ def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, maeR_hist, maeF_his
     ax2.set_xlabel('Epochs')
     ax2.set_xlim([0, n_epochs])
     ax1.set_ylabel('Loss')
-    ax1.set_ylim([0, 4])
+    ax1.set_ylim([0, 6])
     # add grid lines
     #ax1.grid(True)
     #ax2.grid(True)
@@ -166,12 +166,9 @@ def plot_images_error(src_img, gen_img, tar_img):
 
 
 
-
-
-
-
-
-
+########################################################################################################################
+#   OLD SCRIPTS
+########################################################################################################################
 
 def plot_images(src_img, gen_img, tar_img):
     images = np.vstack((src_img, gen_img, tar_img))
@@ -211,23 +208,7 @@ def plot_images(src_img, gen_img, tar_img):
         cbar.locator = matplotlib.ticker.MaxNLocator(nbins=6)
         cbar.update_ticks()
 
-
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # create a line plot of loss for the gan and save to file
