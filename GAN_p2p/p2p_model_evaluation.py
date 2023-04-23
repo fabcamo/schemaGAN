@@ -11,13 +11,13 @@ from functions.p2p_summary import plot_images_error
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
 # For DelftBlue
-path_data = r'/scratch/fcamposmontero/databases/512x32/validation'
-path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000_2/model_000399.h5'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000_validation'
+#path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
+#path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e500_s2000_2/model_000399.h5'
+#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e500_s2000_2/validation'
 # For local
-#path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
-#path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\r07_512x32_5\\model_000200.h5'
-#path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test\\model_000004.h5'
+path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
 
 
 ########################################################################################################################
@@ -29,8 +29,8 @@ SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 # Choose missing rate
-miss_rate = 0.90
-min_distance = 6
+miss_rate = 0.95
+min_distance = 10
 
 ########################################################################################################################
 
@@ -57,8 +57,10 @@ dataset = IC_normalization(data)
 # Load the model
 model = load_model(path_to_model_to_evaluate)
 
-# Create the container for the MAE errors
+# Create the container for the MAE, MSE, RMSE
 mae_list = list()
+mse_list = list()
+rmse_list = list()
 
 for i in range(len(input_img)):
     # Choose a cross-section to run through the generator
@@ -70,9 +72,15 @@ for i in range(len(input_img)):
     # Generate image from source
     gen_image = model.predict(src_image)
 
-    # Calculate the Mean absolute error between the target image and the generated one
-    mae = np.mean(np.absolute(tar_image - gen_image))
+    # Calculate the Mean Absolute Error (MAE) between the target image and the generated one
+    mae = np.mean(np.abs(tar_image - gen_image))
     mae_list.append(mae)
+    # Calculate the Mean Squared Error (MSE)
+    mse = np.mean(np.square(tar_image - gen_image))
+    mse_list.append(mse)
+    # Calculate the Root Mean Squared Error (RMSE)
+    rmse = np.sqrt(mse)
+    rmse_list.append(rmse)
 
     plot_images_error(src_image, gen_image, tar_image)
     plot_results_name = os.path.join(path_results, 'validation_{:06d}.png'.format(i + 1))
@@ -84,7 +92,7 @@ for i in range(len(input_img)):
 mae_mean = np.mean(mae_list)
 
 # Save results to dataframe and CSV file
-df = pd.DataFrame({'MAE': mae_list})
+df = pd.DataFrame({'MAE': mae_list, 'MSE': mse_list, 'RMSE': rmse_list})
 csv_file = os.path.join(path_results, 'mae_validation.csv')
 df.to_csv(csv_file, index=False)
 print('>Saved MAE list')

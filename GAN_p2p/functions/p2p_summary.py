@@ -2,21 +2,13 @@ import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 
 from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
 from functions.p2p_process_data import reverse_normalization, reverse_IC_normalization
 
-# For DelftBlue, un-comment this
-#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
-
-# For local run, un-comment this
-path_results = r'C:\inpt\GAN_p2p\results\test'
-
 
 # Save the generator model and check how good the generated image looks.
-def summarize_performance(step, g_model, dataset, n_samples=1):
+def summarize_performance(step, g_model, dataset, path_results):
     print('... Saving a summary')
 
     [src_image, tar_image], _ = generate_real_samples_fix(dataset, 1, 1)
@@ -36,7 +28,8 @@ def summarize_performance(step, g_model, dataset, n_samples=1):
 
 # create a line plot of loss for the gan and save to file
 def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, maeR_hist, maeF_hist, maeR_epoch_hist,
-                 maeF_epoch_hist, accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist, step, n_epochs, iterations):
+                 maeF_epoch_hist, accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist,
+                 step, n_epochs, iterations, path_results):
 
     # create figure with two subplots for loss in generator and discriminator
     fig, ax1 = plt.subplots(figsize=(10, 4))

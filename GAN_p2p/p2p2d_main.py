@@ -13,12 +13,12 @@ from functions.p2p_train_architecture import train
 #   PATHS
 ########################################################################################################################
 # For DelftBlue un-comment this...
-path_data = r'/scratch/fcamposmontero/databases/512x32/train'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
+#path_data = r'/scratch/fcamposmontero/databases/512x32/train'
+#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
 
 # For local run un-comment this...
-#path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
-#path_results = r'C:\inpt\GAN_p2p\results\test'
+path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
+path_results = r'C:\inpt\GAN_p2p\results\test'
 
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
@@ -85,7 +85,7 @@ dataset = IC_normalization(data)
 time_start = time.time()    # Start the timer
 
 # Call the train function
-train(d_model, g_model, gan_model, dataset, n_epochs, n_batch=1)
+train(path_results, d_model, g_model, gan_model, dataset, n_epochs, n_batch=1)
 
 time_end = time.time()      # End the timer
 execution_time = abs(time_start - time_end) # Calculate the run time

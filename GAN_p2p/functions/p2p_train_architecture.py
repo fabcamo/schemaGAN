@@ -5,25 +5,18 @@ import matplotlib.pyplot as plt
 from functions.p2p_summary import summarize_performance, plot_history
 from functions.p2p_generate_samples import generate_real_samples, generate_fake_samples
 
-# For DelftBlue, un-comment this...
-#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s2000'
-
-# For local run, un-comment this...
-path_results = r'C:\inpt\GAN_p2p\results\test'
-
-
 
 # Train pix2pix models
-def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
+def train(path_results, d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     # determine the output square shape of the discriminator
     n_patch = d_model.output_shape[1]
 
-    # unpack dataset
+    # Unpack dataset
     trainA, trainB = dataset
 
-    # calculate the number of batches per training epoch
+    # Calculate the number of batches per training epoch
     bat_per_epo = int(len(trainA) / n_batch)
-    # calculate the number of training iterations
+    # Calculate the number of training iterations
     iterations = bat_per_epo * n_epochs
 
     # Create empty containers for the losses and accuracy
@@ -86,10 +79,11 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
         # Summarize model performance
         summarize_every_n_epochs = 1
         if i % summarize_every_n_epochs == 0:
-            summarize_performance(i, g_model, dataset)
+            summarize_performance(i, g_model, dataset, path_results)
             plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
                          maeR_hist, maeF_hist, maeR_epoch_hist, maeF_epoch_hist,
-                         accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist, i, n_epochs, iterations)
+                         accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist,
+                         i, n_epochs, iterations, path_results)
 
 
     # Save the generator model
@@ -97,13 +91,13 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
     g_model.save(final_generator_path)
     plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist,
                  maeR_hist, maeF_hist, maeR_epoch_hist, maeF_epoch_hist,
-                 accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist, i, n_epochs, iterations)
+                 accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist,
+                 i, n_epochs, iterations, path_results)
 
     # Save results to dataframe and CSV file
     df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'mae_real': maeR_hist,
                        'mae_fake': maeF_hist, 'acc_real': accR_hist, 'acc_fake': accF_hist})
 
-    #csv_file = r'/scratch/fcamposmontero/p2p_512x32_results/results_loss.csv'
     csv_file = os.path.join(path_results, 'results_loss.csv')
     df.to_csv(csv_file, index=False)
 
