@@ -110,26 +110,32 @@ def plot_history(d_hist, g_hist, g_epoch_hist, d_epoch_hist, maeR_hist, maeF_his
 
 def plot_images_error(src_img, gen_img, tar_img):
 
+    # Scale from [-1,1] to [0,255]
+    src_img = reverse_IC_normalization(src_img)
+    tar_img = reverse_IC_normalization(tar_img)
+    gen_img = reverse_IC_normalization(gen_img)
+
     # Calculate the Mean absolute error between the target image and the generated one
-    mae = np.mean(np.absolute(tar_img - gen_img))
+    mae = np.mean(np.abs(tar_img - gen_img))
 
     # Stack all the images
     images = np.vstack((src_img, gen_img, tar_img, np.abs(gen_img-tar_img)))
 
-    # Scale from [-1,1] to [0,255]
-    images = reverse_IC_normalization(images)
     # Set plot titles
     titles = ['Input', 'Output-Generated', 'Original', f'Mean absolute error: {mae:.2f}']
-    ranges_vmin_vmax = [[0, 4.5], [0, 4.5], [0, 4.5], [0, 4.5]]
+    # Set the cbar range
+    ranges_vmin_vmax = [[0, 4.5], [0, 4.5], [0, 4.5], [0, 1]]
+    # Set the cbar titles
+    cbar_titles = ['IC', 'IC', 'IC', 'IC error']
 
     # Create a figure with a size of 10 inches by 4 inches
     fig = plt.figure(figsize=(10, 15))
-
     # plot images row by row
     for i in range(len(images)):
         # define subplot
         ax = fig.add_subplot(4, 1, 1 + i)
         im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
+        #im = ax.imshow(images[i, :, :, 0], cmap='viridis')
         # set title with fontsize
         ax.set_title(titles[i], fontsize=10)
         # set tick_params with fontsize
@@ -144,7 +150,7 @@ def plot_images_error(src_img, gen_img, tar_img):
         # add colorbar
         cbar = fig.colorbar(im, ax=ax, orientation='horizontal', pad=0.16, shrink=0.7)
         cbar.ax.tick_params(labelsize=9)
-        cbar.set_label('IC', fontsize=9)
+        cbar.set_label(cbar_titles[i], fontsize=9)
         cbar.locator = matplotlib.ticker.MaxNLocator(nbins=6)
         cbar.update_ticks()
 

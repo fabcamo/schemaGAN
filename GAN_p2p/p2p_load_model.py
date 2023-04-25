@@ -7,7 +7,7 @@ from functions.p2p_summary import plot_images, plot_images_error
 from numpy.random import randn
 
 # Path the the data
-path = 'C:\\inpt\\synthetic_data\\512x32'
+path = 'C:\\inpt\\synthetic_data\\512x32\\validation'
 
 # Images size
 SIZE_X = 512
@@ -20,7 +20,7 @@ miss_rate = 0.90
 min_distance = 6
 
 # Choose a cross-section to run through the generator
-cross_section_number = 91
+cross_section_number = 2
 
 # Load the data
 all_csv = read_all_csv_files(path)
@@ -35,19 +35,6 @@ full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
-# Plot the original data and the resulting CPT-like data
-n_samples = 1
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + i)
-    #plt.axis('off')
-    plt.imshow(src_images[i], cmap='viridis')
-# plot target image
-for i in range(n_samples):
-    plt.subplot(2, n_samples, 1 + n_samples + i)
-    #plt.axis('off')
-    plt.imshow(tar_images[i], cmap='viridis')
-plt.show()
-plt.close()
 
 # Create the array of source and target images
 data = [src_images, tar_images]
@@ -56,7 +43,7 @@ data = [src_images, tar_images]
 dataset = IC_normalization(data)    # new one
 
 # Load the model
-model = load_model('C:\\inpt\\GAN_p2p\\results\\r05_512x32_10\\generators\\model_000099.h5')
+model = load_model('C:\\inpt\\GAN_p2p\\results\\test\\model_000380.h5')
 
 # X1 as input images and X2 as original images
 [input_img, orig_img] = dataset
@@ -68,8 +55,6 @@ src_image, tar_image = input_img[ix], orig_img[ix]
 
 # generate image from source
 gen_image = model.predict(src_image)
-
-print(np.abs(tar_image-gen_image))
 
 # plot all three images> Input, generated and original
 plot_images_error(src_image, gen_image, tar_image)

@@ -11,13 +11,13 @@ from functions.p2p_summary import plot_images_error
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
 # For DelftBlue
-#path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
-#path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e500_s2000_2/model_000399.h5'
-#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e500_s2000_2/validation'
+path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
+path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s8000/model_000099.h5'
+path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s8000/validation'
 # For local
-path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
-path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test\\model_000004.h5'
-path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+#path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+#path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test\\model_000004.h5'
+#path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
 
 
 ########################################################################################################################
