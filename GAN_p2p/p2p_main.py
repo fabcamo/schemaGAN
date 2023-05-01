@@ -14,11 +14,11 @@ from functions.p2p_train_architecture import train
 ########################################################################################################################
 # For DelftBlue un-comment this...
 path_data = r'/scratch/fcamposmontero/databases/512x32/train'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s8000'
+path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e450_s8000'
 
 # For local run un-comment this...
-#path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
-#path_results = r'C:\inpt\GAN_p2p\results\test'
+path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
+path_results = r'C:\inpt\GAN_p2p\results\test'
 
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
@@ -37,11 +37,11 @@ no_cols = SIZE_X
 
 #miss_rate = 0.9868
 #min_distance = 51
-miss_rate = 0.95
-min_distance = 10
+miss_rate = 0.99
+min_distance = 51
 
 # Number of epochs
-n_epochs = 4
+n_epochs = 450
 
 
 ########################################################################################################################

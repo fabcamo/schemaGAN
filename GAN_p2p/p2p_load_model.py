@@ -16,8 +16,8 @@ no_rows = SIZE_Y
 no_cols = SIZE_X
 
 # Choose missing rate
-miss_rate = 0.90
-min_distance = 6
+miss_rate = 0.95
+min_distance = 13
 
 # Choose a cross-section to run through the generator
 cross_section_number = 2

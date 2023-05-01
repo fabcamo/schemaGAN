@@ -85,6 +85,13 @@ def train(path_results, d_model, g_model, gan_model, dataset, n_epochs=100, n_ba
                          accR_hist, accF_hist, accR_epoch_hist, accF_epoch_hist,
                          i, n_epochs, iterations, path_results)
 
+            # Save results to dataframe and CSV file
+            df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'mae_real': maeR_hist,
+                               'mae_fake': maeF_hist, 'acc_real': accR_hist, 'acc_fake': accF_hist})
+
+            csv_file = os.path.join(path_results, 'results_per_iter.csv')
+            df.to_csv(csv_file, index=False)
+
 
     # Save the generator model
     final_generator_path = os.path.join(path_results, 'final_generator.h5')
@@ -98,7 +105,7 @@ def train(path_results, d_model, g_model, gan_model, dataset, n_epochs=100, n_ba
     df = pd.DataFrame({'disc_loss': d_hist, 'gen_loss': g_hist, 'mae_real': maeR_hist,
                        'mae_fake': maeF_hist, 'acc_real': accR_hist, 'acc_fake': accF_hist})
 
-    csv_file = os.path.join(path_results, 'results_loss.csv')
+    csv_file = os.path.join(path_results, 'results_final.csv')
     df.to_csv(csv_file, index=False)
 
 

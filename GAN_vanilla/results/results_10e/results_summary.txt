@@ -1,6 +1,0 @@
-Executed on: 21/03/2023 02:36:58
-Time taken: 00:26:33
-The shape of a single input image is: (28, 28)
-Number of epochs is: 10
-The total number of training images is: (70000, 28, 28)
-Running TensorFlow with 1 GPU(s)

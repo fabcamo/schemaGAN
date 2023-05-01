@@ -26,3 +26,10 @@ def split_data(data_path, train_folder, validation_folder, train_size, shuffle=T
     for i in indexes_validation:
         shutil.copy(os.path.join(data_path, files[i]), os.path.join(validation_folder, files[i]))
 
+
+
+'''
+output_folder = 'C:\\inpt\\synthetic_data\\512x32_100k'
+# Split the data into train and validation
+split_data(output_folder, os.path.join(output_folder, "train"),
+           os.path.join(output_folder, "./validation"), train_size=0.8)

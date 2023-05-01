@@ -13,8 +13,8 @@ from tensorflow.keras.optimizers import Adam
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-results_dir_path = r'C:\inpt\GAN_vanilla\results\tets'
-#results_dir_path = r'/scratch/fcamposmontero/vGAN_results'
+#results_dir_path = r'C:\inpt\GAN_vanilla\results\test'
+results_dir_path = r'/scratch/fcamposmontero/vGAN_res_sig'
 
 
 
@@ -34,8 +34,9 @@ def discriminator_model(input_shape):
     model.add(Dense(units=1, activation='sigmoid'))
 
     # Compile the model
-    opt = Adam(lr=0.0002, beta_1=0.5)
+    opt = Adam(learning_rate=0.0002, beta_1=0.5)
     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+    print(model.summary())
     return model
 
 
@@ -52,7 +53,7 @@ def generator_model(latent_dim):
     model.add(Dense(units=256, activation=LeakyReLU(alpha=0.2)))
     model.add(Dense(units=512, activation=LeakyReLU(alpha=0.2)))
     # Final dense layer with units = n_nodes to be able to reshape as 28x28
-    model.add(Dense(units=n_nodes, activation=LeakyReLU(alpha=0.2)))
+    model.add(Dense(units=n_nodes, activation='sigmoid'))
 
     # Reshape from 1D to 2D to apply Conv2D
     model.add(Reshape((28, 28, 1)))
@@ -72,7 +73,7 @@ def GAN_model(generator, discriminator):
     model.add(discriminator) # Add the Discriminator
 
     # Compile the model
-    opt = Adam(lr=0.0002, beta_1=0.5)
+    opt = Adam(learning_rate=0.0002, beta_1=0.5)
     model.compile(loss='binary_crossentropy', optimizer=opt)
     return model
 
@@ -86,11 +87,11 @@ def load_data():
     return all_images, all_labels
 
 
-# Normalize the data between -1 & 1
+# Normalize the data between -0 & 1
 def normalize_data():
     all_data = load_data() # Grab all the data from calling the load_data function
     only_images = all_data[0].astype("float32") # Transform as type> float32
-    norm_image = (only_images / 127.5) - 1 # Normalize between -1 and 1
+    norm_image = (only_images / 255) # Normalize between 0 and 1 for sigmiod activation
     return norm_image
 
 
@@ -121,20 +122,14 @@ def generate_fake_samples(generator, latent_dim, how_many):
     labels = np.zeros((how_many, 1)) # Create the labels as> 0 as these samples are fake.
     return fake_images, labels
 
-# Generate noise and plot it as an image
-noise = generate_noise_vectors(100, 1) # Generating a single noise vector
-plt.imshow(noise.reshape(10, 10), cmap='gray')
-plt.axis('off')
-plt.show()
-
 
 # Pull the images and models for every 'X' amount of epochs
 def summarize_performance(step, g_model, latent_dim, n_samples=25):
     # Generate a batch of fake samples
     X_fakeB, _ = generate_fake_samples(g_model, latent_dim, n_samples)
 
-    # Scale all pixels from [-1,1] to [0,1]
-    X_fakeB = (X_fakeB + 1) / 2.0
+    # Scale all pixels from [0, 1] to [0, 255]
+    X_fakeB = X_fakeB * 255
 
     # Plot images from the training dataset
     fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(8, 8))

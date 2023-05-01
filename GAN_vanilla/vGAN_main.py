@@ -12,8 +12,8 @@ from vGAN_models import load_data, normalize_data, train, generate_noise_vectors
 
 
 # Define the PATH
-path = r'C:\inpt\GAN_vanilla\results\tets'
-#path = r'/scratch/fcamposmontero/vGAN_results'
+#path = r'C:\inpt\GAN_vanilla\results\test'
+path = r'/scratch/fcamposmontero/vGAN_res_sig'
 
 # Define the path and the results name file
 results_file_path = os.path.join(path, 'results_summary.txt')
@@ -31,7 +31,7 @@ no_channels = 1         # number of channels in the image
 latent_dim = 128        # user defined number as input to the generator
 n_samples = 25          # number of samples
 
-n_epochs = 20         # number of epochs
+n_epochs = 2000         # number of epochs
 n_batch = 128         # number of samples in batch
 
 # Get the shape of the input data
@@ -54,6 +54,7 @@ gan_model = GAN_model(generator, discriminator)
 
 # Load the dataset of images
 dataset = normalize_data()
+
 
 # Train the model
 train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs, n_batch)
@@ -114,15 +115,13 @@ def show_plot(examples, n):
     plt.show()
 
 # Load model
-model = load_model('C:\\inpt\\GAN_vanilla\\results\\tets\\mnist_final_generator.h5')  # Model trained for 100 epochs
+model = load_model('C:\\inpt\\GAN_vanilla\\results\\vGAN_res_sig\\mnist_final_generator.h5')  # Model trained for 100 epochs
 #model = load_model('/scratch/fcamposmontero/vGAN_results/mnist_final_generator.h5')  # Model trained for 100 epochs
 
 # Generate images
 latent_points = generate_noise_vectors(latent_dim, 25)  # Latent dim and n_samples
 # Generate images
 X = model.predict(latent_points)
-# Scale from [-1,1] to [0,1]
-X = (X + 1) / 2.0
 
 X = (X * 255).astype(np.uint8)
 
