@@ -33,3 +33,4 @@ output_folder = 'C:\\inpt\\synthetic_data\\512x32_100k'
 # Split the data into train and validation
 split_data(output_folder, os.path.join(output_folder, "train"),
            os.path.join(output_folder, "./validation"), train_size=0.8)
+'''

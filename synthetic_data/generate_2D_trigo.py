@@ -116,6 +116,14 @@ while counter < no_realizations:
 split_data(output_folder, os.path.join(output_folder, "train"),
            os.path.join(output_folder, "./validation"), train_size)
 
+# Once the files are moved to the train and validation folders, delete them from output
+file_list = os.listdir(output_folder)   # Get a list of all files in the folder
+# Iterate through the files and delete the CSV files
+for file_name in file_list:
+    if file_name.endswith('.csv'):
+        file_path = os.path.join(output_folder, file_name)
+        os.remove(file_path)
+
 time_end = time.time() # End the timer
 # Execution time of the model
 execution_time = abs(time_start - time_end) # Calculate the run time
@@ -133,11 +141,3 @@ with open(file_path, 'w') as f:
     f.write("Seed: {}\n\n".format(seed))
     f.write("No. of realizations: {}\n\n".format(no_realizations))
 
-
-# Once the files are moved to the train and validation folders, delete them from output
-file_list = os.listdir(output_folder)   # Get a list of all files in the folder
-# Iterate through the files and delete the CSV files
-for file_name in file_list:
-    if file_name.endswith('.csv'):
-        file_path = os.path.join(output_folder, file_name)
-        os.remove(file_path)
