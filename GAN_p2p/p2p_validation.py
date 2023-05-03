@@ -11,13 +11,13 @@ from functions.p2p_summary import plot_images_error
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
 # For DelftBlue
-#path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
-#path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s8000/model_000099.h5'
-#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s8000/validation'
+path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
+path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010'
+path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010/validation'
 # For local
-path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
-path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
-path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+#path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+#path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
+#path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
 
 
 ########################################################################################################################
@@ -60,8 +60,17 @@ mae_mean_list = list()
 mse_mean_list = list()
 rmse_mean_list = list()
 
-# Grab all the .h5 files
-model_files = [f for f in os.listdir(path_to_model_to_evaluate) if f.endswith('.h5')]
+# Use os.listdir to get a list of all the files in the directory
+all_files = os.listdir(path_to_model_to_evaluate)
+# Use list comprehension to filter out only the files that end with '.h5'
+model_file = [file for file in all_files if file.endswith('.h5')]
+# Use a lambda function to extract the XXXXXX part of the filename and sort the files by it
+model_file = sorted(model_file, key=lambda x: int(x.split('_')[1].split('.')[0]))
+# Use list slicing to extract every 5th file, starting from the first one
+model_file = model_file[::5]
+# Print the resulting list
+print(model_file)
+
 
 for model_file in model_files:
     model_path = os.path.join(path_to_model_to_evaluate, model_file)
@@ -148,7 +157,7 @@ plt.xlabel('Epochs')
 plt.ylabel('Error statistics')
 plt.legend(loc='upper right')
 plt.savefig(os.path.join(path_results, 'validation_error.png'), dpi=300, bbox_inches='tight')
-plt.show()
+#plt.show()
 
 
 
