@@ -63,13 +63,13 @@ rmse_mean_list = list()
 # Use os.listdir to get a list of all the files in the directory
 all_files = os.listdir(path_to_model_to_evaluate)
 # Use list comprehension to filter out only the files that end with '.h5'
-model_file = [file for file in all_files if file.endswith('.h5')]
+model_files = [file for file in all_files if file.endswith('.h5')]
 # Use a lambda function to extract the XXXXXX part of the filename and sort the files by it
-model_file = sorted(model_file, key=lambda x: int(x.split('_')[1].split('.')[0]))
+model_files = sorted(model_files, key=lambda x: int(x.split('_')[1].split('.')[0]))
 # Use list slicing to extract every 5th file, starting from the first one
-model_file = model_file[::5]
+model_files = model_files[::5]
 # Print the resulting list
-print(model_file)
+print(model_files)
 
 
 for model_file in model_files:

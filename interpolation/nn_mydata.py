@@ -32,7 +32,9 @@ no_samples = len(all_csv)
 # Reshape the data and store it
 missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
 full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
+# Target images> the original synthetic data
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
+# Source images> the input "cpt-like" data
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
 
@@ -46,5 +48,5 @@ src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
 
 # Create a figure with a size of 10 inches by 4 inches
-plt.imshow(tar_images[0, :, :, 0], cmap='viridis')
+plt.imshow(src_images[0, :, :, 0], cmap='viridis')
 plt.show()
