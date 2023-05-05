@@ -11,13 +11,13 @@ from functions.p2p_summary import plot_images_error
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
 # For DelftBlue
-path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
-path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010/validation'
+#path_validation = r'/scratch/fcamposmontero/databases/512x32/validation'
+#path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010'
+#path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010/validation'
 # For local
-#path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
-#path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
-#path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+path_validation = 'C:\\inpt\\synthetic_data\\test'
+path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
+path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
 
 
 ########################################################################################################################
@@ -29,8 +29,8 @@ SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 # Choose missing rate
-miss_rate = 0.95
-min_distance = 10
+miss_rate = 0.99
+min_distance = 51
 
 ########################################################################################################################
 

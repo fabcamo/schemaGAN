@@ -27,8 +27,8 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
 
     # Iterate through each random field in the list
     for counter, rf in enumerate(dfs):
-        data_z = []     # Create an empty list to store data for each value of x
-        grouped = rf.groupby("z")   # Group the rows of the random field by the value of x
+        data_z = []     # Create an empty list to store data for each value of z
+        grouped = rf.groupby("z")   # Group the rows of the random field by the value of z
 
         # Iterate through each group
         for name, group in grouped:
