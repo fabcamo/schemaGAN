@@ -1,34 +1,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsRegressor
+from scipy.spatial import cKDTree
+from scipy import interpolate
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
 
 
-def nn_interpolate(coords, data_values, grid, n_neighbors=1):
+
+# From DataFusionTools> nearest neighbor interpolation
+def nearest_interpolation(training_points, training_data, prediction_points):
     """
-    Perform nearest neighbor interpolation to predict values on a 2D grid.
-
-    Inputs:
-    - X: A numpy array of shape (N, 2) representing the input data points (coordinates), where N is the number of points.
-    - z: A numpy array of shape (N,) representing the output values (pixel values) for the input data points.
-    - grid: A 2D numpy grid array with the mesh to be filled with the interpolation
-    - n_neighbors: An integer representing the number of nearest neighbors to use for interpolation (default 1).
-
-    Outputs:
-    - Z: A numpy array of the shape of the 2D grid representing the predicted output values.
+    Define the KDtree
+    This interpolation is done with `SciPy interpolate.NearestNDInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.NearestNDInterpolator.html>`_.
+    training_points: array with the training points
+    training_data: data at the training points
+    :return:
     """
+    # assign to variables
+    training_points = training_points  # training points
+    training_data = training_data  # data at the training points
+    # define interpolation function
+    interpolating_function = interpolate.NearestNDInterpolator(
+        training_points, training_data
+    )
+    # create KDtree
+    tree = cKDTree(training_points)
 
-    # Fit k-nearest neighbors model on input data
-    knn = KNeighborsRegressor(n_neighbors=n_neighbors)
-    knn.fit(coords, data_values)
+    # compute closest distance and index of the closest index
+    dist, idx = tree.query(prediction_points)
+    zn = []
+    # create interpolation for every point
+    for i in range(len(prediction_points)):
+        # interpolate
+        zn.append(pixel_values[idx[i]])
 
-    # Predict output for each point on the grid
-    results_grid = knn.predict(grid)
+    zn = np.array(zn)
 
-    # Reshape output into 2D grid
-    interpolation_values = results_grid.reshape(no_rows, no_cols)
+    return zn
 
-    return interpolation_values
 
 ########################################################################################################################
 
@@ -89,7 +97,8 @@ pixel_values = np.array(pixel_values)
 ########################################################################################################################
 
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = nn_interpolate(coords, pixel_values, grid, n_neighbors=3)
+nn_results = nearest_interpolation(coords, pixel_values, grid)
+nn_results = np.reshape(nn_results,(no_rows, no_cols))
 
 
 ########################################################################################################################
@@ -126,6 +135,6 @@ mae_mean = np.mean(mae)
 
 # Plot the absolute difference
 plt.imshow(mae, cmap='viridis')
-plt.title(f"Mean Pixel Value: {round((mae_mean),2)}")
+plt.title(f"Mean absolute error: {round((mae_mean),3)}")
 plt.show()
 
