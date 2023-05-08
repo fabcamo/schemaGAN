@@ -7,31 +7,37 @@ from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_ra
 
 
 # From DataFusionTools> nearest neighbor interpolation
-def nearest_interpolation(training_points, training_data, prediction_points):
+def idw_interpolation(training_points, training_data, prediction_points):
     """
-    Define the KDtree
-    This interpolation is done with `SciPy interpolate.NearestNDInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.NearestNDInterpolator.html>`_.
-    training_points: array with the training points
-    training_data: data at the training points
-    :return:
+    Inverse distance interpolator
     """
+    nb_near_points: int = 6
+    power: float = 1.0
+    tol: float = 1e-9
+    var: Union[List, None, np.array] = None
+
     # assign to variables
-    training_points = training_points  # training points
-    training_data = training_data  # data at the training points
-    # define interpolation function
-    interpolating_function = interpolate.NearestNDInterpolator(
-        training_points, training_data
-    )
-    # create KDtree
+    training_points = np.array(training_points)  # training points
+    training_data = np.array(training_data)  # data at the training points
+
+    # compute Euclidean distance from grid to training
     tree = cKDTree(training_points)
 
-    # compute closest distance and index of the closest index
-    dist, idx = tree.query(prediction_points)
+    # get distances and indexes of the closest nb_points
+    dist, idx = tree.query(prediction_points, nb_near_points)
+    dist += tol  # to overcome division by zero
     zn = []
+
     # create interpolation for every point
     for i in range(len(prediction_points)):
+        # compute weights
+        data = training_data[idx[i]]
+
         # interpolate
-        zn.append(pixel_values[idx[i]])
+        zn.append(
+            np.sum(data.T / dist[i] ** power)
+            / np.sum(1.0 / dist[i] ** power)
+        )
 
     zn = np.array(zn)
 
@@ -97,7 +103,7 @@ pixel_values = np.array(pixel_values)
 ########################################################################################################################
 
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = nearest_interpolation(coords, pixel_values, grid)
+nn_results = idw_interpolation(coords, pixel_values, grid)
 nn_results = np.reshape(nn_results,(no_rows, no_cols))
 
 
@@ -106,7 +112,7 @@ nn_results = np.reshape(nn_results,(no_rows, no_cols))
 # Plot input data and interpolated output
 fig, axs = plt.subplots(nrows=2, figsize=(10,10))
 # Figure 1> a scatter of the input data (x,y > col,row)
-axs[0].scatter(coords[:,1], coords[:,0], c=pixel_values)
+axs[0].scatter(coords[:,1], coords[:,0], c=pixel_values, marker="v")
 axs[0].set_title('Input data')
 # Figure 2> the interpolated grid
 axs[1].set_title('Interpolated output')
@@ -120,7 +126,7 @@ axs[1].set_yticks(np.arange(0, no_rows+1, 5))
 axs[0].invert_yaxis()
 axs[1].invert_yaxis()
 # Plot the input pixels on top of the interpolation results as black dots
-axs[1].scatter(coords[:, 1], coords[:, 0], c='black', s=30)
+axs[1].scatter(coords[:, 1], coords[:, 0], c='black', s=30, marker="v")
 # Show and/or save the plot
 plt.show()
 #fig.savefig('test_save.png')

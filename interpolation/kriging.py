@@ -1,46 +1,38 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.spatial import cKDTree
-from scipy import interpolate
+import pykrige
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
 
 
 
-# From DataFusionTools> nearest neighbor interpolation
-def nearest_interpolation(training_points, training_data, prediction_points):
-    """
-    Define the KDtree
-    This interpolation is done with `SciPy interpolate.NearestNDInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.NearestNDInterpolator.html>`_.
-    training_points: array with the training points
-    training_data: data at the training points
-    :return:
-    """
+# From DataFusionTools> kriging interpolation
+def kriging_interpolation(training_points, training_data, prediction_points):
     # assign to variables
-    training_points = training_points  # training points
-    training_data = training_data  # data at the training points
-    # define interpolation function
-    interpolating_function = interpolate.NearestNDInterpolator(
-        training_points, training_data
+    interpolating_function = pykrige.ok.OrdinaryKriging(
+        training_points.T[0],
+        training_points.T[1],
+        training_data,
+        variogram_model='gaussian',
+        variogram_parameters={
+            "nugget": 40819929,
+            "range": 51,
+            "sill": 38020807
+        },
+        verbose=False,
+        enable_plotting=False,
+        nlags=20,
     )
-    # create KDtree
-    tree = cKDTree(training_points)
 
-    # compute closest distance and index of the closest index
-    dist, idx = tree.query(prediction_points)
-    zn = []
-    # create interpolation for every point
-    for i in range(len(prediction_points)):
-        # interpolate
-        zn.append(pixel_values[idx[i]])
-
-    zn = np.array(zn)
+    zn, ss = interpolating_function.execute(
+        "points", prediction_points.T[0], prediction_points.T[1]
+    )
 
     return zn
 
 
 ########################################################################################################################
 
-# Path for the data
+# Path the the data
 path = 'C:\\inpt\\synthetic_data\\test'
 
 # Define number of rows and columns in 2D grid
@@ -97,7 +89,7 @@ pixel_values = np.array(pixel_values)
 ########################################################################################################################
 
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = nearest_interpolation(coords, pixel_values, grid)
+nn_results = kriging_interpolation(coords, pixel_values, grid)
 nn_results = np.reshape(nn_results,(no_rows, no_cols))
 
 
