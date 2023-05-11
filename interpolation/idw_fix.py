@@ -1,21 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
-from scipy import interpolate
+from scipy.interpolate import interp1d
+from typing import List, Union
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
 
 np.random.seed(20232023)
 
 # From DataFusionTools> nearest neighbor interpolation
 def idw_interpolation(training_points, training_data, prediction_points):
-
-    nb_near_points: int = 5
-    power: float = 1.0
+    """
+    Inverse distance interpolator
+    """
+    nb_near_points: int = 6
+    power: int = 1
     tol: float = 1e-9
-
-    # assign to variables
-    training_points = np.array(training_points)  # training points
-    training_data = np.array(training_data)  # data at the training points
+    default_cov: float = 10.
 
     # compute Euclidean distance from grid to training
     tree = cKDTree(training_points)
@@ -23,20 +23,83 @@ def idw_interpolation(training_points, training_data, prediction_points):
     # get distances and indexes of the closest nb_points
     dist, idx = tree.query(prediction_points, nb_near_points)
     dist += tol  # to overcome division by zero
-    zn = []
 
-    # create interpolation for every point
-    for i in range(len(prediction_points)):
-        # compute weights
-        data = training_data[idx[i]]
+    dist = np.array(dist).reshape(nb_near_points)
+    idx = np.array(idx).reshape(nb_near_points)
 
-        # interpolate
-        zn.append(
-            np.sum(data.T / dist[i] ** power)
-            / np.sum(1.0 / dist[i] ** power)
-        )
+    # for every dataset
+    point_aver = []
+    point_val = []
+    point_var = []
+    point_depth = []
 
-    zn = np.array(zn)
+    for p in range(nb_near_points):
+        # compute the weights
+        wei = (1. / dist[p] ** power) / np.sum(1. / dist ** power)
+        # if single point
+        if point:
+            point_aver.append(training_data[idx[p]] * wei)
+            point_val.append(training_data[idx[p]])
+        # for multiple points
+        else:
+            point_aver.append(np.log(training_data[idx[p]]) * wei)
+            point_val.append(np.log(training_data[idx[p]]))
+        point_depth.append(depth_data[idx[p]])
+
+    # compute average
+    if point:
+        zn = [np.sum(point_aver)]
+    else:
+        new = []
+        for i in range(nb_near_points):
+            f = interp1d(point_depth[i], point_aver[i], fill_value=(point_aver[i][-1], point_aver[i][0]),
+                         bounds_error=False)
+            new.append(f(depth_prediction))
+        zn = np.sum(np.array(new), axis=0)
+
+    # compute variance
+    if point:
+        for p in range(nb_near_points):
+            # compute the weighs
+            wei = (1. / dist[p] ** power) / np.sum(1. / dist ** power)
+            point_var.append((point_val[p] - zn) ** 2 * wei)
+    else:
+
+        # compute mean
+        new = []
+        # 1. for each nearest point p
+        for i in range(nb_near_points):
+            # 2.  The method first interpolates the training data values onto the prediction depths
+            # using linear interpolation.
+            f = interp1d(point_depth[i], point_val[i], fill_value=(point_val[i][-1], point_val[i][0]),
+                         bounds_error=False)
+            new.append(f(depth_prediction))
+        # compute variance
+        for p in range(nb_near_points):
+            # compute the weights
+            wei = (1. / dist[p] ** power) / np.sum(1. / dist ** power)
+            # compute var
+            # 3.  It then computes the squared difference between the interpolated value new[p] and
+            # the predicted value zn, and multiplies this squared difference by the weight wei for that
+            # training point. This gives the variance contribution for that training point.
+            point_var.append((new[p] - zn) ** 2 * wei)
+    # 4. The variance of the prediction is the sum of the variance contributions
+    # for all the nearest neighbor training points.
+    var = np.sum(np.array(point_var), axis=0)
+
+    # add to variables
+    if point:
+        # update to normal parameters
+        zn = zn
+        var = var
+    else:
+        # update to lognormal parameters
+        zn = np.exp(zn + var / 2)
+        var = np.exp(2 * zn + var) * (np.exp(var) - 1)
+
+    # if only 1 data point is available (var = 0 for all points) -> var is default value
+    if nb_near_points == 1:
+        var = np.full(len(var), (default_cov * np.array(zn)) ** 2)
 
     return zn
 

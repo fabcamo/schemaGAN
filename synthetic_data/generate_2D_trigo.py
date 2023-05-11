@@ -3,7 +3,6 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime
 
 from layers_functions.layer_boundary import layer_boundary
 from layers_functions.generate_rf import generate_rf_group
@@ -14,48 +13,59 @@ time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
 output_folder = 'C:\\inpt\\synthetic_data\\512x32'
 
+########################################################################################################################
+#   GENERATE SEED
+########################################################################################################################
 # Generate a random seed using NumPy
 seed = np.random.randint(20220412, 20230412)
 # Set the seed for NumPy's random number generator
 np.random.seed(seed)
 
-no_realizations = 200     # number of realizations to generate
-train_size = 0.9
 
-
-##### MAIN DIMENSION VARIABLES ######################################################################################
+########################################################################################################################
+#   USER INPUT FOR TRAINING
+########################################################################################################################
+no_realizations = 200   # number of realizations to generate
+train_size = 0.8        # training size
 x_max = 512             # length (x) of the model
 z_max = 32              # depth (z) of the model
-# Model coordinates
+
+
+########################################################################################################################
+#   GEOMETRY PRE-PROCESS
+########################################################################################################################
 x_coord = np.arange(0, x_max, 1)       # array of x coordinates
 z_coord = np.arange(0, z_max, 1)       # array of z coordinates
 xs, zs = np.meshgrid(x_coord, z_coord, indexing="ij")   # 2D mesh of coordinates x,z
-############################################################################################################
 
 
-time_start = time.time() # start the timer
+########################################################################################################################
+#   GENERATE THE SYNTHETIC DATA
+########################################################################################################################
+time_start = time.time()    # start the timer
+
 counter = 0
 while counter < no_realizations:
     try:
         print('Generating model no.:', counter+1)
-        #random.seed(seed)
 
-        # store the random field models inside layers
-        layers = generate_rf_group(seed)
-        np.random.shuffle(layers)
-        # set up the geometry
-        matrix = np.zeros((z_max, x_max))
-        coords_to_list = np.array([xs.ravel(), zs.ravel()]).T
-        values = np.zeros(coords_to_list.shape[0])
+        layers = generate_rf_group(seed)    # store the random field models inside layers
+        np.random.shuffle(layers)           # shuffle the layers
+
+        # Set up the matrix geometry
+        matrix = np.zeros((z_max, x_max))   # create the matrix of size {rows, cols}
+        coords_to_list = np.array([xs.ravel(), zs.ravel()]).T   # store the grid coordinates in a variable
+        values = np.zeros(coords_to_list.shape[0])  # create a matrix same as coords but with zeros
 
         # Generate new y value for each plot
         y1 = layer_boundary(x_coord, z_max)
         y2 = layer_boundary(x_coord, z_max)
         y3 = layer_boundary(x_coord, z_max)
         y4 = layer_boundary(x_coord, z_max)
-        boundaries = [y1, y2, y3, y4]
-        boundaries = sorted(boundaries, key=lambda x: x[0])
+        boundaries = [y1, y2, y3, y4]   # store the boundaries in a list
+        boundaries = sorted(boundaries, key=lambda x: x[0]) # sort the list to avoid stacking on top of each other
 
+        # Create containers for each layer
         area_1 = []
         area_2 = []
         area_3 = []
@@ -77,20 +87,20 @@ while counter < no_realizations:
                     area_5.append([col, row])
 
         # Store lists in a list of lists
-        lists = [area_1, area_2, area_3, area_4, area_5]
+        all_layers = [area_1, area_2, area_3, area_4, area_5]
 
-        for i, lst in enumerate(lists):
-            mask = (coords_to_list[:, None] == lists[i]).all(2).any(1)
+        for i, lst in enumerate(all_layers):
+            mask = (coords_to_list[:, None] == all_layers[i]).all(2).any(1)
             layer_coordinates = coords_to_list[mask]
             layer_IC = layers[i](layer_coordinates.T)
             values[mask] = layer_IC
 
-        # store the results in a dataframe
+        # Store the results in a dataframe
         df = pd.DataFrame({"x": xs.ravel(), "z": zs.ravel(), "IC": values.ravel()})
         grouped = df.groupby('x')
 
 
-        ##### PLOT AND SAVE THE RESULTS ########################################################################
+        ##### PLOT AND SAVE THE RESULTS ################################################################################
         plt.clf()   # clear the current figure
         df_pivot = df.pivot(index="z", columns="x", values="IC")
 
@@ -111,8 +121,7 @@ while counter < no_realizations:
         print(f"Error in generating model no. {counter + 1}: {e}")
         continue
 
-
-# Split the data into train and validation
+##### SPLIT THE DATA INTO TRAINING AND VALIDATION AT RANDOM ############################################################
 split_data(output_folder, os.path.join(output_folder, "train"),
            os.path.join(output_folder, "./validation"), train_size)
 
@@ -125,6 +134,11 @@ for file_name in file_list:
         os.remove(file_path)
 
 time_end = time.time() # End the timer
+
+
+########################################################################################################################
+#   WRITE THE SUMMARY FOR THE SYNTHETIC DATA
+########################################################################################################################
 # Execution time of the model
 execution_time = abs(time_start - time_end) # Calculate the run time
 # Format time taken to run into> Hours : Minutes : Seconds

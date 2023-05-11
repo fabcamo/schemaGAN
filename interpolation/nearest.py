@@ -4,24 +4,10 @@ from scipy.spatial import cKDTree
 from scipy import interpolate
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
 
-
+np.random.seed(20232023)
 
 # From DataFusionTools> nearest neighbor interpolation
 def nearest_interpolation(training_points, training_data, prediction_points):
-    """
-    Define the KDtree
-    This interpolation is done with `SciPy interpolate.NearestNDInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.NearestNDInterpolator.html>`_.
-    training_points: array with the training points
-    training_data: data at the training points
-    :return:
-    """
-    # assign to variables
-    training_points = training_points  # training points
-    training_data = training_data  # data at the training points
-    # define interpolation function
-    interpolating_function = interpolate.NearestNDInterpolator(
-        training_points, training_data
-    )
     # create KDtree
     tree = cKDTree(training_points)
 
@@ -31,7 +17,7 @@ def nearest_interpolation(training_points, training_data, prediction_points):
     # create interpolation for every point
     for i in range(len(prediction_points)):
         # interpolate
-        zn.append(pixel_values[idx[i]])
+        zn.append(training_data[idx[i]])
 
     zn = np.array(zn)
 
@@ -120,7 +106,7 @@ axs[1].set_yticks(np.arange(0, no_rows+1, 5))
 axs[0].invert_yaxis()
 axs[1].invert_yaxis()
 # Plot the input pixels on top of the interpolation results as black dots
-axs[1].scatter(coords[:, 1], coords[:, 0], c='black', s=30, marker="v")
+axs[1].scatter(coords[:, 1], coords[:, 0], c=pixel_values, edgecolor='k', s=30, marker="v")
 # Show and/or save the plot
 plt.show()
 #fig.savefig('test_save.png')
