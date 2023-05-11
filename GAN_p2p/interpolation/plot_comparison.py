@@ -12,7 +12,7 @@ seed = np.random.randint(20220412, 20230412)
 np.random.seed(seed)
 
 # Path to the validation data
-path = 'C:\\inpt\\synthetic_data\\test'
+path = '/synthetic_data/test'
 
 # Define number of rows and columns in 2D grid
 no_rows = 32
@@ -47,7 +47,7 @@ src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 ########################################################################################################################
 #   USER INPUT FOR THE VALIDATION
 ########################################################################################################################
-def plot_comparison_of_methods(src_img, gen_img, tar_img):
+def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging):
 
     # Stack all the images
     images = np.vstack((tar_img, src_img,
@@ -124,10 +124,3 @@ def plot_comparison_of_methods(src_img, gen_img, tar_img):
     plt.tight_layout()
 
 
-########################################################################################################################
-#   CALL THE FUNCTION
-########################################################################################################################
-
-plot_comparison_of_methods(src_images, src_images, tar_images)
-plt.savefig('averaver.png')
-plt.show()

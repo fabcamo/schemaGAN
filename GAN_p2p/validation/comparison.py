@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
+from GAN_p2p.interpolation.methods import nearest_interpolation, idw_interpolation, kriging_interpolation
+from GAN_p2p.interpolation.plot_comparison import plot_comparison_of_methods
 
 np.random.seed(20232023)
 
@@ -8,7 +10,7 @@ np.random.seed(20232023)
 ########################################################################################################################
 
 # Path for the data
-path = '/synthetic_data/test'
+path = 'C:\\inpt\\synthetic_data\\512x32\\validation'
 
 # Define number of rows and columns in 2D grid
 no_rows = 32
@@ -37,11 +39,14 @@ tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 # Source images> the input "cpt-like" data
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
+# Grab the number of validation images
+no_validation_images = src_images.shape[0]
+
 # Grab the data from the cpt-like data image (src_image)
 coord_list = []     # to store the coordinates
 pixel_values = []   # to store the pixel values
 # Loop over each image in src_images to grab the coordinates with IC values
-for i in range(src_images.shape[0]):
+for i in range(no_validation_images):
     # Get the indices of non-zero values in the i-th image
     # y_indices>[rows] & x_indices>[cols]
     y_indices, x_indices = np.nonzero(src_images[i, :, :, 0])
@@ -66,6 +71,14 @@ pixel_values = np.array(pixel_values)
 # Interpolate onto 2D grid using nearest neighbor interpolation
 nn_results = nearest_interpolation(coords, pixel_values, grid)
 nn_results = np.reshape(nn_results,(no_rows, no_cols))
+
+# Interpolate onto 2D grid using IDW interpolation
+idw_results = idw_interpolation(coords, pixel_values, grid)
+idw_results = np.reshape(idw_results,(no_rows, no_cols))
+
+# Interpolate onto 2D grid using Kriging interpolation
+kriging_results = kriging_interpolation(coords, pixel_values, grid)
+kriging_results = np.reshape(kriging_results,(no_rows, no_cols))
 
 
 ########################################################################################################################
@@ -105,3 +118,11 @@ plt.imshow(mae, cmap='viridis')
 plt.title(f"Mean absolute error: {round((mae_mean),3)}")
 plt.show()
 
+
+########################################################################################################################
+#   CALL THE PLOTS FOR THE COMPARISON
+########################################################################################################################
+
+plot_comparison_of_methods(src_images, src_images, tar_images, nn_results, idw_results, kriging_results)
+plt.savefig('averaver.png')
+plt.show()

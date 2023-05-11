@@ -5,6 +5,7 @@ from scipy.spatial import cKDTree
 
 # From DataFusionTools> nearest neighbor interpolation
 def nearest_interpolation(training_points, training_data, prediction_points):
+
     # create KDtree
     tree = cKDTree(training_points)
 

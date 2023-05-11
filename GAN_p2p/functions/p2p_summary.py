@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
-from functions.p2p_process_data import reverse_normalization, reverse_IC_normalization
+from GAN_p2p.functions.p2p_generate_samples import generate_real_samples, generate_real_samples_fix, generate_fake_samples
+from GAN_p2p.functions.p2p_process_data import reverse_normalization, reverse_IC_normalization
 
 
 # Save the generator model and check how good the generated image looks.

@@ -7,17 +7,34 @@ from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_ra
 np.random.seed(20232023)
 
 # From DataFusionTools> nearest neighbor interpolation
-def nearest_interpolation(training_points, training_data, prediction_points):
-    # create KDtree
+def idw_interpolation(training_points, training_data, prediction_points):
+
+    nb_near_points: int = 5
+    power: float = 1.0
+    tol: float = 1e-9
+
+    # assign to variables
+    training_points = np.array(training_points)  # training points
+    training_data = np.array(training_data)  # data at the training points
+
+    # compute Euclidean distance from grid to training
     tree = cKDTree(training_points)
 
-    # compute closest distance and index of the closest index
-    dist, idx = tree.query(prediction_points)
+    # get distances and indexes of the closest nb_points
+    dist, idx = tree.query(prediction_points, nb_near_points)
+    dist += tol  # to overcome division by zero
     zn = []
+
     # create interpolation for every point
     for i in range(len(prediction_points)):
+        # compute weights
+        data = training_data[idx[i]]
+
         # interpolate
-        zn.append(training_data[idx[i]])
+        zn.append(
+            np.sum(data.T / dist[i] ** power)
+            / np.sum(1.0 / dist[i] ** power)
+        )
 
     zn = np.array(zn)
 
@@ -26,8 +43,8 @@ def nearest_interpolation(training_points, training_data, prediction_points):
 
 ########################################################################################################################
 
-# Path for the data
-path = 'C:\\inpt\\synthetic_data\\test'
+# Path the the data
+path = '/synthetic_data/test'
 
 # Define number of rows and columns in 2D grid
 no_rows = 32
@@ -83,7 +100,7 @@ pixel_values = np.array(pixel_values)
 ########################################################################################################################
 
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = nearest_interpolation(coords, pixel_values, grid)
+nn_results = idw_interpolation(coords, pixel_values, grid)
 nn_results = np.reshape(nn_results,(no_rows, no_cols))
 
 
@@ -106,7 +123,7 @@ axs[1].set_yticks(np.arange(0, no_rows+1, 5))
 axs[0].invert_yaxis()
 axs[1].invert_yaxis()
 # Plot the input pixels on top of the interpolation results as black dots
-axs[1].scatter(coords[:, 1], coords[:, 0], c=pixel_values, edgecolor='k', s=30, marker="v")
+axs[1].scatter(coords[:, 1], coords[:, 0], c='black', s=30, marker="v")
 # Show and/or save the plot
 plt.show()
 #fig.savefig('test_save.png')
