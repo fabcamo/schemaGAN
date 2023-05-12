@@ -106,7 +106,14 @@ def generate_nn_images(no_rows, no_cols, src_images):
     return nn_images
 
 
+def compute_errors(original, gan, nn, idw, kriging):
 
+    mae_gan_list = []
+    for i in range(len(original)):
+        mae_gan = np.mean(np.abs(gan[i] - original[i]))
+        mae_gan_list.append(mae_gan)
+
+    return mae_gan_list
 
 
 

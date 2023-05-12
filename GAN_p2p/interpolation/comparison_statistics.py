@@ -4,11 +4,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from interpolation_utils import get_cptlike_data, format_source_images
+from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
 from interpolation_utils import generate_gan_image, generate_nn_images
+from interpolation_plots import plot_images_error_comparison
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization, reverse_IC_normalization
-from GAN_p2p.interpolation.methods import nearest_interpolation, idw_interpolation, kriging_interpolation
-from GAN_p2p.functions.p2p_summary import plot_images_error_comparison
 
 
 ########################################################################################################################
@@ -97,7 +96,7 @@ dataset = IC_normalization(data)
 coords_all, pixel_values_all = get_cptlike_data(src_images)
 
 # Format the original image and the cptlike image for ploting
-original_img, cptlike_img = format_source_images(dataset)
+original_images, cptlike_img = format_source_images(dataset)
 
 
 
@@ -112,11 +111,16 @@ gan_images = generate_gan_image(generator, dataset)
 nn_images = generate_nn_images(SIZE_Y, SIZE_X, src_images)
 
 
-print('aqui')
+mae_gan =  compute_errors(
+    original_images, gan_images, nn_images, nn_images, nn_images)
+
+
+
+
 
 val_img = 7
 
-plot_images_error_comparison(cptlike_img[val_img], gan_images[val_img], original_img[val_img], nn_images[val_img])
+plot_images_error_comparison(cptlike_img[val_img], gan_images[val_img], original_images[val_img])
 #validation_dir = os.path.join(path_results, f"validation_{model_file}")
 #if not os.path.exists(validation_dir):
 #    os.mkdir(validation_dir)
@@ -125,6 +129,15 @@ plt.show()
 #plt.savefig(plot_results_name)
 plt.close()
 
+
+plot_images_error_comparison(cptlike_img[val_img], nn_images[val_img], original_images[val_img])
+#validation_dir = os.path.join(path_results, f"validation_{model_file}")
+#if not os.path.exists(validation_dir):
+#    os.mkdir(validation_dir)
+#plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
+plt.show()
+#plt.savefig(plot_results_name)
+plt.close()
 
 
 
