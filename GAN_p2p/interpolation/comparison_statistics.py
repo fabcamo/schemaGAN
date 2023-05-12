@@ -3,11 +3,12 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import load_model
 
-from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
+from interpolation_utils import get_cptlike_data, format_source_images
+from interpolation_utils import generate_gan_image, generate_nn_images
+from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization, reverse_IC_normalization
 from GAN_p2p.interpolation.methods import nearest_interpolation, idw_interpolation, kriging_interpolation
-from GAN_p2p.functions.p2p_summary import plot_images_error
+from GAN_p2p.functions.p2p_summary import plot_images_error_comparison
 
 
 ########################################################################################################################
@@ -31,7 +32,7 @@ min_distance = 51
 # Generate a random seed using NumPy
 seed = np.random.randint(20220412, 20230412)
 # Set the seed for NumPy's random number generator
-np.random.seed(seed)
+np.random.seed(20232023)
 
 
 ########################################################################################################################
@@ -82,6 +83,9 @@ full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i
 tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
 src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
 
+# Grab the number of validation images
+no_validation_images = src_images.shape[0]
+
 # Create the array of source and target images
 data = [src_images, tar_images]
 
@@ -89,71 +93,38 @@ data = [src_images, tar_images]
 dataset = IC_normalization(data)
 [input_img, orig_img] = dataset
 
-# Grab the data from the cpt-like data image (src_image)
-coord_list = []     # to store the coordinates
-pixel_values = []   # to store the pixel values
-# Loop over each image in src_images to grab the coordinates with IC values
-for i in range(src_images.shape[0]):
-    # Get the indices of non-zero values in the i-th image
-    # y_indices>[rows] & x_indices>[cols]
-    y_indices, x_indices = np.nonzero(src_images[i, :, :, 0])
-    # Combine the x and y indices into a 2D array
-    # in format> (rows, cols)
-    image_coords = np.vstack((y_indices, x_indices)).T
-    # Get the pixel values corresponding to the non-zero coordinates
-    image_values = src_images[i, y_indices, x_indices, 0]
-    # Append the non-zero coordinates to the list
-    coord_list.append(image_coords)
-    # Append the pixel values to the list
-    pixel_values.extend(image_values.tolist())
+# Get the coordinates and the pixel values for the cotlike data
+coords_all, pixel_values_all = get_cptlike_data(src_images)
 
-# Convert the lists to arrays
-coords = np.array(coord_list)
-coords = coords[0]
-pixel_values = np.array(pixel_values)
+# Format the original image and the cptlike image for ploting
+original_img, cptlike_img = format_source_images(dataset)
 
 
 
 ########################################################################################################################
-#   LOAD THE GENERATOR
+#   GENERATE THE INTERPOLATION IMAGES
 ########################################################################################################################
-model = load_model(generator)
+
+# Generate the GAN images
+gan_images = generate_gan_image(generator, dataset)
+
+# Generate Nearest Neighbor images
+nn_images = generate_nn_images(SIZE_Y, SIZE_X, src_images)
 
 
-########################################################################################################################
-#   GENERATE THE GAN INTERPOLATION IMAGES
-########################################################################################################################
-gan_images = []
-for i in range(len(input_img)):
-    # Choose a cross-section to run through the generator
-    cross_section_number = i
-    # Choose a given cross-seciton
-    ix = np.array([cross_section_number])
-    src_image, tar_image = input_img[ix], orig_img[ix]
+print('aqui')
 
-    # Generate image from source
-    gan_generated_image = model.predict(src_image)
-    gan_images.append(gan_generated_image)
-    print(f">Generated GAN interpolation no. {i} from model {name_of_model_to_use}")
+val_img = 7
 
-    # Interpolate onto 2D grid using nearest neighbor interpolation
-    nn_results = nearest_interpolation(coords, pixel_values, grid)
-    nn_results = np.reshape(nn_results, (no_rows, no_cols))
+plot_images_error_comparison(cptlike_img[val_img], gan_images[val_img], original_img[val_img], nn_images[val_img])
+#validation_dir = os.path.join(path_results, f"validation_{model_file}")
+#if not os.path.exists(validation_dir):
+#    os.mkdir(validation_dir)
+#plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
+plt.show()
+#plt.savefig(plot_results_name)
+plt.close()
 
-
-
-
-
-
-
-    plot_images_error(src_image, nn_results, tar_image)
-    #validation_dir = os.path.join(path_results, f"validation_{model_file}")
-    #if not os.path.exists(validation_dir):
-    #    os.mkdir(validation_dir)
-    #plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
-    plt.show()
-    #plt.savefig(plot_results_name)
-    plt.close()
 
 
 

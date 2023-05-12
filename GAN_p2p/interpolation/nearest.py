@@ -63,6 +63,7 @@ no_validation_images = src_images.shape[0]
 # Grab the data from the cpt-like data image (src_image)
 coords_all = []     # to store the coordinates
 pixel_values_all = []   # to store the pixel values
+
 # Loop over each image in src_images to grab the coordinates with IC values
 for i in range(no_validation_images):
     # Get the indices of non-zero values in the i-th image
@@ -91,12 +92,13 @@ for i in range(no_validation_images):
     # Grab the corresponding coordinates and pixel values for the image at hand
     coords, pixel_values = coords_all[i], pixel_values_all[i]
     # Interpolate onto 2D grid using nearest neighbor interpolation
-    nn_interpolation = []
+    #nn_interpolation = []
     nn_interpolation = nearest_interpolation(coords, pixel_values, grid)
-    # Append the results to the list
-    nn_results.append(nn_interpolation)
+
     # Reshape the results of a single image to plot
     nn_interpolation = np.reshape(nn_interpolation, (no_rows, no_cols))
+    # Append the results to the list
+    nn_results.append(nn_interpolation)
 ########################################################################################################################
 
 
@@ -125,7 +127,7 @@ for i in range(no_validation_images):
     # Plot the input pixels on top of the interpolation results as black dots
     axs[1].scatter(coords[:, 1], coords[:, 0], c=pixel_values, edgecolor='k', s=30, marker="v")
     # Show and/or save the plot
-    plt.show()
+    #plt.show()
     #fig.savefig('test_save.png')
 
 ########################################################################################################################
@@ -139,5 +141,6 @@ for i in range(no_validation_images):
     # Plot the absolute difference
     plt.imshow(mae, cmap='viridis')
     plt.title(f"Mean absolute error: {round((mae_mean),3)}")
-    plt.show()
+    #plt.show()
 
+print('hola')
