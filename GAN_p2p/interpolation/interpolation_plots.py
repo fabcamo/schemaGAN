@@ -44,4 +44,73 @@ def plot_images_error_comparison(src_img, generated_img, tar_img):
 
 
 
+def plot_histograms(list1, list2, name):
+    # create a figure and axis object
+    fig, ax = plt.subplots()
+
+    # plot histograms of the two lists on the same axis with outlines of the bars
+    ax.hist(list1, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
+    ax.hist(list2, alpha=0.5, label='NN', bins=20, color='goldenrod', edgecolor='dimgray')
+
+    # calculate means of the two lists
+    mean1 = np.mean(list1)
+    mean2 = np.mean(list2)
+
+    # plot vertical lines at the means of the two lists
+    ax.axvline(mean1, color='dimgrey', linestyle='dashed', linewidth=1)
+    ax.axvline(mean2, color='darkgoldenrod', linestyle='dashed', linewidth=1)
+
+    # add labels and legend
+    plt.xlabel('Mean absolute error')
+    plt.ylabel('Frequency')
+    plt.title(f'Mean absolute error for {name}')
+    ax.legend(loc='upper right')
+
+    # display the plot
+    plt.show()
+
+
+def plot_histograms_row(gan, nn, idw, krig):
+    # create a figure with 3 subplots in a row
+    fig, axs = plt.subplots(1, 3, figsize=(12, 4))
+
+    # plot each histogram in a separate subplot
+    axs[0].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
+    axs[0].hist(nn, alpha=0.5, label='NN', bins=20, color='goldenrod', edgecolor='dimgray')
+    mean1a = np.mean(gan)
+    mean2a = np.mean(nn)
+    axs[0].axvline(mean1a, color='dimgrey', linestyle='dashed', linewidth=1)
+    axs[0].axvline(mean2a, color='darkgoldenrod', linestyle='dashed', linewidth=1)
+    axs[0].set_xlabel('Mean absolute error')
+    axs[0].set_ylabel('Frequency')
+    axs[0].set_title(f'Mean absolute error GAN vs NN')
+    axs[0].legend(loc='upper right')
+
+    axs[1].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
+    axs[1].hist(idw, alpha=0.5, label='IDW', bins=20, color='teal', edgecolor='dimgray')
+    mean1b = np.mean(gan)
+    mean2b = np.mean(idw)
+    axs[1].axvline(mean1b, color='dimgrey', linestyle='dashed', linewidth=1)
+    axs[1].axvline(mean2b, color='teal', linestyle='dashed', linewidth=1)
+    axs[1].set_xlabel('Mean absolute error')
+    axs[1].set_ylabel('Frequency')
+    axs[1].set_title(f'Mean absolute error for GAN vs IDW')
+    axs[1].legend(loc='upper right')
+
+    axs[2].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
+    axs[2].hist(krig, alpha=0.5, label='Krig', bins=20, color='indigo', edgecolor='dimgray')
+    mean1c = np.mean(gan)
+    mean2c = np.mean(krig)
+    axs[2].axvline(mean1c, color='dimgrey', linestyle='dashed', linewidth=1)
+    axs[2].axvline(mean2c, color='indigo', linestyle='dashed', linewidth=1)
+    axs[2].set_xlabel('Mean absolute error')
+    axs[2].set_ylabel('Frequency')
+    axs[2].set_title(f'Mean absolute error for GAN vs Kriging')
+    axs[2].legend(loc='upper right')
+
+    # adjust the spacing between subplots
+    plt.tight_layout()
+
+    # display the plot
+    plt.show()
 

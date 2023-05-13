@@ -25,6 +25,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
+    print('Applying missing rate to data')
     # Iterate through each random field in the list
     for counter, rf in enumerate(dfs):
         data_z = []     # Create an empty list to store data for each value of z
@@ -95,7 +96,8 @@ def check_min_spacing(data_z, miss_rate, min_distance):
             if all(index not in columns_to_keep_index for index in range_to_check):
                 columns_to_keep_index.append(rand_index)  # if true, append the rand_index to the list
             else:
-                print('No space to accommodate random index, RETRYING')
+                pass
+                #print('Not enough space, retrying')
 
     return columns_to_keep_index
 

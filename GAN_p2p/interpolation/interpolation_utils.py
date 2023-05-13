@@ -106,14 +106,27 @@ def generate_nn_images(no_rows, no_cols, src_images):
     return nn_images
 
 
-def compute_errors(original, gan, nn, idw, kriging):
+def compute_errors(original, gan, nn, idw, krig):
 
     mae_gan_list = []
+    mae_nn_list = []
+    mae_idw_list = []
+    mae_krig_list = []
+
     for i in range(len(original)):
         mae_gan = np.mean(np.abs(gan[i] - original[i]))
         mae_gan_list.append(mae_gan)
 
-    return mae_gan_list
+        mae_nn = np.mean(np.abs(nn[i] - original[i]))
+        mae_nn_list.append(mae_nn)
+
+        mae_idw = np.mean(np.abs(idw[i] - original[i]))
+        mae_idw_list.append(mae_idw)
+
+        mae_krig = np.mean(np.abs(krig[i] - original[i]))
+        mae_krig_list.append(mae_krig)
+
+    return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list
 
 
 

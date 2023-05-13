@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
 from interpolation_utils import generate_gan_image, generate_nn_images
-from interpolation_plots import plot_images_error_comparison
+from interpolation_plots import plot_images_error_comparison, plot_histograms_row, plot_histograms
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization, reverse_IC_normalization
 
 
@@ -110,13 +110,18 @@ gan_images = generate_gan_image(generator, dataset)
 # Generate Nearest Neighbor images
 nn_images = generate_nn_images(SIZE_Y, SIZE_X, src_images)
 
-
-mae_gan =  compute_errors(
+# Call for the calculation of the MAE of each interpolation method for each validation image
+mae_gan, mae_nn, mae_idw, mae_krig =  compute_errors(
     original_images, gan_images, nn_images, nn_images, nn_images)
 
+# Calculate the average from all the validation images
+mae_gan_avg = np.mean(mae_gan)
+mae_nn_avg = np.mean(mae_nn)
 
 
+plot_histograms(mae_gan, mae_nn, 'nearest neighbor')
 
+plot_histograms_row(mae_gan, mae_nn, mae_nn, mae_nn)
 
 val_img = 7
 
