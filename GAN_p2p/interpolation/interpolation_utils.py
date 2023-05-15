@@ -1,7 +1,7 @@
 import numpy as np
 from tensorflow.keras.models import load_model
 from GAN_p2p.functions.p2p_process_data import reverse_IC_normalization
-from methods import nearest_interpolation
+from methods import nearest_interpolation, idw_interpolation, kriging_interpolation
 
 
 
@@ -104,6 +104,54 @@ def generate_nn_images(no_rows, no_cols, src_images):
         nn_images.append(nn_interpolation)
 
     return nn_images
+
+
+def generate_idw_images(no_rows, no_cols, src_images):
+    # Create 2D grid with specified number of rows and columns
+    rows = np.linspace(0, no_rows - 1, no_rows)
+    cols = np.linspace(0, no_cols - 1, no_cols)
+    grid = np.array(np.meshgrid(rows, cols)).T.reshape(-1, 2)
+
+    coords_all, pixel_values_all = get_cptlike_data(src_images)
+
+    idw_images = []
+    for i in range(src_images.shape[0]):
+
+        # call the {i} coordinates with pixels and pixel values
+        coords, pixel_values = coords_all[i], pixel_values_all[i]
+
+        idw_inter = idw_interpolation(coords, pixel_values, grid)
+        # Reshape the results of a single image to plot
+        idw_inter = np.reshape(idw_inter, (1, no_rows, no_cols, 1))
+        # Append the results to the list
+        idw_images.append(idw_inter)
+
+    return idw_images
+
+
+def generate_krig_images(no_rows, no_cols, src_images):
+    # Create 2D grid with specified number of rows and columns
+    gridx = np.linspace(0, no_cols - 1, no_cols)
+    gridy = np.linspace(0, no_rows - 1, no_rows)
+
+    coords_all, pixel_values_all = get_cptlike_data(src_images)
+
+    krig_images = []
+    for i in range(src_images.shape[0]):
+
+        # call the {i} coordinates with pixels and pixel values
+        coords, pixel_values = coords_all[i], pixel_values_all[i]
+
+        # Run the interpolation
+        krig_inter = kriging_interpolation(coords, pixel_values, gridx, gridy)
+        # Reshape the results of a single image to plot
+        krig_inter = np.reshape(krig_inter, (1, no_rows, no_cols, 1))
+
+        # Append the results to the list
+        krig_images.append(krig_inter)
+
+    return krig_images
+
 
 
 def compute_errors(original, gan, nn, idw, krig):

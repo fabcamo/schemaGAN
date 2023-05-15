@@ -6,7 +6,7 @@ from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_ra
 
 
 # From DataFusionTools> kriging interpolation
-def kriging_interpolation(training_points, training_data, prediction_points, para, range):
+def kriging_interpolation(training_points, training_data, prediction_points, para):
     # assign to variables
     interpolating_function = pykrige.ok.OrdinaryKriging(
         training_points.T[0],
@@ -15,12 +15,12 @@ def kriging_interpolation(training_points, training_data, prediction_points, par
         variogram_model='gaussian',
         variogram_parameters={
             "nugget": para["nugget"],
-            "range": 500,
+            "range": 400,
             "sill": para["var"]
         },
         verbose=False,
         enable_plotting=False,
-        nlags=20,
+        nlags=6,
     )
 
     zn, ss = interpolating_function.execute(
@@ -86,12 +86,12 @@ coords = np.array(coord_list)
 coords = coords[0]
 pixel_values = np.array(pixel_values)
 
-
+x = coords[:, 0]
+y = coords[:, 1]
 ########################################################################################################################
 
-
 import gstools as gs
-bins = np.arange(30)
+bins = np.arange(25)
 bin_center, gamma = gs.vario_estimate((coords.T[0], coords.T[1]), pixel_values, bins)
 fit_model = gs.Gaussian(dim=2)
 plt.scatter(bin_center, gamma, color="k", label="data")
@@ -99,7 +99,7 @@ ax = plt.gca()
 para, pcov, r2 = fit_model.fit_variogram(bin_center, gamma, return_r2=True)
 fit_model.plot(ax=ax)
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = kriging_interpolation(coords, pixel_values, grid, para, np.max(np.diff(coords.T[1])))
+nn_results = kriging_interpolation(coords, pixel_values, grid, para)
 nn_results = np.reshape(nn_results,(no_rows, no_cols))
 ########################################################################################################################
 

@@ -6,6 +6,7 @@ import pandas as pd
 
 # Read all csv data to train on
 def read_all_csv_files(directory):
+    print('Reading all the data')
     directory = os.path.join(directory)    # Join the directory path with the os path separator
     csv_data = []    # Create an empty list to store the read dataframes
 
@@ -25,7 +26,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     missing_data, full_data = [], []     # Create two empty lists to store missing and full data
     value_name = 'IC'   # Set value_name to 'IC'
 
-    print('Applying missing rate to data')
+    print('Applying missing rate')
     # Iterate through each random field in the list
     for counter, rf in enumerate(dfs):
         data_z = []     # Create an empty list to store data for each value of z

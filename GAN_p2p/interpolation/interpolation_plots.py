@@ -74,9 +74,13 @@ def plot_histograms_row(gan, nn, idw, krig):
     # create a figure with 3 subplots in a row
     fig, axs = plt.subplots(1, 3, figsize=(12, 4))
 
+    bins0 = np.histogram(np.hstack((gan, nn)), bins=20)[1]  # get the bin edges
+    bins1 = np.histogram(np.hstack((gan, idw)), bins=20)[1]  # get the bin edges
+    bins2 = np.histogram(np.hstack((gan, krig)), bins=20)[1]  # get the bin edges
+
     # plot each histogram in a separate subplot
-    axs[0].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
-    axs[0].hist(nn, alpha=0.5, label='NN', bins=20, color='goldenrod', edgecolor='dimgray')
+    axs[0].hist(gan, bins=bins0, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
+    axs[0].hist(nn, bins=bins0, alpha=0.5, label='NN', color='goldenrod', edgecolor='dimgray')
     mean1a = np.mean(gan)
     mean2a = np.mean(nn)
     axs[0].axvline(mean1a, color='dimgrey', linestyle='dashed', linewidth=1)
@@ -86,8 +90,8 @@ def plot_histograms_row(gan, nn, idw, krig):
     axs[0].set_title(f'Mean absolute error GAN vs NN')
     axs[0].legend(loc='upper right')
 
-    axs[1].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
-    axs[1].hist(idw, alpha=0.5, label='IDW', bins=20, color='teal', edgecolor='dimgray')
+    axs[1].hist(gan, bins=bins1, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
+    axs[1].hist(idw, bins=bins1, alpha=0.5, label='IDW', color='teal', edgecolor='dimgray')
     mean1b = np.mean(gan)
     mean2b = np.mean(idw)
     axs[1].axvline(mean1b, color='dimgrey', linestyle='dashed', linewidth=1)
@@ -97,8 +101,8 @@ def plot_histograms_row(gan, nn, idw, krig):
     axs[1].set_title(f'Mean absolute error for GAN vs IDW')
     axs[1].legend(loc='upper right')
 
-    axs[2].hist(gan, alpha=0.5, label='GAN', bins=10, color='gray', edgecolor='dimgray')
-    axs[2].hist(krig, alpha=0.5, label='Krig', bins=20, color='indigo', edgecolor='dimgray')
+    axs[2].hist(gan, bins=bins2, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
+    axs[2].hist(krig, bins=bins2, alpha=0.5, label='Krig', color='indigo', edgecolor='dimgray')
     mean1c = np.mean(gan)
     mean2c = np.mean(krig)
     axs[2].axvline(mean1c, color='dimgrey', linestyle='dashed', linewidth=1)
@@ -114,3 +118,11 @@ def plot_histograms_row(gan, nn, idw, krig):
     # display the plot
     plt.show()
 
+
+
+'''
+    bins = np.histogram(np.hstack((gan, nn)), bins=40)[1]  # get the bin edges
+    plt.hist(gan, bins)
+    plt.hist(nn, bins)
+    plt.show()
+'''

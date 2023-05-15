@@ -1,6 +1,7 @@
 import numpy as np
 import pykrige
 from scipy.spatial import cKDTree
+from pykrige.ok import OrdinaryKriging
 
 
 # From DataFusionTools> nearest neighbor interpolation
@@ -24,7 +25,7 @@ def nearest_interpolation(training_points, training_data, prediction_points):
 
 def idw_interpolation(training_points, training_data, prediction_points):
 
-    nb_near_points: int = 5
+    nb_near_points: int = 6
     power: float = 1.0
     tol: float = 1e-9
 
@@ -56,25 +57,21 @@ def idw_interpolation(training_points, training_data, prediction_points):
     return zn
 
 
-def kriging_interpolation(training_points, training_data, prediction_points):
+def kriging_interpolation(training_points, training_data, gridx, gridy):
     # assign to variables
-    interpolating_function = pykrige.ok.OrdinaryKriging(
-        training_points.T[0],
-        training_points.T[1],
-        training_data,
-        variogram_model='gaussian',
-        variogram_parameters={
-            "nugget": 40819929,
-            "range": 51,
-            "sill": 38020807
-        },
-        verbose=False,
-        enable_plotting=False,
-        nlags=20,
-    )
+    variogram_model = 'gaussian'
+    nlags = 6
 
-    zn, ss = interpolating_function.execute(
-        "points", prediction_points.T[0], prediction_points.T[1]
-    )
+    x = training_points[:, 1] # take the columns
+    y = training_points[:, 0] # take the rows
+    z = training_data
+    print(x)
+    print(y)
+    print(z)
 
-    return zn
+    # Create the kriging object
+    OK = OrdinaryKriging(x, y, z, variogram_model=variogram_model, nlags=nlags)
+    # Interpolate the data onto the grid
+    z_interp, _ = OK.execute('grid', gridx, gridy)
+
+    return z_interp

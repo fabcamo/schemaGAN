@@ -4,8 +4,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
-from interpolation_utils import generate_gan_image, generate_nn_images
+from interpolation_utils import generate_gan_image, generate_nn_images, generate_idw_images, generate_krig_images
 from interpolation_plots import plot_images_error_comparison, plot_histograms_row, plot_histograms
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization, reverse_IC_normalization
 
@@ -106,24 +107,27 @@ original_images, cptlike_img = format_source_images(dataset)
 
 # Generate the GAN images
 gan_images = generate_gan_image(generator, dataset)
-
 # Generate Nearest Neighbor images
 nn_images = generate_nn_images(SIZE_Y, SIZE_X, src_images)
+# Generate Inverse distance images
+idw_images = generate_idw_images(SIZE_Y, SIZE_X, src_images)
+# Generate Kriging images
+krig_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
 
 # Call for the calculation of the MAE of each interpolation method for each validation image
 mae_gan, mae_nn, mae_idw, mae_krig =  compute_errors(
-    original_images, gan_images, nn_images, nn_images, nn_images)
+    original_images, gan_images, nn_images, idw_images, krig_images)
 
 # Calculate the average from all the validation images
 mae_gan_avg = np.mean(mae_gan)
 mae_nn_avg = np.mean(mae_nn)
+mae_idw_avg = np.mean(mae_idw)
+mae_krig_avg = np.mean(mae_krig)
 
 
-plot_histograms(mae_gan, mae_nn, 'nearest neighbor')
+plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_krig)
 
-plot_histograms_row(mae_gan, mae_nn, mae_nn, mae_nn)
-
-val_img = 7
+val_img = 0
 
 plot_images_error_comparison(cptlike_img[val_img], gan_images[val_img], original_images[val_img])
 #validation_dir = os.path.join(path_results, f"validation_{model_file}")
@@ -144,6 +148,25 @@ plt.show()
 #plt.savefig(plot_results_name)
 plt.close()
 
+
+plot_images_error_comparison(cptlike_img[val_img], idw_images[val_img], original_images[val_img])
+#validation_dir = os.path.join(path_results, f"validation_{model_file}")
+#if not os.path.exists(validation_dir):
+#    os.mkdir(validation_dir)
+#plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
+plt.show()
+#plt.savefig(plot_results_name)
+plt.close()
+
+
+plot_images_error_comparison(cptlike_img[val_img], krig_images[val_img], original_images[val_img])
+#validation_dir = os.path.join(path_results, f"validation_{model_file}")
+#if not os.path.exists(validation_dir):
+#    os.mkdir(validation_dir)
+#plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
+plt.show()
+#plt.savefig(plot_results_name)
+plt.close()
 
 
 
