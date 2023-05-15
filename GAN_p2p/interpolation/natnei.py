@@ -1,45 +1,50 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree, Delaunay
 from scipy import interpolate
 from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf
 
 np.random.seed(20232023)
 
 # From DataFusionTools> nearest neighbor interpolation
-def idw_interpolation(training_points, training_data, prediction_points):
+def natural_nei_interpolation(training_points, training_data, prediction_points):
 
-    nb_near_points: int = 5
-    power: float = 1.0
-    tol: float = 1e-9
-
-    # assign to variables
-    training_points = np.array(training_points)  # training points
-    training_data = np.array(training_data)  # data at the training points
-
-    # compute Euclidean distance from grid to training
-    tree = cKDTree(training_points)
-
-    # get distances and indexes of the closest nb_points
-    dist, idx = tree.query(prediction_points, nb_near_points)
-    dist += tol  # to overcome division by zero
     zn = []
-
-    # create interpolation for every point
+    prediction_points = np.array(prediction_points)
     for i in range(len(prediction_points)):
+        new_points = np.vstack([training_points, prediction_points[i].T])
+        tri = Delaunay(new_points)
+        # Find index of prediction point
+        pindex = np.where(np.all(tri.points == prediction_points[i].T, axis=1))[0][0]
+        # find neighbours
+        neig_idx = tri.vertex_neighbor_vertices[1][
+                   tri.vertex_neighbor_vertices[0][pindex]: tri.vertex_neighbor_vertices[
+                       0
+                   ][pindex + 1]
+                   ]
+
+        # get the coordinates of the neighbours
+        coords_neig = [tri.points[j] for j in neig_idx]
+        # compute Euclidean distance
+        dist = [np.linalg.norm(prediction_points[i] - j) for j in coords_neig]
+        # find data of the neighbours
+        idx_coords_neig = []
+        for j in coords_neig:
+            idx_coords_neig.append(
+                np.where(np.all(training_points == j, axis=1))[0][0]
+            )
+
+        # get data of the neighbours
+        data_neig = [np.array(training_data[j]) for j in idx_coords_neig]
         # compute weights
-        data = training_data[idx[i]]
+        zn_aux = []
+        for ii in range(len(data_neig)):
+            aux = data_neig[ii] * dist[ii] / np.sum(dist)
+            zn_aux.append(aux)
+        zn.append(np.sum(np.array(zn_aux), axis=0))
 
-        # interpolate
-        zn.append(
-            np.sum(data.T / dist[i] ** power)
-            / np.sum(1.0 / dist[i] ** power)
-        )
-
-    zn = np.array(zn)
 
     return zn
-
 
 ########################################################################################################################
 
@@ -100,8 +105,8 @@ pixel_values = np.array(pixel_values)
 ########################################################################################################################
 
 # Interpolate onto 2D grid using nearest neighbor interpolation
-nn_results = idw_interpolation(coords, pixel_values, grid)
-nn_results = np.reshape(nn_results,(no_rows, no_cols))
+natnei_results = natural_nei_interpolation(coords, pixel_values, grid)
+natnei_results = np.reshape(natnei_results, (no_rows, no_cols))
 
 
 ########################################################################################################################
@@ -113,7 +118,7 @@ axs[0].scatter(coords[:,1], coords[:,0], c=pixel_values, marker="v")
 axs[0].set_title('Input data')
 # Figure 2> the interpolated grid
 axs[1].set_title('Interpolated output')
-im = axs[1].imshow(nn_results, extent=[0, no_cols, 0, no_rows], aspect='auto', origin='lower')
+im = axs[1].imshow(natnei_results, extent=[0, no_cols, 0, no_rows], aspect='auto', origin='lower')
 # Set tick labels to be the same for both subplots
 axs[0].set_xticks(np.arange(0, no_cols+1, 50))
 axs[0].set_yticks(np.arange(0, no_rows+1, 5))
@@ -133,7 +138,7 @@ plt.show()
 
 
 # Calculate the absolute difference
-mae = np.abs(tar_images[0, :, :, 0] - nn_results)
+mae = np.abs(tar_images[0, :, :, 0] - natnei_results)
 mae_mean = np.mean(mae)
 
 # Plot the absolute difference

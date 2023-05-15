@@ -1,7 +1,8 @@
 import numpy as np
+import csv
 from tensorflow.keras.models import load_model
 from GAN_p2p.functions.p2p_process_data import reverse_IC_normalization
-from methods import nearest_interpolation, idw_interpolation, kriging_interpolation
+from methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation
 
 
 
@@ -154,12 +155,39 @@ def generate_krig_images(no_rows, no_cols, src_images):
 
 
 
-def compute_errors(original, gan, nn, idw, krig):
+def generate_nat_nei_images(no_rows, no_cols, src_images):
+    # Create 2D grid with specified number of rows and columns
+    rows = np.linspace(0, no_rows - 1, no_rows)
+    cols = np.linspace(0, no_cols - 1, no_cols)
+    grid = np.array(np.meshgrid(rows, cols)).T.reshape(-1, 2)
+
+    coords_all, pixel_values_all = get_cptlike_data(src_images)
+
+    natnei_images = []
+    for i in range(src_images.shape[0]):
+
+        # call the {i} coordinates with pixels and pixel values
+        coords, pixel_values = coords_all[i], pixel_values_all[i]
+
+        natnei_inter = natural_nei_interpolation(coords, pixel_values, grid)
+        # Reshape the results of a single image to plot
+        natnei_inter = np.reshape(natnei_inter, (1, no_rows, no_cols, 1))
+        # Append the results to the list
+        natnei_images.append(natnei_inter)
+
+    return natnei_images
+
+
+
+
+
+def compute_errors(original, gan, nn, idw, krig, natnei):
 
     mae_gan_list = []
     mae_nn_list = []
     mae_idw_list = []
     mae_krig_list = []
+    mae_natnei_list = []
 
     for i in range(len(original)):
         mae_gan = np.mean(np.abs(gan[i] - original[i]))
@@ -174,7 +202,25 @@ def compute_errors(original, gan, nn, idw, krig):
         mae_krig = np.mean(np.abs(krig[i] - original[i]))
         mae_krig_list.append(mae_krig)
 
-    return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list
+        mae_natnei = np.mean(np.abs(natnei[i] - original[i]))
+        mae_natnei_list.append(mae_natnei)
+
+    # Save results to a CSV file
+    with open('results_comparison_MAE.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Index', 'MAE GAN', 'MAE NN', 'MAE IDW', 'MAE Krig', 'MAE NatNei'])
+        for i in range(len(original)):
+            writer.writerow(
+                [i, mae_gan_list[i], mae_nn_list[i], mae_idw_list[i], mae_krig_list[i], mae_natnei_list[i]])
+
+    # Find the index of the minimum and maximum values in mae_gan_list
+    min_index = np.argmin(mae_gan_list)
+    max_index = np.argmax(mae_gan_list)
+    # Print the index of the minimum and maximum values
+    print("Index of minimum value in mae_gan_list:", min_index)
+    print("Index of maximum value in mae_gan_list:", max_index)
+
+    return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list, mae_natnei_list
 
 
 

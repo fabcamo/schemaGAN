@@ -10,7 +10,7 @@ np.random.seed(20232023)
 ########################################################################################################################
 
 # Path for the data
-path = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+path = 'C:\\inpt\\synthetic_data\\test'
 
 # Define number of rows and columns in 2D grid
 no_rows = 32
@@ -77,8 +77,8 @@ idw_results = idw_interpolation(coords, pixel_values, grid)
 idw_results = np.reshape(idw_results,(no_rows, no_cols))
 
 # Interpolate onto 2D grid using Kriging interpolation
-kriging_results = kriging_interpolation(coords, pixel_values, grid)
-kriging_results = np.reshape(kriging_results,(no_rows, no_cols))
+#kriging_results = kriging_interpolation(coords, pixel_values, grid)
+#kriging_results = np.reshape(kriging_results,(no_rows, no_cols))
 
 
 ########################################################################################################################
@@ -123,6 +123,6 @@ plt.show()
 #   CALL THE PLOTS FOR THE COMPARISON
 ########################################################################################################################
 
-plot_comparison_of_methods(src_images, src_images, tar_images, nn_results, idw_results, kriging_results)
+plot_comparison_of_methods(src_images, src_images, tar_images, nn_results, idw_results, nn_results)
 plt.savefig('averaver.png')
 plt.show()
