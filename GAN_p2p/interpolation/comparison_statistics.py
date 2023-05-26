@@ -1,21 +1,20 @@
 import os
 import time
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
-from interpolation_utils import generate_gan_image, generate_nn_images, generate_idw_images, generate_krig_images
-from interpolation_plots import plot_images_error_comparison, plot_histograms_row, plot_comparison_of_methods
-from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization, reverse_IC_normalization
+from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images
+from interpolation_plots import plot_histograms_row, plot_comparison_of_methods
+from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
 
 
 ########################################################################################################################
 #   USER INPUT FOR THE VALIDATION
 ########################################################################################################################
 # Input the name of the generator model to use
-name_of_model_to_use = 'model_000051.h5'
+name_of_model_to_use = 'model_000450.h5'
 
 # Images size
 SIZE_X = 512
@@ -25,6 +24,8 @@ SIZE_Y = 32
 miss_rate = 0.99
 min_distance = 51
 
+# Choose which validation image to use in the comparison
+val_img = 12
 
 ########################################################################################################################
 #   GENERATE SEED
@@ -38,9 +39,12 @@ np.random.seed(20232023)
 ########################################################################################################################
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
-# For local
-path_validation = 'C:\\inpt\\synthetic_data\\validation'
-path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\20krun'
+# For local validation run
+# Path to the validation images
+path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+# Path to the generator models
+path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
+# Path to save the results of the validation
 path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
 
 
@@ -104,11 +108,10 @@ original_images, cptlike_img = format_source_images(dataset)
 ########################################################################################################################
 #   GENERATE THE INTERPOLATION IMAGES
 ########################################################################################################################
-
 # Generate the GAN images
 gan_images = generate_gan_image(generator, dataset)
 # Generate Nearest Neighbor images
-nn_images = generate_nn_images(SIZE_Y, SIZE_X, src_images)
+nearnei_images = generate_nearnei_images(SIZE_Y, SIZE_X, src_images)
 # Generate Inverse distance images
 idw_images = generate_idw_images(SIZE_Y, SIZE_X, src_images)
 # Generate Kriging images
@@ -116,83 +119,32 @@ krig_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
 # Generate Natural Neighbor images
 natnei_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
 
+
+########################################################################################################################
+#   CALCULATE THE ERRORS IN THE INTERPOLATION METHODS
+########################################################################################################################
 # Call for the calculation of the MAE of each interpolation method for each validation image
-mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei =  compute_errors(
-    original_images, gan_images, nn_images, idw_images, krig_images, natnei_images)
-
-# Calculate the average from all the validation images
-mae_gan_avg = np.mean(mae_gan)
-mae_nn_avg = np.mean(mae_nn)
-mae_idw_avg = np.mean(mae_idw)
-mae_krig_avg = np.mean(mae_krig)
-mae_natnei_avg = np.mean(mae_natnei)
-
-print('mae gan average is>', mae_gan_avg)
-print('mae nn average is>', mae_nn_avg)
-print('mae idw average is>', mae_idw_avg)
-print('mae krig average is>', mae_krig_avg)
-print('mae natnei average is>', mae_natnei_avg)
+mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_means =  compute_errors(
+    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images)
 
 
+########################################################################################################################
+#   PLOT THE COMPARISON IMAGES
+########################################################################################################################
+# Plots three histograms in a row to compare each method with the GAN
 plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_natnei)
-
-val_img = 12
-
-plot_images_error_comparison(cptlike_img[val_img], natnei_images[val_img], original_images[val_img])
-#validation_dir = os.path.join(path_results, f"validation_{model_file}")
-#if not os.path.exists(validation_dir):
-#    os.mkdir(validation_dir)
-#plot_results_name = os.path.join(validation_dir, f"model_{model_file}_validation_{i}.png")
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'histograms_row.png'))
 plt.show()
-#plt.savefig(plot_results_name)
-plt.close()
 
+
+# Plots 10 images for a given validation image, with erros
 plot_comparison_of_methods(cptlike_img[val_img], gan_images[val_img],
-                           original_images[val_img], nn_images[val_img],
-                           idw_images[val_img], krig_images[val_img])
-plt.savefig('comparisonofmethods.png')
+                           original_images[val_img], nearnei_images[val_img],
+                           idw_images[val_img], krig_images[val_img],
+                           mae_means)
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'comparison_of_methods.png'))
 plt.show()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-print('Finished')
-
-
-
-'''
-Load all the original images
-Generate the cpt-like images (with a fixed seed)
-
-Load the chosen GENERATOR model
-Generate the GAN images from the cpt-like
-Store them all in a container> GAN
-
-Call the NN/IDW/Kriging interpolator
-From the cpt-like data, generate the images for each one
-Store them all in a container> NN, IDW, KRIGING
-
-Create the containers for the error for each method>
-MAE_gan, MAE_nn, MAE_idw, MAE_kriging
-MSE_gan, MSE_nn, MSE_idw, MSE_kriging
-RMSE_gan, RMSE_nn, RMSE_idw, RMSE_kriging
-
-Loop one by one and calculate the error
-Store them all in a list for each
-Get the average for each
-Make some plots comparing them
-
-
-
-'''

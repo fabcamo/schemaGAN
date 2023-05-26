@@ -80,14 +80,14 @@ def plot_histograms_row(gan, nn, idw, krig):
 
     # plot each histogram in a separate subplot
     axs[0].hist(gan, bins=10, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
-    axs[0].hist(nn, bins=20, alpha=0.5, label='NN', color='goldenrod', edgecolor='dimgray')
+    axs[0].hist(nn, bins=20, alpha=0.5, label='NearNei', color='goldenrod', edgecolor='dimgray')
     mean1a = np.mean(gan)
     mean2a = np.mean(nn)
     axs[0].axvline(mean1a, color='dimgrey', linestyle='dashed', linewidth=1)
     axs[0].axvline(mean2a, color='darkgoldenrod', linestyle='dashed', linewidth=1)
     axs[0].set_xlabel('Mean absolute error')
     axs[0].set_ylabel('Frequency')
-    axs[0].set_title(f'Mean absolute error GAN vs NN')
+    axs[0].set_title(f'Mean absolute error GAN vs Nearest Neighbor')
     axs[0].legend(loc='upper right')
     axs[0].set_xlim(0.05, 0.5)
 
@@ -118,12 +118,10 @@ def plot_histograms_row(gan, nn, idw, krig):
     # adjust the spacing between subplots
     plt.tight_layout()
 
-    plt.savefig('histograms.png')
-    # display the plot
-    plt.show()
 
 
-def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging):
+
+def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging, mae_means):
 
     # Stack all the images
     images = np.vstack((tar_img, src_img,
@@ -134,10 +132,11 @@ def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging):
 
     # Set plot titles for each subplot
     titles = ['Original cross-section', 'Input CPT data',
-              'GAN prediction', 'GAN MAE:',
-              'Nearest neighbor interpolation', 'Nearest neighbor MAE:',
-              'Inverse distance interpolation', 'Inverse distance MAE:',
-              'Ordinary kriging interpolation', 'Ordinary kriging MAE:']
+              'GAN prediction', f'GAN MAE: {mae_means[0]:.2f}',
+              'Nearest neighbor interpolation', f'Nearest neighbor MAE: {mae_means[1]:.2f}',
+              'Inverse distance interpolation', f'Inverse distance MAE: {mae_means[2]:.2f}',
+              'Ordinary kriging interpolation', f'Ordinary kriging MAE: {mae_means[3]:.2f}']
+
 
     # Set the axis labels for each subplot
     xlabels = ['', '', '', '', '', '', '', '', 'Distance', 'Distance']
@@ -197,6 +196,7 @@ def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging):
             ax.set_xlim([0, 512])
             ax.set_ylim([32, 0])
 
+    # adjust the spacing between subplots
     plt.tight_layout()
 
 
