@@ -1,8 +1,9 @@
-import numpy as np
+import os
 import csv
+import numpy as np
 from tensorflow.keras.models import load_model
 from GAN_p2p.functions.p2p_process_data import reverse_IC_normalization
-from methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation
+from interpolation_methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation
 
 
 
@@ -297,7 +298,7 @@ def generate_nat_nei_images(no_rows, no_cols, src_images):
 
 
 
-def compute_errors(original, gan, nn, idw, krig, natnei):
+def compute_errors(original, gan, nn, idw, krig, natnei, path):
     """
     This function computes the Mean Absolute Errors (MAE) for different algorithms
     and save the results in a CSV file. It also identifies the indices of minimum
@@ -320,6 +321,11 @@ def compute_errors(original, gan, nn, idw, krig, natnei):
     mae_means (list): Mean of each MAE list.
     """
 
+    # Specify the filename
+    filename = 'results_comparison_MAE.csv'
+    # Join the path and filename
+    full_path = os.path.join(path, filename)
+
     # Initialize MAE lists for each method
     mae_gan_list = []
     mae_nn_list = []
@@ -340,8 +346,8 @@ def compute_errors(original, gan, nn, idw, krig, natnei):
                  np.mean(mae_idw_list), np.mean(mae_krig_list),
                  np.mean(mae_natnei_list)]
 
-    # Save results to a CSV file
-    with open('results_comparison_MAE.csv', 'w', newline='') as csvfile:
+    # Save results to a CSV file at the specified path
+    with open(full_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Index', 'MAE GAN', 'MAE NearNei', 'MAE IDW', 'MAE Krig', 'MAE NatNei'])
         for i in range(len(original)):

@@ -127,7 +127,7 @@ for i in range(no_validation_images):
     # Plot the input pixels on top of the interpolation results as black dots
     axs[1].scatter(coords[:, 1], coords[:, 0], c=pixel_values, edgecolor='k', s=30, marker="v")
     # Show and/or save the plot
-    #plt.show()
+    plt.show()
     #fig.savefig('test_save.png')
 
 ########################################################################################################################

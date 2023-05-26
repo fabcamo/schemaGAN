@@ -125,7 +125,7 @@ natnei_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
 ########################################################################################################################
 # Call for the calculation of the MAE of each interpolation method for each validation image
 mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_means =  compute_errors(
-    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images)
+    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, path_results)
 
 
 ########################################################################################################################
