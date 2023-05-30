@@ -1,5 +1,4 @@
 import os
-import time
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,7 +6,7 @@ import matplotlib.pyplot as plt
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
 from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images
 from interpolation_plots import plot_histograms_row, plot_comparison_of_methods
-from GAN_p2p.functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
+from GAN_p2p.functions.p2p_process_data import load_remove_reshape_data, IC_normalization
 
 
 ########################################################################################################################
@@ -75,17 +74,8 @@ grid = np.array(np.meshgrid(rows, cols)).T.reshape(-1, 2)
 ########################################################################################################################
 #   LOAD THE VALIDATION DATA
 ########################################################################################################################
-all_csv = read_all_csv_files(path_validation)
-
-# Remove data to create fake-CPTs
-missing_data, full_data= apply_miss_rate_per_rf(all_csv, miss_rate, min_distance)
-no_samples = len(all_csv)
-
-# Reshape the data and store it
-missing_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in missing_data])
-full_data = np.array([np.reshape(i, (no_rows, no_cols)).astype(np.float32) for i in full_data])
-tar_images = np.reshape(full_data, (no_samples, no_rows, no_cols, 1))
-src_images = np.reshape(missing_data, (no_samples, no_rows, no_cols, 1))
+# load all images, convert to cptlike and reshape them
+tar_images, src_images = load_remove_reshape_data(path_validation, miss_rate, min_distance, no_rows, no_cols)
 
 # Grab the number of validation images
 no_validation_images = src_images.shape[0]

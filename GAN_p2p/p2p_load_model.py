@@ -2,7 +2,7 @@ from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 import numpy as np
 
-from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, preprocess_data, IC_normalization
+from functions.p2p_process_data import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
 from functions.p2p_summary import plot_images, plot_images_error
 from numpy.random import randn
 

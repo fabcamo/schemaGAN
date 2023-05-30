@@ -116,13 +116,13 @@ def generate_gan_image(generator_path, dataset):
         src_image, tar_image = input_img[ix], orig_img[ix]
 
         # Generate the GAN image with the chosen generator
-        gan_generated_image = model.predict(src_image)
+        gan_res = model.predict(src_image)
 
         # Reverse normalization (from [-1,1] to [0,255]) of the generated GAN image
-        gan_generated_image = reverse_IC_normalization(gan_generated_image)
+        gan_res = reverse_IC_normalization(gan_res)
 
         # Append the reversed-normalized GAN images to the list
-        gan_images.append(gan_generated_image)
+        gan_images.append(gan_res)
 
     return gan_images
 
@@ -158,13 +158,13 @@ def generate_nearnei_images(no_rows, no_cols, src_images):
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
         # Perform nearest neighbor interpolation using the coordinates, pixel values, and grid
-        nearnei_interpolation = nearest_interpolation(coords, pixel_values, grid)
+        nearnei_res = nearest_interpolation(coords, pixel_values, grid)
 
         # Reshape the results of a single image to plot
-        nearnei_interpolation = np.reshape(nearnei_interpolation, (1, no_rows, no_cols, 1))
+        nearnei_res = np.reshape(nearnei_res, (1, no_rows, no_cols, 1))
 
         # Append the results to the list
-        nearnei_images.append(nearnei_interpolation)
+        nearnei_images.append(nearnei_res)
 
     return nearnei_images
 
@@ -200,13 +200,13 @@ def generate_idw_images(no_rows, no_cols, src_images):
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
         # Perform IDW interpolation using the coordinates, pixel values, and grid
-        idw_inter = idw_interpolation(coords, pixel_values, grid)
+        idw_res = idw_interpolation(coords, pixel_values, grid)
 
         # Reshape the results of a single image to plot
-        idw_inter = np.reshape(idw_inter, (1, no_rows, no_cols, 1))
+        idw_res = np.reshape(idw_res, (1, no_rows, no_cols, 1))
 
         # Append the results to the list
-        idw_images.append(idw_inter)
+        idw_images.append(idw_res)
 
     return idw_images
 
@@ -242,20 +242,20 @@ def generate_krig_images(no_rows, no_cols, src_images):
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
         # Perform Kriging interpolation using the coordinates, pixel values, and grids
-        krig_inter = kriging_interpolation(coords, pixel_values, gridx, gridy)
+        krig_res = kriging_interpolation(coords, pixel_values, gridx, gridy)
 
         # Reshape the results of a single image to plot
-        krig_inter = np.reshape(krig_inter, (1, no_rows, no_cols, 1))
+        krig_res = np.reshape(krig_res, (1, no_rows, no_cols, 1))
 
         # Append the results to the list
-        krig_images.append(krig_inter)
+        krig_images.append(krig_res)
 
     return krig_images
 
 
 
 
-def generate_nat_nei_images(no_rows, no_cols, src_images):
+def generate_natnei_images(no_rows, no_cols, src_images):
     """
     Generates images using Natural Neighbor interpolation.
 
@@ -285,13 +285,13 @@ def generate_nat_nei_images(no_rows, no_cols, src_images):
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
         # Perform Natural Neighbor interpolation using the coordinates, pixel values, and grid
-        natnei_inter = natural_nei_interpolation(coords, pixel_values, grid)
+        natnei_res = natural_nei_interpolation(coords, pixel_values, grid)
 
         # Reshape the results of a single image to plot
-        natnei_inter = np.reshape(natnei_inter, (1, no_rows, no_cols, 1))
+        natnei_res = np.reshape(natnei_res, (1, no_rows, no_cols, 1))
 
         # Append the results to the list
-        natnei_images.append(natnei_inter)
+        natnei_images.append(natnei_res)
 
     return natnei_images
 
