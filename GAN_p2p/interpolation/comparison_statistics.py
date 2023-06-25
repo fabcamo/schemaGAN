@@ -1,10 +1,14 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+# Set the font family to "Arial"
+rcParams['font.family'] = 'Arial'
 
 
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
-from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images
+from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images, generate_inpainting_images, generate_natnei_images
 from interpolation_plots import plot_histograms_row, plot_comparison_of_methods
 from GAN_p2p.functions.p2p_process_data import load_remove_reshape_data, IC_normalization
 
@@ -44,7 +48,7 @@ path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
 # Path to the generator models
 path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
 # Path to save the results of the validation
-path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation_new'
 
 
 # Iterate over each file in the directory to find the requested model
@@ -107,22 +111,24 @@ idw_images = generate_idw_images(SIZE_Y, SIZE_X, src_images)
 # Generate Kriging images
 krig_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
 # Generate Natural Neighbor images
-natnei_images = generate_krig_images(SIZE_Y, SIZE_X, src_images)
+natnei_images = generate_natnei_images(SIZE_Y, SIZE_X, src_images)
+# Generate Inpainting images
+inpt_images = generate_inpainting_images(SIZE_Y, SIZE_X, src_images)
 
 
 ########################################################################################################################
 #   CALCULATE THE ERRORS IN THE INTERPOLATION METHODS
 ########################################################################################################################
 # Call for the calculation of the MAE of each interpolation method for each validation image
-mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_means =  compute_errors(
-    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, path_results)
+mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_errors(
+    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
 
 ########################################################################################################################
 #   PLOT THE COMPARISON IMAGES
 ########################################################################################################################
 # Plots three histograms in a row to compare each method with the GAN
-plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_natnei)
+plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
 # Save the plot to the specified path
 plt.savefig(os.path.join(path_results, 'histograms_row.png'))
 plt.show()
@@ -132,7 +138,7 @@ plt.show()
 plot_comparison_of_methods(cptlike_img[val_img], gan_images[val_img],
                            original_images[val_img], nearnei_images[val_img],
                            idw_images[val_img], krig_images[val_img],
-                           mae_means)
+                           natnei_images[val_img], inpt_images[val_img], mae_means)
 # Save the plot to the specified path
 plt.savefig(os.path.join(path_results, 'comparison_of_methods.png'))
 plt.show()

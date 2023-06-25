@@ -77,8 +77,13 @@ image_shape = src_images.shape[1:]
 
 # Define the models
 d_model = define_discriminator_512x32(image_shape)
+print("DISCRIMINATOR MODEL #################################################################################")
+d_model.summary()
 g_model = define_generator(image_shape)
+print("GENERATOR MODEL #################################################################################")
+g_model.summary()
 gan_model = define_gan(g_model, d_model, image_shape)
+
 
 # Format the data to use in the models
 data = [src_images, tar_images]

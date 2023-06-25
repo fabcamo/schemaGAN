@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from GAN_p2p.functions.p2p_process_data import load_remove_reshape_data
 from GAN_p2p.interpolation.interpolation_utils import generate_krig_images, get_cptlike_data
 
-
+np.random.seed(20232023)
 ########################################################################################################################
 
 # Path the the data
@@ -21,6 +21,7 @@ grid = np.array(np.meshgrid(rows, cols)).T.reshape(-1, 2)
 # Choose missing rate
 miss_rate = 0.99
 min_distance = 51
+
 
 ########################################################################################################################
 # load all images, convert to cptlike and reshape them
@@ -45,6 +46,8 @@ fig, axs = plt.subplots(nrows=2, figsize=(10,10))
 # Figure 1> a scatter of the input data (x,y > col,row)
 axs[0].scatter(coords[:,1], coords[:,0], c=pixel_values, marker="v")
 axs[0].set_title('Input data')
+axs[0].set_xlim([0, 512])  # Set the x limit here
+axs[0].set_ylim([0, 32])  # Set the y limit here
 # Figure 2> the interpolated grid
 axs[1].set_title('Interpolated output')
 im = axs[1].imshow(krig_img[0, :, :, 0], extent=[0, no_cols, 0, no_rows], aspect='auto', origin='lower')
@@ -57,7 +60,7 @@ axs[1].set_yticks(np.arange(0, no_rows+1, 5))
 axs[0].invert_yaxis()
 axs[1].invert_yaxis()
 # Plot the input pixels on top of the interpolation results as black dots
-axs[1].scatter(coords[:, 1], coords[:, 0], edgecolor='k', s=30, marker="v")
+#axs[1].scatter(coords[:, 1], coords[:, 0], edgecolor='k', s=30, marker="v")
 # Show and/or save the plot
 plt.show()
 #fig.savefig('test_save.png')
