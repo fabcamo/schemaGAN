@@ -91,7 +91,7 @@ data = [src_images, tar_images]
 dataset = IC_normalization(data)
 [input_img, orig_img] = dataset
 
-# Get the coordinates and the pixel values for the cotlike data
+# Get the coordinates and the pixel values for the cptlike data
 coords_all, pixel_values_all = get_cptlike_data(src_images)
 
 # Format the original image and the cptlike image for ploting
