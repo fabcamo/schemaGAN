@@ -9,15 +9,12 @@ from functions.p2p_generator_architecture import define_generator
 from functions.p2p_gan_architecture import define_gan
 from functions.p2p_train_architecture import train
 
-# Check the time and start the timers
-time_current = time.strftime("%d/%m/%Y %H:%M:%S")
-
 ########################################################################################################################
 #   PATHS
 ########################################################################################################################
 # For DelftBlue un-comment this...
-path_data = r'/scratch/fcamposmontero/databases/512x32_50k/train'
-path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e100_s40k'
+path_data = r'/scratch/fcamposmontero/databases/512x32_20k/train'
+path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e200_s16k'
 
 # For local run un-comment this...
 #path_data = 'C:\\inpt\\synthetic_data\\512x32\\train'
@@ -25,19 +22,13 @@ path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e100_s40k'
 
 results_dir_path = os.path.join(path_results, 'results_summary.txt')
 
-
-########################################################################################################################
-#   GENERATE SEED
-########################################################################################################################
-# Generate a random seed using NumPy
-seed = np.random.randint(20220412, 20230412)
-# Set the seed for NumPy's random number generator
-np.random.seed(seed)
-
+# Check the time and start the timers
+time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 
 ########################################################################################################################
 #   CHOOSE THE  GEOMETRY, EPOCHS AND MISSING RATE
 ########################################################################################################################
+
 # Resizing images, if needed
 SIZE_X = 512
 SIZE_Y = 32
@@ -50,12 +41,13 @@ miss_rate = 0.99
 min_distance = 51
 
 # Number of epochs
-n_epochs = 100
+n_epochs = 200
 
 
 ########################################################################################################################
 #   PROCESS THE DATA AND DEFINE THE MODELS
 ########################################################################################################################
+
 # Create empty containers for the target and source images
 tar_images = []
 src_images = []
@@ -77,14 +69,8 @@ image_shape = src_images.shape[1:]
 
 # Define the models
 d_model = define_discriminator_512x32(image_shape)
-print("DISCRIMINATOR MODEL #################################################################################")
-d_model.summary()
 g_model = define_generator(image_shape)
-print("GENERATOR MODEL #################################################################################")
-g_model.summary()
 gan_model = define_gan(g_model, d_model, image_shape)
-print("GANGAN MODEL #################################################################################")
-gan_model.summary()
 
 # Format the data to use in the models
 data = [src_images, tar_images]
@@ -118,7 +104,6 @@ time_str = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
 with open(results_dir_path, "a") as file:
     file.write("Executed on: {}\n".format(time_current))
     file.write("Execution time: {}\n\n".format(time_str))
-    file.write("Seed: {}\n\n".format(seed))
     file.write("The shape of a single input image is: {}\n".format(image_shape))
     file.write("The total number of training images is: {}\n".format(src_images.shape[0]))
     file.write("Number of epochs is: {}\n\n".format(n_epochs))
