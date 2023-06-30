@@ -21,6 +21,7 @@ def nearest_interpolation(training_points, training_data, prediction_points):
     """
 
     # Create a KDtree from the known data points
+
     # KDtree is used to quickly find nearest neighbours in multidimensional space
     tree = cKDTree(training_points)
 

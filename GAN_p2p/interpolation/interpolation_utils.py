@@ -6,7 +6,6 @@ from GAN_p2p.functions.p2p_process_data import reverse_IC_normalization
 from interpolation_methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
 
 
-
 def get_cptlike_data(src_images):
     """
     Extracts the pixel coordinates and corresponding values for non-zero pixels
@@ -414,6 +413,8 @@ def compute_errors(original, gan, nn, idw, krig, natnei, inpt, path):
     print("Index of maximum value in mae_gan_list:", max_index)
 
     return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list, mae_natnei_list, mae_inpt_list, mae_means
+
+
 
 
 

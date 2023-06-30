@@ -12,7 +12,7 @@ rcParams['font.family'] = 'Arial'
 
 from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
 from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images, generate_inpainting_images, generate_natnei_images
-from interpolation_plots import plot_histograms_row, plot_comparison_of_methods
+from interpolation_plots import plot_histograms_row, plot_comparison_of_methods, generate_boxplot
 from GAN_p2p.functions.p2p_process_data import load_remove_reshape_data, IC_normalization
 
 
@@ -169,7 +169,15 @@ mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_e
 plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
 # Save the plot to the specified path
 plt.savefig(os.path.join(path_results, 'histograms_row.pdf'), format='pdf')
-plt.show()
+#plt.show()
+plt.close()
+
+
+generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'boxplot.pdf'), format='pdf')
+#plt.show()
+plt.close()
 
 
 
@@ -184,4 +192,4 @@ for i in range(no_validation_images):
                                natnei_images[i], inpt_images[i], val_img)
     # Save the plot to the specified path with a dynamic figure name
     plt.savefig(os.path.join(path_results, f'compar_{i}_of_4000.pdf'), format='pdf')
-
+    plt.close()

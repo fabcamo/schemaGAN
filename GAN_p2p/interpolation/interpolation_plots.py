@@ -183,3 +183,58 @@ def plot_comparison_of_methods(src_img, gen_img, tar_img, nn, idw, kriging, natn
 
     # Adjust the spacing between subplots
     plt.tight_layout()
+
+
+
+
+
+def generate_boxplot(gan, nearnei, idw, krig, natnei, inpt):
+    """
+    Generate a box plot to compare the Mean Absolute Error (MAE) values
+    of different interpolation methods.
+
+    Parameters:
+        gan (list): List of MAE values for SchemaGAN method.
+        nearnei (list): List of MAE values for Nearest Neighbor method.
+        idw (list): List of MAE values for IDW method.
+        krig (list): List of MAE values for Kriging method.
+        natnei (list): List of MAE values for Natural Neighbor method.
+        inpt (list): List of MAE values for Inpainting method.
+
+    Returns:
+        None
+    """
+
+    # Combine the MAE values into a list of lists
+    data = [gan, nearnei, idw, krig, natnei, inpt]
+
+    # Create a figure and axis object with a specific size
+    fig, ax = plt.subplots(figsize=(9, 3))
+
+    # Define the color palette
+    color_palette = plt.cm.viridis
+
+    # Create the box plot with filled boxes
+    boxplot = ax.boxplot(data, showfliers=True, sym='.', whis=[5, 95], patch_artist=True)
+
+    # Customize the colors of the boxes
+    for i, box in enumerate(boxplot['boxes']):
+        # Set the facecolor of the boxes using the Viridis palette
+        box.set(facecolor=color_palette(i / len(data)), alpha=0.5)
+
+    # Change the color of the mean line inside the boxes to black
+    for median in boxplot['medians']:
+        # Set the color of the median line to black
+        median.set(color='black')
+
+    # Customize the plot labels
+    ax.set_xticklabels(['SchemaGAN', 'Nearest Neighbour', 'Kriging', 'IDW', 'Natural Neighbour', 'Inpainting'])
+
+    # Set the y-axis label
+    ax.set_ylabel('MAE')
+
+    # Set the plot title
+    ax.set_title('Comparison of Interpolation Methods')
+
+    # Show the plot
+    plt.show()
