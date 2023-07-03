@@ -1,9 +1,12 @@
 import os
 import csv
 import numpy as np
+from skimage import metrics
+from matplotlib import pyplot as plt
+
 from tensorflow.keras.models import load_model
 from GAN_p2p.functions.p2p_process_data import reverse_IC_normalization
-from interpolation_methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
+from GAN_p2p.interpolation.interpolation_methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
 
 
 def get_cptlike_data(src_images):
@@ -213,7 +216,6 @@ def generate_idw_images(no_rows, no_cols, src_images):
 
 
 
-
 def generate_krig_images(no_rows, no_cols, src_images):
     """
     Generates images using Kriging interpolation.
@@ -297,6 +299,8 @@ def generate_natnei_images(no_rows, no_cols, src_images):
     return natnei_images
 
 
+
+
 def generate_inpainting_images(no_rows, no_cols, src_images):
     """
     Generates images using Inpaiting interpolation.
@@ -340,8 +344,7 @@ def generate_inpainting_images(no_rows, no_cols, src_images):
 
 
 
-
-def compute_errors(original, gan, nn, idw, krig, natnei, inpt, path):
+def compute_mae(original, gan, nn, idw, krig, natnei, inpt, path):
     """
     This function computes the Mean Absolute Errors (MAE) for different algorithms
     and save the results in a CSV file. It also identifies the indices of minimum
@@ -413,6 +416,289 @@ def compute_errors(original, gan, nn, idw, krig, natnei, inpt, path):
     print("Index of maximum value in mae_gan_list:", max_index)
 
     return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list, mae_natnei_list, mae_inpt_list, mae_means
+
+
+
+
+def compute_mse(original, gan, nn, idw, krig, natnei, inpt, path):
+    """
+    This function computes the Mean Squared Errors (MSE) for different algorithms
+    and save the results in a CSV file. It also identifies the indices of minimum
+    and maximum values in the GAN MSE list.
+
+    Parameters:
+    original (list): Original values.
+    gan (list): Generated Adversarial Network's values.
+    nn (list): Neural Network's values.
+    idw (list): Inverse Distance Weighting's values.
+    krig (list): Kriging's values.
+    natnei (list): Natural Neighbor's values.
+    inpt (list): Inpainting values.
+
+    Returns:
+    mse_gan_list (list): MSE list for GAN.
+    mse_nn_list (list): MSE list for Neural Network.
+    mse_idw_list (list): MSE list for IDW.
+    mse_krig_list (list): MSE list for Kriging.
+    mse_natnei_list (list): MSE list for Natural Neighbor.
+    mse_inpt_list (list): MSE list for Inpainting.
+    mse_means (list): Mean of each MSE list.
+    """
+
+    # Specify the filename
+    filename = 'results_comparison_MSE.csv'
+    # Join the path and filename
+    full_path = os.path.join(path, filename)
+
+    # Initialize MSE lists for each method
+    mse_gan_list = []
+    mse_nn_list = []
+    mse_idw_list = []
+    mse_krig_list = []
+    mse_natnei_list = []
+    mse_inpt_list = []
+
+    # Calculate MSE for each method and append to the respective list
+    for i in range(len(original)):
+        mse_gan_list.append(np.mean(np.square(gan[i] - original[i])))
+        mse_nn_list.append(np.mean(np.square(nn[i] - original[i])))
+        mse_idw_list.append(np.mean(np.square(idw[i] - original[i])))
+        mse_krig_list.append(np.mean(np.square(krig[i] - original[i])))
+        mse_natnei_list.append(np.mean(np.square(natnei[i] - original[i])))
+        mse_inpt_list.append(np.mean(np.square(inpt[i] - original[i])))
+
+    # Calculate the mean of each MSE list and store in mse_means
+    mse_means = [np.mean(mse_gan_list), np.mean(mse_nn_list),
+                 np.mean(mse_idw_list), np.mean(mse_krig_list),
+                 np.mean(mse_natnei_list), np.mean(mse_inpt_list)]
+
+    # Save results to a CSV file at the specified path
+    with open(full_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Index', 'MSE GAN', 'MSE NearNei', 'MSE IDW', 'MSE Krig', 'MSE NatNei', 'MSE Inpt'])
+        for i in range(len(original)):
+            writer.writerow([i, mse_gan_list[i], mse_nn_list[i],
+                             mse_idw_list[i], mse_krig_list[i], mse_natnei_list[i], mse_inpt_list[i]])
+
+        # Add another row in the CSV with the mean of each MSE list
+        writer.writerow(['Mean', mse_means[0], mse_means[1], mse_means[2], mse_means[3], mse_means[4], mse_means[5]])
+
+    # Find the index of the minimum and maximum values in mse_gan_list
+    min_index = np.argmin(mse_gan_list)
+    max_index = np.argmax(mse_gan_list)
+
+    # Print the index of the minimum and maximum values
+    print("Index of minimum value in mse_gan_list:", min_index)
+    print("Index of maximum value in mse_gan_list:", max_index)
+
+    return mse_gan_list, mse_nn_list, mse_idw_list, mse_krig_list, mse_natnei_list, mse_inpt_list, mse_means
+
+
+
+
+def compute_ssim(original, gan, nn, idw, krig, natnei, inpt, path):
+    """
+    This function computes the Structural Similarity Index (SSIM) for different algorithms
+    and save the results in a CSV file. It also identifies the indices of minimum
+    and maximum values in the GAN SSIM list.
+
+    Parameters:
+    original (list): Original values.
+    gan (list): Generated Adversarial Network's values.
+    nn (list): Neural Network's values.
+    idw (list): Inverse Distance Weighting's values.
+    krig (list): Kriging's values.
+    natnei (list): Natural Neighbor's values.
+    inpt (list): Inpainting values.
+
+    Returns:
+    ssim_gan_list (list): SSIM list for GAN.
+    ssim_gan_list_map (list): SSIM map list for GAN.
+    ssim_nn_list (list): SSIM list for Neural Network.
+    ssim_nn_list_map (list): SSIM map list for Neural Network.
+    ssim_idw_list (list): SSIM list for IDW.
+    ssim_idw_list_map (list): SSIM map list for IDW.
+    ssim_krig_list (list): SSIM list for Kriging.
+    ssim_krig_list_map (list): SSIM map list for Kriging.
+    ssim_natnei_list (list): SSIM list for Natural Neighbor.
+    ssim_natnei_list_map (list): SSIM map list for Natural Neighbor.
+    ssim_inpt_list (list): SSIM list for Inpainting.
+    ssim_inpt_list_map (list): SSIM map list for Inpainting.
+    ssim_means (list): Mean of each SSIM list.
+    """
+    filename = 'results_comparison_SSIM.csv'
+    full_path = os.path.join(path, filename)
+
+    ssim_gan_list, ssim_gan_list_map = [], []
+    ssim_nn_list, ssim_nn_list_map = [], []
+    ssim_idw_list, ssim_idw_list_map = [], []
+    ssim_krig_list, ssim_krig_list_map = [], []
+    ssim_natnei_list, ssim_natnei_list_map = [], []
+    ssim_inpt_list, ssim_inpt_list_map = [], []
+
+    gan = np.squeeze(gan)
+    original = np.squeeze(original)
+    nn = np.squeeze(nn)
+    idw = np.squeeze(idw)
+    krig = np.squeeze(krig)
+    natnei = np.squeeze(natnei)
+    inpt = np.squeeze(inpt)
+
+    for i in range(len(original)):
+        ssim, diff_image = metrics.structural_similarity(gan[i], original[i], data_range=4.5-0, full=True)
+        ssim_gan_list.append(ssim)
+        ssim_gan_list_map.append(diff_image)
+
+        ssim, diff_image = metrics.structural_similarity(nn[i], original[i], data_range=4.5-0, full=True)
+        ssim_nn_list.append(ssim)
+        ssim_nn_list_map.append(diff_image)
+
+        ssim, diff_image = metrics.structural_similarity(idw[i], original[i], data_range=4.5-0, full=True)
+        ssim_idw_list.append(ssim)
+        ssim_idw_list_map.append(diff_image)
+
+        ssim, diff_image = metrics.structural_similarity(krig[i], original[i], data_range=4.5-0, full=True)
+        ssim_krig_list.append(ssim)
+        ssim_krig_list_map.append(diff_image)
+
+        ssim, diff_image = metrics.structural_similarity(natnei[i], original[i], data_range=4.5-0, full=True)
+        ssim_natnei_list.append(ssim)
+        ssim_natnei_list_map.append(diff_image)
+
+        ssim, diff_image = metrics.structural_similarity(inpt[i], original[i], data_range=4.5-0, full=True)
+        ssim_inpt_list.append(ssim)
+        ssim_inpt_list_map.append(diff_image)
+
+    ssim_means = [np.mean(ssim) for ssim in [ssim_gan_list, ssim_nn_list, ssim_idw_list,
+                                             ssim_krig_list, ssim_natnei_list, ssim_inpt_list]]
+
+    with open(full_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Index', 'SSIM GAN', 'SSIM NN', 'SSIM IDW',
+                         'SSIM Krig', 'SSIM NatNei', 'SSIM Inpt'])
+        for i in range(len(original)):
+            writer.writerow([i, ssim_gan_list[i], ssim_nn_list[i],
+                             ssim_idw_list[i], ssim_krig_list[i],
+                             ssim_natnei_list[i], ssim_inpt_list[i]])
+
+        writer.writerow(['Mean', *ssim_means])
+
+    return (ssim_gan_list, ssim_gan_list_map, ssim_nn_list, ssim_nn_list_map,
+            ssim_idw_list, ssim_idw_list_map, ssim_krig_list, ssim_krig_list_map,
+            ssim_natnei_list, ssim_natnei_list_map, ssim_inpt_list, ssim_inpt_list_map, ssim_means)
+
+
+
+
+
+def compute_hausdorff_distance(original, gan, nn, idw, krig, natnei, inpt, path):
+    """
+    This function computes the Hausdorff distance for different algorithms
+    and save the results in a CSV file.
+
+    Parameters:
+    original (list): Original values.
+    gan (list): Generated Adversarial Network's values.
+    nn (list): Neural Network's values.
+    idw (list): Inverse Distance Weighting's values.
+    krig (list): Kriging's values.
+    natnei (list): Natural Neighbor's values.
+    inpt (list): Inpainting values.
+
+    Returns:
+    haus_error_lists (dict): A dictionary containing Hausdorff distance lists for each method.
+    """
+    filename = 'results_comparison_Hausdorff.csv'
+    full_path = os.path.join(path, filename)
+
+    # Initialize lists to store Hausdorff distance for each method
+    haus_error_gan_list, haus_error_nn_list, haus_error_idw_list, haus_error_krig_list, haus_error_natnei_list, haus_error_inpt_list = [], [], [], [], [], []
+
+    gan = np.squeeze(gan)
+    original = np.squeeze(original)
+    nn = np.squeeze(nn)
+    idw = np.squeeze(idw)
+    krig = np.squeeze(krig)
+    natnei = np.squeeze(natnei)
+    inpt = np.squeeze(inpt)
+
+    for i in range(len(original)):
+
+        haus_error_gan_list.append(metrics.hausdorff_distance(gan[i], original[i], method='modified'))
+        haus_error_nn_list.append(metrics.hausdorff_distance(nn[i], original[i], method='modified'))
+        haus_error_idw_list.append(metrics.hausdorff_distance(idw[i], original[i], method='modified'))
+        haus_error_krig_list.append(metrics.hausdorff_distance(krig[i], original[i], method='modified'))
+        haus_error_natnei_list.append(metrics.hausdorff_distance(natnei[i], original[i], method='modified'))
+        haus_error_inpt_list.append(metrics.hausdorff_distance(inpt[i], original[i], method='modified'))
+
+    with open(full_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Index', 'Haus GAN', 'Haus NN', 'Haus IDW',
+                         'Haus Krig', 'Haus NatNei', 'Haus Inpt'])
+        for i in range(len(original)):
+            writer.writerow([i, haus_error_gan_list[i], haus_error_nn_list[i],
+                             haus_error_idw_list[i], haus_error_krig_list[i],
+                             haus_error_natnei_list[i], haus_error_inpt_list[i]])
+
+
+    return haus_error_gan_list, haus_error_nn_list, haus_error_idw_list, haus_error_krig_list, haus_error_natnei_list, haus_error_inpt_list
+
+
+
+
+
+def compute_errors_gan_only(original, gan, path):
+    """
+    This function computes the Mean Absolute Errors (MAE) for GAN method
+    and save the results in a CSV file.
+
+    Parameters:
+    original (list): Original values.
+    gan (list): Generated Adversarial Network's values.
+
+    Returns:
+    mae_gan (list): MAE list for GAN.
+    mae_gan_avg (float): Average MAE for GAN.
+    mae_gan_stddev (float): Standard deviation of MAE for GAN.
+    """
+
+    # Specify the filename
+    filename = 'results_comparison_MAE_gan_only.csv'
+    # Join the path and filename
+    full_path = os.path.join(path, filename)
+
+    # Initialize MAE list for GAN
+    mae_gan = []
+
+    # Calculate MAE for GAN and append to the list
+    for i in range(len(original)):
+        mae_gan.append(np.mean(np.abs(gan[i] - original[i])))
+
+    # Calculate the average and standard deviation of the MAE list
+    mae_gan_avg = np.mean(mae_gan)
+    mae_gan_stddev = np.std(mae_gan)
+
+    # Save results to a CSV file at the specified path
+    with open(full_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Index', 'MAE GAN'])
+        for i in range(len(original)):
+            writer.writerow([i, mae_gan[i]])
+
+        # Add another row in the CSV with the mean and stddev of the MAE list
+        writer.writerow(['Average', mae_gan_avg])
+        writer.writerow(['Standard Deviation', mae_gan_stddev])
+
+    # Find the index of the minimum and maximum values in mae_gan_list
+    min_index = np.argmin(mae_gan)
+    max_index = np.argmax(mae_gan)
+
+    # Print the index of the minimum and maximum values
+    print("Index of minimum value in mae_gan_list:", min_index)
+    print("Index of maximum value in mae_gan_list:", max_index)
+
+    return mae_gan, mae_gan_avg, mae_gan_stddev
+
 
 
 

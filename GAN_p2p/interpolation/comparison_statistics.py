@@ -10,9 +10,9 @@ import time
 rcParams['font.family'] = 'Arial'
 
 
-from interpolation_utils import get_cptlike_data, format_source_images, compute_errors
+from interpolation_utils import get_cptlike_data, format_source_images, compute_mae, compute_ssim, compute_mse, compute_hausdorff_distance
 from interpolation_utils import generate_gan_image, generate_nearnei_images, generate_idw_images, generate_krig_images, generate_inpainting_images, generate_natnei_images
-from interpolation_plots import plot_histograms_row, plot_comparison_of_methods, generate_boxplot
+from interpolation_plots import plot_histograms_mae, plot_histograms_mse, plot_histograms_ssim, plot_comparison_of_methods_mae, plot_comparison_of_methods_ssim, plot_comparison_of_methods_mse, generate_boxplot
 from GAN_p2p.functions.p2p_process_data import load_remove_reshape_data, IC_normalization
 
 
@@ -158,38 +158,110 @@ with open(output_file, 'a') as f:
 #   CALCULATE THE ERRORS IN THE INTERPOLATION METHODS
 ########################################################################################################################
 # Call for the calculation of the MAE of each interpolation method for each validation image
-mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_errors(
+mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_mae(
+    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
+
+# Call for the calculation of the MSE of each interpolation method for each validation image
+mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, mse_means = compute_mse(
+    original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
+
+# Call for the calculation of the SSIM of each interpolation method for each validation image, and also get the MAP
+ssim_gan, ssim_gan_map, ssim_nn, ssim_nn_map, ssim_idw, ssim_idw_map, ssim_krig, ssim_krig_map, ssim_natnei, ssim_natnei_map, ssim_inpt, ssim_inpt_map, ssim_means =  compute_ssim(
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
 
 ########################################################################################################################
 #   PLOT THE COMPARISON IMAGES
 ########################################################################################################################
+
+##### FOR THE MAE #############################################################
+
 # Plots three histograms in a row to compare each method with the GAN
-plot_histograms_row(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
+plot_histograms_mae(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'histograms_row.pdf'), format='pdf')
+plt.savefig(os.path.join(path_results, 'histograms_row_mae.pdf'), format='pdf')
 #plt.show()
 plt.close()
 
-
-generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
+# Box plot for the comparison of the methods
+generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, method='Mean absolute error')
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'boxplot.pdf'), format='pdf')
+plt.savefig(os.path.join(path_results, 'boxplot_mae.pdf'), format='pdf')
 #plt.show()
 plt.close()
 
-
-
+# Big 7x2 comparison plot with all methods and errors
 for i in range(no_validation_images):
     # Get the validation image MAE for each method
-    val_img = [mae_gan[i], mae_nn[i], mae_idw[i], mae_krig[i], mae_natnei[i], mae_inpt[i]]
+    mae_per_img = [mae_gan[i], mae_nn[i], mae_idw[i], mae_krig[i], mae_natnei[i], mae_inpt[i]]
 
     # Plots 10 images for a given validation image, with erros
-    plot_comparison_of_methods(cptlike_img[i], gan_images[i],
-                               original_images[i], nearnei_images[i],
-                               idw_images[i], krig_images[i],
-                               natnei_images[i], inpt_images[i], val_img)
+    plot_comparison_of_methods_mae(cptlike_img[i], gan_images[i],
+                                   original_images[i], nearnei_images[i],
+                                   idw_images[i], krig_images[i],
+                                   natnei_images[i], inpt_images[i], mae_per_img)
     # Save the plot to the specified path with a dynamic figure name
-    plt.savefig(os.path.join(path_results, f'compar_{i}_of_4000.pdf'), format='pdf')
+    plt.savefig(os.path.join(path_results, f'comparMAE_{i}_of_4000.pdf'), format='pdf')
     plt.close()
+
+
+##### FOR THE MSE ####################################################
+# Plots five histograms in a row to compare each method with the GAN
+plot_histograms_mse(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt)
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'histograms_row_mse.pdf'), format='pdf')
+#plt.show()
+plt.close()
+
+# Box plot for the comparison of the methods
+generate_boxplot(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, method='Mean squared error')
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'boxplot_mse.pdf'), format='pdf')
+#plt.show()
+plt.close()
+
+# Big 7x2 comparison plot with all methods and errors
+for i in range(no_validation_images):
+    # Get the validation image MSE for each method
+    mse_per_img = [mse_gan[i], mse_nn[i], mse_idw[i], mse_krig[i], mse_natnei[i], mse_inpt[i]]
+
+    # Plots 10 images for a given validation image, with errors
+    plot_comparison_of_methods_mse(cptlike_img[i], gan_images[i],
+                                   original_images[i], nearnei_images[i],
+                                   idw_images[i], krig_images[i],
+                                   natnei_images[i], inpt_images[i], mse_per_img)
+    # Save the plot to the specified path with a dynamic figure name
+    plt.savefig(os.path.join(path_results, f'comparMSE_{i}_of_4000.pdf'), format='pdf')
+    plt.close()
+
+
+
+##### FOR THE SSIM ##########################################################
+# Plots five histograms in a row to compare each method with the GAN
+plot_histograms_ssim(ssim_gan, ssim_nn, ssim_idw, ssim_krig, ssim_natnei, ssim_inpt)
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'histograms_row_ssim.pdf'), format='pdf')
+#plt.show()
+plt.close()
+
+# Box plot for the comparison of the methods
+generate_boxplot(ssim_gan, ssim_nn, ssim_idw, ssim_krig, ssim_natnei, ssim_inpt, method='Structural similarity index')
+# Save the plot to the specified path
+plt.savefig(os.path.join(path_results, 'boxplot_ssim.pdf'), format='pdf')
+#plt.show()
+plt.close()
+
+# Big 7x2 comparison plot with all methods and errors
+for i in range(no_validation_images):
+    # Get the validation image MAE for each method
+    ssim_per_img = [ssim_gan[i], ssim_nn[i], ssim_idw[i], ssim_krig[i], ssim_natnei[i], ssim_inpt[i]]
+
+    # Plots 10 images for a given validation image, with erros
+    plot_comparison_of_methods_ssim(cptlike_img[i], gan_images[i], original_images[i], nearnei_images[i],
+                                   idw_images[i], krig_images[i], natnei_images[i], inpt_images[i],
+                                   ssim_gan_map[i], ssim_nn_map[i], ssim_idw_map[i], ssim_krig_map[i],
+                                   ssim_natnei_map[i], ssim_inpt_map[i], ssim_per_img)
+    # Save the plot to the specified path with a dynamic figure name
+    plt.savefig(os.path.join(path_results, f'comparSSIM_{i}_of_4000.pdf'), format='pdf')
+    plt.close()
+
