@@ -12,7 +12,7 @@ def define_gan(g_model, d_model, image_shape):
             layer.trainable = False  # Descriminator layers set to untrainable in the combined GAN but
             # standalone descriminator will be trainable.
 
-    # Define the source image
+    # Define the source image (CPT-like)
     in_src = Input(shape=image_shape)
     # suppy the image as input to the generator
     gen_out = g_model(in_src)
