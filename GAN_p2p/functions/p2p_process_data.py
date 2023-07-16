@@ -44,6 +44,7 @@ def read_all_csv_files(directory):
 
 
 
+
 def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     """
     Apply a given missing rate to each random field in the input data and return the missing data and the full data.
@@ -95,6 +96,7 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
 
 
 
+
 def remove_random_columns(data_z, miss_rate, min_distance):
     """
     Remove a random number of columns from the matrix at a specified rate,
@@ -136,6 +138,8 @@ def remove_random_columns(data_z, miss_rate, min_distance):
 
     # Return the final array with random columns removed
     return miss_list
+
+
 
 
 def check_min_spacing(data_z, miss_rate, min_distance):
@@ -181,7 +185,6 @@ def check_min_spacing(data_z, miss_rate, min_distance):
             columns_to_keep_index.append(rand_index)
 
     return columns_to_keep_index
-
 
 
 
@@ -257,7 +260,6 @@ def load_remove_reshape_data(path_to_images, miss_rate, min_distance, no_rows, n
 
 
 
-
 def IC_normalization(data):
     """
     Normalize IC values in the data from [0 - MaxIC] to [-1 - 1].
@@ -288,6 +290,8 @@ def IC_normalization(data):
     tar_normalized = 2 * (tar_data / data_range) - 1
 
     return [src_normalized, tar_normalized]
+
+
 
 
 def reverse_IC_normalization(data):
