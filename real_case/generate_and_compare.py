@@ -175,32 +175,10 @@ def run_and_get_mean_mae(csv_file):
     # Reshape them to the format that the other functions know how to handle
     cs_to_evaluate = cs_to_evaluate.reshape(1, 32, 512, 1)
 
-    # FOR THE SCHEMAGAN MODEL
-    # Path to the generator models
-    path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
-    # Input the name of the generator model to use
-    name_of_model_to_use = 'model_000051.h5'
-
-    # Pull the Generator model
-    # Iterate over each file in the directory to find the requested model
-    for filename in os.listdir(path_to_model_to_evaluate):
-        # Check if the filename matches the desired name
-        if filename == name_of_model_to_use:
-            # If we find a matching file, store its full path in the 'generator' variable and exit the loop
-            generator = os.path.join(path_to_model_to_evaluate, filename)
-            print(f"The '{name_of_model_to_use}' has been selected as the generator")
-            break
-    else:
-        # If we don't find a matching file, print a message to the console
-        print(f"No file found with name '{name_of_model_to_use}'")
-
     # Dirty way of making the normalization script run
     data_to_norm = [cs_to_evaluate, cs_to_evaluate]
     normalized_data = IC_normalization(data_to_norm)
     [cs_to_evaluate_normalized, cs_to_evaluate_normalized] = normalized_data
-
-    # Load the generator model from path
-    model = load_model(generator)
 
     # Generate the images with a random number of CPT and locations given
     # Run the SchemaGAN
@@ -274,6 +252,28 @@ if __name__ == "__main__":
     # Number of runs
     num_runs = 10
 
+    # FOR THE SCHEMAGAN MODEL
+    # Path to the generator models
+    path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
+    # Input the name of the generator model to use
+    name_of_model_to_use = 'model_000051.h5'
+
+    # Pull the Generator model
+    # Iterate over each file in the directory to find the requested model
+    for filename in os.listdir(path_to_model_to_evaluate):
+        # Check if the filename matches the desired name
+        if filename == name_of_model_to_use:
+            # If we find a matching file, store its full path in the 'generator' variable and exit the loop
+            generator = os.path.join(path_to_model_to_evaluate, filename)
+            print(f"The '{name_of_model_to_use}' has been selected as the generator")
+            break
+    else:
+        # If we don't find a matching file, print a message to the console
+        print(f"No file found with name '{name_of_model_to_use}'")
+
+    # Load the generator model from path
+    model = load_model(generator)
+
     # Lists to store the average MAE results from each run
     avg_mae_gan = []
     avg_mae_near = []
@@ -315,10 +315,11 @@ if __name__ == "__main__":
     })
     df_average_mae.to_csv("average_mae_results.csv", index=False)
 
-    # Calculate the total average for each method
+    # Calculate the total average MAE for each method
     total_average_mae_gan = np.mean(avg_mae_gan)
     total_average_mae_near = np.mean(avg_mae_near)
     total_average_mae_krig = np.mean(avg_mae_krig)
+    # Calculate the total average MSE for each method
     total_average_mse_gan = np.mean(avg_mae_gan)
     total_average_mse_near = np.mean(avg_mae_near)
     total_average_mse_krig = np.mean(avg_mae_krig)
