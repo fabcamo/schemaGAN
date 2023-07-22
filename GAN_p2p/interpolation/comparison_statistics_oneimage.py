@@ -37,13 +37,13 @@ np.random.seed(20232023)
 #   PATH FOR THE VALIDATION DATA AND MODEL TO EVALUATE
 ########################################################################################################################
 # Path to the validation images
-path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
+path_validation = 'C:\\inpt\\synthetic_data\\512x32\\test'
 # Path to the generator models
 path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
 # Path to save the results of the validation
-path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation_new'
+path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\just_one_image'
 # Specify the output file
-output_file = 'C:\\inpt\\GAN_p2p\\results\\test\\validation_new\\times.txt'
+output_file = 'C:\\inpt\\GAN_p2p\\results\\test\\just_one_image\\times.txt'
 
 
 # Iterate over each file in the directory to find the requested model
@@ -77,7 +77,17 @@ grid = np.array(np.meshgrid(rows, cols)).T.reshape(-1, 2)
 #   LOAD THE VALIDATION DATA
 ########################################################################################################################
 # load all images, convert to cptlike and reshape them
-tar_images, src_images = load_remove_reshape_data(path_validation, miss_rate, min_distance, no_rows, no_cols)
+tar_images = []
+src_images = []
+# Loop to run the function 100 times
+for i in range(10):
+    tar_images_single, src_images_single = load_remove_reshape_data(path_validation, miss_rate, min_distance, no_rows, no_cols)
+    tar_images.append(tar_images_single)
+    src_images.append(src_images_single)
+
+# Convert the lists to NumPy arrays and concatenate along axis 0
+tar_images = np.concatenate(tar_images, axis=0)
+src_images = np.concatenate(src_images, axis=0)
 
 # Grab the number of validation images
 no_validation_images = src_images.shape[0]
