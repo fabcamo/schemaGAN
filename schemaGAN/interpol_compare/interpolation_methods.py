@@ -46,7 +46,7 @@ def nearest_interpolation(training_points, training_data, prediction_points):
 
 def idw_interpolation(training_points, training_data, prediction_points):
     """
-    Performs Inverse Distance Weighting (IDW) interpolation on the provided data.
+    Performs Inverse Distance Weighting (IDW) interpol_compare on the provided data.
 
     Parameters:
         training_points (np.ndarray): Known data points (x, y coordinates).
@@ -71,7 +71,7 @@ def idw_interpolation(training_points, training_data, prediction_points):
     # Get unique x coordinates from the training points
     x_points = np.array(list(set(training_points[:, 1]))).reshape(-1, 1)
 
-    # Number of nearest points to consider for the interpolation
+    # Number of nearest points to consider for the interpol_compare
     nb_near_points = len(x_points)
     # Get training data for the points
     training_data_points = []
@@ -104,7 +104,7 @@ def idw_interpolation(training_points, training_data, prediction_points):
         # extrapolate data
         data = extrapolate_array(data, len(y_points_prediction))
 
-        # Compute the IDW interpolation for the current point
+        # Compute the IDW interpol_compare for the current point
         zn.append(np.sum(data.T / dist[i] ** power, axis=1) / np.sum(1.0 / dist[i] ** power))
 
     # Convert interpolated values list to a numpy array
@@ -115,13 +115,13 @@ def idw_interpolation(training_points, training_data, prediction_points):
 
 
 def kriging_interpolation(training_points, training_data, gridx, gridy):
-    """Perform ordinary kriging interpolation.
+    """Perform ordinary kriging interpol_compare.
 
     Parameters:
         training_points (np.ndarray): Known data points, each row is a pair (y, x).
         training_data (np.ndarray): Known data values corresponding to the points.
-        gridx (np.ndarray): Grid points in x dimension for performing interpolation.
-        gridy (np.ndarray): Grid points in y dimension for performing interpolation.
+        gridx (np.ndarray): Grid points in x dimension for performing interpol_compare.
+        gridy (np.ndarray): Grid points in y dimension for performing interpol_compare.
 
     Returns:
         np.ndarray: Interpolated values at each point in the grid.
@@ -180,11 +180,11 @@ def natural_nei_interpolation(training_points, training_data, prediction_points)
     # Initialize an empty list to store the interpolated data
     zn = []
 
-    # define natural neighbor interpolation
+    # define natural neighbor interpol_compare
     natural_n = interpolate.LinearNDInterpolator(np.array(training_points), np.array(training_data),
                                                     fill_value=np.mean(np.array(training_data)))
 
-    # create interpolation for every point
+    # create interpol_compare for every point
     for i in range(len(prediction_points)):
         zn.append(natural_n(prediction_points[i]))
 
@@ -218,7 +218,7 @@ def extrapolate_array(arr, max_length):
     # Create an empty array with the desired length
     extrapolated_arr = np.empty((len(arr), max_length))
 
-    # Perform linear interpolation for each array in the input
+    # Perform linear interpol_compare for each array in the input
     for i, a in enumerate(arr):
         x = np.linspace(0, 1, len(a))
         x_new = np.linspace(0, 1, max_length)
@@ -300,13 +300,13 @@ def natural_nei_interpolation_old(training_points, training_data, prediction_poi
 
 def kriging_interpolation_old(training_points, training_data, gridx, gridy):
     """
-    Perform ordinary kriging interpolation.
+    Perform ordinary kriging interpol_compare.
 
     Parameters:
         training_points (np.ndarray): Known data points, each row is a pair (y, x).
         training_data (np.ndarray): Known data values corresponding to the points.
-        gridx (np.ndarray): Grid points in x dimension for performing interpolation.
-        gridy (np.ndarray): Grid points in y dimension for performing interpolation.
+        gridx (np.ndarray): Grid points in x dimension for performing interpol_compare.
+        gridy (np.ndarray): Grid points in y dimension for performing interpol_compare.
 
     Returns:
         np.ndarray: Interpolated values at each point in the grid.

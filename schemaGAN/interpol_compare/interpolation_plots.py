@@ -250,8 +250,8 @@ def plot_histograms_ssim(gan, NeNI, idw, krig, NatNI, inpt):
 def plot_comparison_of_methods_mae(src_img, gen_img, tar_img, nn, idw, kriging, natni, inp, mae_per_img):
     """
     This function plots the comparison of different methods' results including GAN,
-    nearest neighbor interpolation, inverse distance interpolation, kriging interpolation,
-    Natural Neighbor interpolation, and Inpainting.
+    nearest neighbor interpol_compare, inverse distance interpol_compare, kriging interpol_compare,
+    Natural Neighbor interpol_compare, and Inpainting.
 
     Parameters:
     src_img, gen_img, tar_img, nn, idw, kriging, natni, inp (np.array): Arrays containing source image,
@@ -353,8 +353,8 @@ def plot_comparison_of_methods_mae(src_img, gen_img, tar_img, nn, idw, kriging, 
 def plot_comparison_of_methods_mse(src_img, gen_img, tar_img, nn, idw, kriging, natni, inp, mse_per_img):
     """
     This function plots the comparison of different methods' results including GAN,
-    nearest neighbor interpolation, inverse distance interpolation, kriging interpolation,
-    Natural Neighbor interpolation, and Inpainting.
+    nearest neighbor interpol_compare, inverse distance interpol_compare, kriging interpol_compare,
+    Natural Neighbor interpol_compare, and Inpainting.
 
     Parameters:
     src_img, gen_img, tar_img, nn, idw, kriging, natni, inp (np.array): Arrays containing source image,
@@ -457,8 +457,8 @@ def plot_comparison_of_methods_ssim(src_img, gen_img, tar_img, nn, idw, kriging,
                                     ssim_per_img):
     """
     This function plots the comparison of different methods' results including GAN,
-    nearest neighbor interpolation, inverse distance interpolation, kriging interpolation,
-    Natural Neighbor interpolation, and Inpainting.
+    nearest neighbor interpol_compare, inverse distance interpol_compare, kriging interpol_compare,
+    Natural Neighbor interpol_compare, and Inpainting.
 
     Parameters:
     src_img, gen_img, tar_img, nn, idw, kriging, natni, inp (np.array): Arrays containing source image,
@@ -566,7 +566,7 @@ def plot_comparison_of_methods_ssim(src_img, gen_img, tar_img, nn, idw, kriging,
 def generate_boxplot(gan, nearnei, idw, krig, natnei, inpt, method):
     """
     Generate a box plot to compare the Mean Absolute Error (MAE) values
-    of different interpolation methods.
+    of different interpol_compare methods.
 
     Parameters:
         gan (list): List of MAE values for SchemaGAN method.

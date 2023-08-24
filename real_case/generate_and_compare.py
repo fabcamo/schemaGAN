@@ -79,7 +79,7 @@ def update_dataframe(df, columns_to_check, zero_start_row_indices):
 def generate_boxplot(gan, nearnei, krig, method):
     """
     Generate a box plot to compare the Mean Absolute Error (MAE) values
-    of different interpolation methods.
+    of different interpol_compare methods.
 
     Parameters:
         gan (list): List of MAE values for SchemaGAN method.
@@ -130,7 +130,7 @@ def generate_boxplot(gan, nearnei, krig, method):
 
 def run_and_get_mean_mae(csv_file):
     """
-    Run the interpolation methods and calculate the mean MAE for each.
+    Run the interpol_compare methods and calculate the mean MAE for each.
 
     Parameters:
         csv_file (str): The path to the CSV file containing data.
@@ -189,12 +189,12 @@ def run_and_get_mean_mae(csv_file):
     gan_res = np.squeeze(gan_res)
     # Convert to dataframe and save it
     df_gan = pd.DataFrame(gan_res)
-    # Run the Nearest Neighbour interpolation
+    # Run the Nearest Neighbour interpol_compare
     nearnei_res = generate_nearnei_images(SIZE_Y, SIZE_X, cs_to_evaluate)
     nearnei_res = np.squeeze(nearnei_res)
     # Convert to dataframe and save it
     df_nn = pd.DataFrame(nearnei_res)
-    # Run the Kriging interpolation
+    # Run the Kriging interpol_compare
     krig_res = generate_krig_images(SIZE_Y, SIZE_X, cs_to_evaluate)
     krig_res = np.squeeze(krig_res)
     # Convert to dataframe and save it

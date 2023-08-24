@@ -59,7 +59,7 @@ axs[1].set_yticks(np.arange(0, no_rows+1, 5))
 # Invert the axis on the figures
 axs[0].invert_yaxis()
 axs[1].invert_yaxis()
-# Plot the input pixels on top of the interpolation results as black dots
+# Plot the input pixels on top of the interpol_compare results as black dots
 #axs[1].scatter(coords[:, 1], coords[:, 0], edgecolor='k', s=30, marker="v")
 # Show and/or save the plot
 plt.show()

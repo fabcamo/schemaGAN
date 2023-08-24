@@ -154,15 +154,15 @@ with open(output_file, 'a') as f:
 ########################################################################################################################
 #   CALCULATE THE ERRORS IN THE INTERPOLATION METHODS
 ########################################################################################################################
-# Call for the calculation of the MAE of each interpolation method for each validation image
+# Call for the calculation of the MAE of each interpol_compare method for each validation image
 mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_mae(
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
-# Call for the calculation of the MSE of each interpolation method for each validation image
+# Call for the calculation of the MSE of each interpol_compare method for each validation image
 mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, mse_means = compute_mse(
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
-# Call for the calculation of the SSIM of each interpolation method for each validation image, and also get the MAP
+# Call for the calculation of the SSIM of each interpol_compare method for each validation image, and also get the MAP
 ssim_gan, ssim_gan_map, ssim_nn, ssim_nn_map, ssim_idw, ssim_idw_map, ssim_krig, ssim_krig_map, ssim_natnei, ssim_natnei_map, ssim_inpt, ssim_inpt_map, ssim_means =  compute_ssim(
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
