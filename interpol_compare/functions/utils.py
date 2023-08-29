@@ -2,11 +2,10 @@ import os
 import csv
 import numpy as np
 from skimage import metrics
-from matplotlib import pyplot as plt
 
 from tensorflow.keras.models import load_model
 from schemaGAN.functions.utils import reverse_IC_normalization
-from schemaGAN.interpolation.interpolation_methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
+from interpol_compare.functions.methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
 
 
 def get_cptlike_data(src_images):

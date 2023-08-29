@@ -1,0 +1,8 @@
+Seed number used: 20222558
+Seed number used: 20223110
+GAN images generation took 5.29 seconds.
+Nearest Neighbor images generation took 0.20 seconds.
+Inverse distance images generation took 2.98 seconds.
+Kriging images generation took 13.83 seconds.
+Natural Neighbor images generation took 3.62 seconds.
+Inpainting images generation took 2.22 seconds.
