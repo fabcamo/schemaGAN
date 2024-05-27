@@ -9,12 +9,18 @@ For a detailed description and findings, please refer to the [official thesis](h
 
 **Keywords:** Deep learning, machine learning, generative adversarial network, schematization, cone penetration test, interpolation, stratigraphy.
 
+![Alt text](images/example.png)
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Results](#results)
 
+## Synthetic data
+
+Check the code to generate the synthetic data for training here:
+https://github.com/fabcamo/GeoSchemaGen
 
 ## Installation
 

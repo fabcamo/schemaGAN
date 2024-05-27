@@ -1,7 +1,0 @@
-Executed on: 22/08/2023 14:51:01
-Execution time: 00:00:23
-
-Seed: 20221869
-
-No. of realizations: 20
-
