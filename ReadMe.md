@@ -9,7 +9,7 @@ For a detailed description and findings, please refer to the [official thesis](h
 
 **Keywords:** Deep learning, machine learning, generative adversarial network, schematization, cone penetration test, interpolation, stratigraphy.
 
-![Alt text](images/example.png)
+![Alt text](https://github.com/fabcamo/schemaGAN/blob/refactor/docs/schemaGAN_arch.png?raw=true)
 
 ## Table of Contents
 
