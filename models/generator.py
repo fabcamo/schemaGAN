@@ -1,11 +1,15 @@
 import tensorflow as tf
 import numpy as np
 
+"""
+This is a script to build the generator model for the GAN based on a pix2pix Generator U-Net architecture,
+based on https://www.tensorflow.org/tutorials/generative/pix2pix and the work done by @EleniSmyrniou and @FabianCampos
+"""
 
-def encoder(filters: int, kernel: int, strides: tuple,
-            batchnorm: bool = True, dropout: bool = False, dropout_rate: float = 0.5):
+def downsample(filters: int, kernel: int, strides: tuple,
+               batchnorm: bool = True, dropout: bool = False, dropout_rate: float = 0.5):
     """
-    Encoder block to build the GAN generator
+    Downsample (encoder) block to build the GAN generator
 
     Args:
         filters (int): The number of filters in the convolutional layer.
@@ -46,10 +50,11 @@ def encoder(filters: int, kernel: int, strides: tuple,
     return result
 
 
-def decoder(filters: int, kernel: int, strides: int, batchnorm: bool = True, dropout: bool = True,
+def upsample(filters: int, kernel: int, strides: tuple, batchnorm: bool = True, dropout: bool = True,
             dropout_rate: float = 0.5):
     """
-    Decoder block to build the GAN generator
+
+    Upsample (decoder) block to build the GAN generator
 
     Args:
         filters (int): The number of filters in the convolutional layer.
@@ -90,10 +95,23 @@ def decoder(filters: int, kernel: int, strides: int, batchnorm: bool = True, dro
     return result
 
 
-def Generator(input_shape: tuple = (256, 256, 4), base_filters: int = 64):
-    # Calculate the number of layers based on the smallest dimension of the input shape
-    # The number of layers is the log base 2 of the smallest dimension minus 1 (for the last layer)
-    num_layers = int(np.log2(min(input_shape[:2]))) - 1
+def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base_filters: int = 64):
+    """
+    Build the generator model for the GAN based on a pix2pix Generator U-Net architecture.
+    Design decisions are based on the original pix2pix paper: https://arxiv.org/abs/1611.07004.
+    Change the code to modify layer with or w.o. batch normalization, dropout, etc.
+
+    Args:
+        input_shape (tuple, optional): The shape of the input tensor. Default is (256, 256, 4).
+        OUTPUT_CHANNELS (int, optional): The number of output channels. Default is 1, RGB used 3
+        base_filters (int, optional): The number of filters in the first layer. Default is 64.
+
+    Returns:
+        tf.keras.Model: The generator model.
+    """
+    # Calculate the number of layers based on both dimensions of the input shape
+    num_layers_width = int(np.log2(input_shape[0])) - 1
+    num_layers_height = int(np.log2(input_shape[1])) - 1
 
     # Define the input tensor to the generator
     generator_inputs = tf.keras.layers.Input(shape=input_shape)
@@ -103,26 +121,33 @@ def Generator(input_shape: tuple = (256, 256, 4), base_filters: int = 64):
 
     # Create the encoder/downsample stack
     encoder_layers = []
-    for i in range(num_layers):
+    for i in range(max(num_layers_width, num_layers_height)):
         # Double the number of filters with each layer (min 64, max 512)
         filters = base_filters * min(8, 2 ** i)
-        # If the input is not square, use different strides to make it square
-        if input_shape[0] != input_shape[1] and i == 0:
-            # Add a encoder layer with different strides to the encoder stack
-            encoder_layers.append(encoder(filters=filters, kernel=4, strides=(2, 1), batchnorm=False))
+        # Adjust the strides to make the output square
+        if i < num_layers_width and i < num_layers_height:
+            strides = (2, 2)
+        elif i < num_layers_width:
+            strides = (2, 1)
         else:
-            # Add a encoder layer to the encoder stack
-            encoder_layers.append(encoder(filters=filters, kernel=4, strides=(2, 2), batchnorm=(i != 0)))
-    # Add the last encoder layer
-    encoder_layers.append(encoder(filters=base_filters * 8, kernel=4, strides=(2, 2)))
+            strides = (1, 2)
+        # Add a encoder layer to the encoder stack with batch normalization after the first layer
+        encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
 
-    # Create the decoder/upsample stack
+    # Create the decoder stack
     decoder_layers = []
-    for i in range(num_layers):
+    for i in range(max(num_layers_width, num_layers_height)):
         # Halve the number of filters with each layer (min 64, max 512)
-        filters = base_filters * min(8, 2 ** (num_layers - i - 1))
-        # Add an decoder layer to the decoder stack
-        decoder_layers.append(decoder(filters=filters, kernel=4, dropout=(i < 3)))
+        filters = base_filters * min(8, 2 ** (max(num_layers_width, num_layers_height) - i - 1))
+        # Adjust the strides to make the output square
+        if i < num_layers_width and i < num_layers_height:
+            strides = (2, 2)
+        elif i < num_layers_width:
+            strides = (2, 1)
+        else:
+            strides = (1, 2)
+        # Add a decoder layer to the decoder stack
+        decoder_layers.append(upsample(filters=filters, kernel=4, strides=strides, batchnorm=True, dropout=(i < 3)))
 
     # This list will hold the output tensors that will be used for skip connections
     skip_connections = []
@@ -145,7 +170,7 @@ def Generator(input_shape: tuple = (256, 256, 4), base_filters: int = 64):
     # Add the last layer
     initializer = tf.random_normal_initializer(mean=0.0, stddev=0.02)
     last_layer = tf.keras.layers.Conv2DTranspose(
-        OUTPUT_CHANNELS,
+        filters=OUTPUT_CHANNELS,
         kernel_size=4,
         strides=2,
         padding="same",
