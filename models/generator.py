@@ -110,8 +110,11 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
         tf.keras.Model: The generator model.
     """
     # Calculate the number of layers based on both dimensions of the input shape
-    num_layers_width = int(np.log2(input_shape[0])) - 1
-    num_layers_height = int(np.log2(input_shape[1])) - 1
+    num_layers_width = int(np.log2(input_shape[0]))
+    num_layers_height = int(np.log2(input_shape[1]))
+    # Assign the number of layers to a min a max dimension
+    big_dimension = max(num_layers_width, num_layers_height)
+    short_dimension = min(num_layers_width, num_layers_height)
 
     # Define the input tensor to the generator
     generator_inputs = tf.keras.layers.Input(shape=input_shape)
@@ -121,31 +124,34 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
 
     # Create the encoder/downsample stack
     encoder_layers = []
-    for i in range(max(num_layers_width, num_layers_height)):
+    for i in range(big_dimension):
         # Double the number of filters with each layer (min 64, max 512)
         filters = base_filters * min(8, 2 ** i)
         # Adjust the strides to make the output square
-        if i < num_layers_width and i < num_layers_height:
-            strides = (2, 2)
-        elif i < num_layers_width:
-            strides = (2, 1)
-        else:
+        if i < short_dimension - 1 and short_dimension != big_dimension:
             strides = (1, 2)
+        elif i >= short_dimension - 1:
+            strides = (2, 2)
+        else:
+            strides = (2, 2)
         # Add a encoder layer to the encoder stack with batch normalization after the first layer
         encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
 
     # Create the decoder stack
     decoder_layers = []
-    for i in range(max(num_layers_width, num_layers_height)):
-        # Halve the number of filters with each layer (min 64, max 512)
-        filters = base_filters * min(8, 2 ** (max(num_layers_width, num_layers_height) - i - 1))
-        # Adjust the strides to make the output square
-        if i < num_layers_width and i < num_layers_height:
-            strides = (2, 2)
-        elif i < num_layers_width:
-            strides = (2, 1)
+    for i in range(big_dimension):
+        # Calculate the number of filters for the current layer
+        if i < big_dimension - 4:
+            filters = base_filters * 8
         else:
+            filters = base_filters * min(8, 2 ** (big_dimension - i - 2))
+        # Adjust the strides to make the output square
+        if i <= short_dimension - 1:
+            strides = (2, 2)
+        elif i > short_dimension - 1 and short_dimension != big_dimension:
             strides = (1, 2)
+        else:
+            strides = (2, 2)
         # Add a decoder layer to the decoder stack
         decoder_layers.append(upsample(filters=filters, kernel=4, strides=strides, batchnorm=True, dropout=(i < 3)))
 
