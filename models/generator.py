@@ -95,16 +95,19 @@ def upsample(filters: int, kernel: int, strides: tuple, batchnorm: bool = True, 
     return result
 
 
-def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base_filters: int = 64):
+def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base_filters: int = 64, dropout_layers: int = 3):
     """
     Build the generator model for the GAN based on a pix2pix Generator U-Net architecture.
     Design decisions are based on the original pix2pix paper: https://arxiv.org/abs/1611.07004.
     Change the code to modify layer with or w.o. batch normalization, dropout, etc.
 
+    -----> WORKS FOR SHAPES THAT ARE POWERS OF 2 <------
+
     Args:
         input_shape (tuple, optional): The shape of the input tensor. Default is (256, 256, 4).
-        OUTPUT_CHANNELS (int, optional): The number of output channels. Default is 1, RGB used 3
+        OUTPUT_CHANNELS (int, optional): The number of output channels. Default is 1, RGB uses 3.
         base_filters (int, optional): The number of filters in the first layer. Default is 64.
+        dropout_layers (int, optional): The number of layers to apply dropout. Default is 3 based on pix2pix.
 
     Returns:
         tf.keras.Model: The generator model.
@@ -112,7 +115,7 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
     # Calculate the number of layers based on both dimensions of the input shape
     num_layers_width = int(np.log2(input_shape[0]))
     num_layers_height = int(np.log2(input_shape[1]))
-    # Assign the number of layers to a min a max dimension
+    # Assign the number of layers to a min a max dimension, needed for irregular shapes
     big_dimension = max(num_layers_width, num_layers_height)
     short_dimension = min(num_layers_width, num_layers_height)
 
@@ -153,7 +156,7 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
         else:
             strides = (2, 2)
         # Add a decoder layer to the decoder stack
-        decoder_layers.append(upsample(filters=filters, kernel=4, strides=strides, batchnorm=True, dropout=(i < 3)))
+        decoder_layers.append(upsample(filters=filters, kernel=4, strides=strides, batchnorm=True, dropout=(i < dropout_layers)))
 
     # This list will hold the output tensors that will be used for skip connections
     skip_connections = []
