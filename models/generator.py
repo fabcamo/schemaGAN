@@ -95,7 +95,8 @@ def upsample(filters: int, kernel: int, strides: tuple, batchnorm: bool = True, 
     return result
 
 
-def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base_filters: int = 64, dropout_layers: int = 3):
+def Generator(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT_CHANNELS: int = 1, base_filters: int = 64,
+              dropout_layers: int = 3):
     """
     Build the generator model for the GAN based on a pix2pix Generator U-Net architecture.
     Design decisions are based on the original pix2pix paper: https://arxiv.org/abs/1611.07004.
@@ -104,7 +105,8 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
     -----> WORKS FOR SHAPES THAT ARE POWERS OF 2 <------
 
     Args:
-        input_shape (tuple, optional): The shape of the input tensor. Default is (256, 256, 4).
+        input_size (tuple, optional): The shape of the input tensor. Default is (256, 256)
+        no_inputs (int, optional): The number of input channels. Default is 4, RGB uses 3.
         OUTPUT_CHANNELS (int, optional): The number of output channels. Default is 1, RGB uses 3.
         base_filters (int, optional): The number of filters in the first layer. Default is 64.
         dropout_layers (int, optional): The number of layers to apply dropout. Default is 3 based on pix2pix.
@@ -112,6 +114,9 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
     Returns:
         tf.keras.Model: The generator model.
     """
+    # Create the input_shape
+    input_shape = (*input_size, no_inputs)
+
     # Calculate the number of layers based on both dimensions of the input shape
     num_layers_width = int(np.log2(input_shape[0]))
     num_layers_height = int(np.log2(input_shape[1]))
@@ -191,3 +196,13 @@ def Generator(input_shape: tuple = (256, 256, 4), OUTPUT_CHANNELS: int = 1, base
 
     # Return the generator model
     return tf.keras.Model(inputs=generator_inputs, outputs=final_output)
+
+
+def Discriminator(input_shape: tuple = (256,256,4)):
+
+    # Define the input tensor to the discriminator
+    initializer = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+
+    inp = tf.keras.layers.Input(shape=input_shape, name='input_image')
+    tar = tf.keras.layers.Input(shape=input_shape, name='target_image')
+
