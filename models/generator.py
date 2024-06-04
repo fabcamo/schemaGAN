@@ -234,9 +234,13 @@ def Discriminator(input_size: tuple = (256, 256), no_inputs: int = 4, base_filte
     big_dimension = max(num_layers_width, num_layers_height)
     short_dimension = min(num_layers_width, num_layers_height)
 
+    # Calculate the number of downsample layers as the big_dimension - 5 in order to have a 32x32 output
+    # before going into the final convolutional layers
+    num_downsample_layers = big_dimension - 5
+
     # Create the downsample stack
     down_layers = []
-    for i in range(big_dimension - 2):
+    for i in range(big_dimension - num_downsample_layers):
         # Double the number of filters with each layer (min 64, max 512)
         filters = base_filters * min(8, 2 ** i)
         # Adjust the strides to make the output square
@@ -247,7 +251,7 @@ def Discriminator(input_size: tuple = (256, 256), no_inputs: int = 4, base_filte
         else:
             strides = (2, 2)
         # Add a downsample layer to the stack with batch normalization after the first layer
-        down_layers.append(downsample(filters=filters, size=4, apply_batchnorm=(i != 0)))
+        down_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
 
     # Apply the downsample layers
     current_layer_output = x
@@ -270,7 +274,7 @@ def Discriminator(input_size: tuple = (256, 256), no_inputs: int = 4, base_filte
     zero_pad2 = tf.keras.layers.ZeroPadding2D()(leaky_relu)
 
     # The output of the discriminator is a single value
-    last = tf.keras.layers.Conv2D(filters=1, kernel=4, strides=1, kernel_initializer=initializer)(zero_pad2)
+    last = tf.keras.layers.Conv2D(filters=1, kernel_size=4, strides=1, kernel_initializer=initializer)(zero_pad2)
 
     # Return the discriminator model with the input and target tensors as inputs and the output tensor as output
     return tf.keras.Model(inputs=[inp, tar], outputs=last)
