@@ -1,20 +1,20 @@
 from schemaGAN.functions.arch_discriminator import define_discriminator
 
 schemaGAN_generator = define_discriminator(image_shape=(32, 512, 1))
-#print(schemaGAN_generator.summary())
+print(schemaGAN_generator.summary())
 
 
-from models.generator import Discriminator
+from models.generator import Discriminator_modular
 
-discriminator = Discriminator(input_size=(256, 256), no_inputs=3)
+discriminator = Discriminator_modular(input_size=(32, 512), no_inputs=1)
 print(discriminator.summary())
 
 
 
-from utils.generator_eleni import Discriminator, DiscriminatorTF
+from utils.gen_dis_eleni import Discriminator, DiscriminatorTF
 discriminator = Discriminator()
-print(discriminator.summary())
+#print(discriminator.summary())
 
 discriminatorTF = DiscriminatorTF()
-print(discriminatorTF.summary())
+#print(discriminatorTF.summary())
 
