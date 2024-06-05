@@ -86,6 +86,28 @@ def Discriminator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, ba
     return tf.keras.Model(inputs=[inp, tar], outputs=last)
 
 
-def discriminator_loss(disc_real_output, disc_generated_output):
+def discriminator_loss(disc_real_output: tf.Tensor, disc_generated_output: tf.Tensor,
+                       loss_object: tf.keras.losses = tf.keras.losses.BinaryCrossentropy(from_logits=True)):
+    """
+    Calculate the discriminator loss for the GAN. The discriminator loss is the sum of the loss for the real and
+    generated images. The loss for the real images is calculated with ones as the target value and the loss for the
+    generated images is calculated with zeros as the target value. The total discriminator loss is the sum of the real
+    and generated loss values.
 
+    Args:
+        disc_real_output (tf.Tensor): The output of the discriminator for the real images.
+        disc_generated_output (tf.Tensor): The output of the discriminator for the generated images.
+        loss_object (tf.keras.losses, optional): The loss function to use. Default is BCE as p2p.
+
+    Returns:
+        total_disc_loss (tf.Tensor): The total discriminator loss for the GAN.
+    """
+    # Calculate the loss for the real and generated images
     real_loss = loss_object(tf.ones_like(disc_real_output), disc_real_output)
+    # The discriminator should classify the generated images as fake (0) so the loss is calculated with zeros
+    # as the target value for the generated images (discriminator output should be close to 0).
+    generated_loss = loss_object(tf.zeros_like(disc_generated_output), disc_generated_output)
+    # The total discriminator loss is the sum of the real and generated loss values
+    total_disc_loss = real_loss + generated_loss
+
+    return total_disc_loss
