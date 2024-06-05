@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 
 def downsample(filters: int, kernel: int, strides: tuple,
                batchnorm: bool = True, dropout: bool = False, dropout_rate: float = 0.5):

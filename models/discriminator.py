@@ -84,3 +84,8 @@ def Discriminator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, ba
 
     # Return the discriminator model with the input and target tensors as inputs and the output tensor as output
     return tf.keras.Model(inputs=[inp, tar], outputs=last)
+
+
+def discriminator_loss(disc_real_output, disc_generated_output):
+
+    real_loss = loss_object(tf.ones_like(disc_real_output), disc_real_output)

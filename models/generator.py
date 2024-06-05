@@ -110,3 +110,36 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     # Return the generator model
     return tf.keras.Model(inputs=generator_inputs, outputs=final_output)
 
+
+
+def generator_loss(disc_generated_output: tf.Tensor, gen_output: tf.Tensor, target: tf.Tensor,
+                   loss_object: tf.keras.losses = tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                   LAMBDA: int = 100):
+    """
+    Calculate the generator loss for the GAN based on the discriminator output, the generator output, the target,
+    the loss object, and the lambda value for the L1 loss. The generator loss is the sum of the adversarial loss
+    and the L1 loss. The adversarial loss is the binary cross-entropy loss between the discriminator output and
+    a tensor of ones, while the L1 loss is the mean absolute error between the generator output and the target.
+
+    Args:
+        disc_generated_output (tf.Tensor): The output of the discriminator for the generated image.
+        gen_output (tf.Tensor): The output of the generator.
+        target (tf.Tensor): The target image.
+        loss_object (tf.keras.losses): The loss object for the adversarial loss. Default is BinaryCrossentropy.
+        LAMBDA (int): The lambda value for the L1 loss. Default is 100 as in the original pix2pix paper.
+
+    Returns:
+        tf.Tensor: The total generator loss which is the sum of the adversarial loss and the L1 loss.
+        tf.Tensor: The adversarial loss which is the BCE loss between the discriminator output and a tensor of ones.
+        tf.Tensor: The L1 loss which is the MAE between the generator output and the target.
+
+    """
+    # Compute the adversarial loss between the discriminator output and a tensor of ones (real image)
+    gan_loss = loss_object(tf.ones_like(disc_generated_output), disc_generated_output)
+
+    # Compute the L1 loss between the generated image and the target image
+    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
+    # Total generator loss is the sum of the adversarial loss and the L1 loss
+    total_gen_loss = gan_loss + (LAMBDA * l1_loss)
+
+    return total_gen_loss, gan_loss, l1_loss
