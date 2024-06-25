@@ -3,6 +3,8 @@ import time
 
 from IPython import display
 
+from models.generator import Generator_modular
+
 @tf.function
 def train_step(input_image: tf.Tensor, target: tf.Tensor, step):
     """

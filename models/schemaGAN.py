@@ -1,46 +1,152 @@
-import tensorflow as tf
-
-import time
+import os
 import datetime
 import numpy as np
-import plotly.express as px
-from PIL import Image
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import pandas as pd
 
+from pathlib import Path
 from models.generator import Generator_modular
 from models.discriminator import Discriminator_modular
-from models.training import train_step, fit
 
-from matplotlib import pyplot as plt
-from matplotlib.widgets import Slider
-from IPython import display
-import pickle
-import os
 
-def all_images(model, input_dataset):
-    from matplotlib import rc
-    rc('font',**{'family':'serif','serif':['Times'], 'size': 14})
-    rc('text', usetex=True)
-    dataset = [value for counter, value in enumerate(input_dataset)]
-    predictions = [model(data[0], training=True) for data in dataset]
-    data_diff = [data[1].numpy()[0,:,:] - predictions[counter].numpy()[0,:,:,0] for counter, data in enumerate(dataset)]
-    for counter, image_output in enumerate(predictions):
-        fig, ax = plt.subplots(1, 4)
-        fig.set_size_inches(18.5, 10.5)
-        error = np.mean(np.array(np.abs(data_diff[counter])))
-        fig.suptitle(f"Absolute error: {error}", fontsize=15)
-        display_list = [dataset[counter][0][0].numpy().T * AMAX,
-                        dataset[counter][1][0].numpy().T * AMAX,
-                        predictions[counter].numpy().T[0,:,:] * AMAX,
-                        data_diff[counter].T * AMAX]
-        title = ["Input Image", "Ground Truth", "Predicted Image", "Absolute difference"]
-        for i in range(4):
-            ax[i].set_title(title[i])
-            # Getting the pixel values in the [0, 1] range to plot.
-            im = ax[i].imshow(display_list[i], vmin=0, vmax=AMAX)
-            ax[i].axis("off")
-        fig.colorbar(im, ax=ax.ravel().tolist(), orientation="horizontal")
-        fig.savefig(f"slice_{counter}_prediction.png")
-        plt.close(fig)
+def load_images_from_csv(cs_path: str, cptlike_path: str, height: int = 32, width: int = 512, channels: int = 1):
+    """
+    Load images from CSV files containing the IC values for cross-section and CPT-like images.
+
+    Args:
+        cs_path (str): The path to the cross-section image file.
+        cptlike_path (str): The path to the CPT-like image file.
+        height (int, optional): The height of the image. Default is 32.
+        width (int, optional): The width of the image. Default is 512.
+        channels (int, optional): The number of channels in the image. Default is 1.
+
+    Returns:
+        tuple: A tuple containing two image tensors (cs_image, cptlike_image).
+    """
+    def load_image_from_csv(csv_file_path):
+        """
+        Load an image from a CSV file containing the IC values.
+
+        Args:
+            csv_file_path (str): The path to the CSV file.
+
+        Returns:
+            tf.Tensor: The image tensor containing the IC values.
+        """
+        # Read the CSV file into a pandas DataFrame
+        df = pd.read_csv(csv_file_path)
+
+        # Initialize an empty tensor for the image
+        image = tf.zeros([height, width, channels], dtype=tf.float32)
+
+        # Populate the tensor with the IC values
+        for _, row in df.iterrows():
+            x, z, ic_value = int(row['x']), int(row['z']), float(row['IC'])
+            image = tf.tensor_scatter_nd_update(image, [[z, x, 0]], [ic_value])
+
+        return image
+
+    # Load cross-section image
+    cs_image = load_image_from_csv(cs_path)
+
+    # Load CPT-like image
+    cptlike_image = load_image_from_csv(cptlike_path)
+
+    return cs_image, cptlike_image
+
+
+
+def normalize(image: tf.Tensor):
+    """
+    Normalize the image to the range [-1, 1]. This is the range expected by the generator model.
+
+    Args:
+        image (tf.Tensor): The image tensor to normalize.
+
+    Returns:
+        tf.Tensor: The normalized image tensor.
+
+    """
+    normalized_image = (image / 127.5) - 1
+
+    return normalized_image
+
+
+def load_image_train(cs_file, cptlike_file):
+    """
+    Load and normalize training images from CSV files.
+
+    Args:
+        cs_file (str): Path to the cross-section image CSV file.
+        cptlike_file (str): Path to the CPT-like image CSV file.
+
+    Returns:
+        tuple: Normalized cross-section and CPT-like image tensors.
+    """
+    cs_image, cptlike_image = load_images_from_csv(cs_file, cptlike_file)
+    cs_image = normalize(cs_image)
+    cptlike_image = normalize(cptlike_image)
+    return cs_image, cptlike_image
+
+
+
+
+PATH =
+
+# List files in the train directory
+input_files = sorted(PATH.glob('train/cs_*.jpg'))
+real_files = sorted(PATH.glob('train/cptlike_*.jpg'))
+
+# Create a dataset of file pairs
+file_pairs = list(zip(input_files, real_files))
+
+# Create a TensorFlow Dataset from the file pairs
+train_dataset = tf.data.Dataset.from_tensor_slices((file_pairs))
+train_dataset = train_dataset.map(lambda input_file, real_file: tf.py_function(
+    func=lambda input_file, real_file: load_image_train(input_file.numpy().decode('utf-8'), real_file.numpy().decode('utf-8')),
+    inp=[input_file, real_file],
+    Tout=[tf.float32, tf.float32]),
+    num_parallel_calls=tf.data.AUTOTUNE)
+train_dataset = train_dataset.shuffle(BUFFER_SIZE)
+train_dataset = train_dataset.batch(BATCH_SIZE)
+
+# Example usage:
+show_samples_from_dataset(train_dataset, num_samples=3)
+
+
+
+BUFFER_SIZE = 400  # Example buffer size, adjust as needed
+BATCH_SIZE = 1     # Example batch size, adjust as needed
+
+# Example usage:
+cs_path = "D:/GeoSchemaGen/tests/outputs/train/cs_10.csv"
+cptlike_path = "D:/GeoSchemaGen/tests/outputs/train/cptlike_10.csv"
+
+dataset = create_dataset("D:/GeoSchemaGen/tests/outputs/train")
+
+print(dataset)
+
+
+
+def test_plot_image(image):
+    # Squeeze the last dimension for visualization purposes if it has only one channel
+    image_np = tf.squeeze(image).numpy()
+
+    # Plot the image
+    plt.imshow(image_np, cmap='gray')
+    plt.title("Loaded Image")
+    plt.colorbar()
+    plt.show()
+
+
+
+
+
+
+
+##### FROM HERE ON IT'S ELENI'S CODE ############################
+
 
 
 def _input_fn(inputs, target):
@@ -60,44 +166,25 @@ def load_from_pickle(file):
     all_data = model['all_data']
     return feature_names, np.array(all_data).astype(np.float32)
 
-
 def set_up_data_as_input(directory_inputs):
-    # load all the pickles
     pickle_names = [o for o in os.listdir(directory_inputs) if os.path.isfile(os.path.join(directory_inputs,o)) and o.endswith(".p")]
-
-    # Create empty containers for the target and source images
     global_data = []
-    # loop over all the pickles and load the data
     for pickle_name in pickle_names:
-        # load the data from the pickle
         feature_names_loc, all_data = load_from_pickle(os.path.join(directory_inputs, pickle_name))
-        # if the number of features is 6, then we have the correct data
         if len(feature_names_loc) == 6:
-            # set the feature names
             feature_names = feature_names_loc
-        # append the data to the global data
         global_data.append(all_data)
-
-
-    # remove empty lists from the global data
+    # remove empty lists
     global_data = [data for data in global_data if len(data) > 0]
-
-    # concatenate the data to one big dataset
     dataset_all = np.concatenate(global_data, axis=0)
-
-    # find indexes for inputs and outputs in the feature names list
+    # find indexes for input
     inputs_lookup = ['FRICTION_ANGLE', 'geometry', 'water_level', 'YOUNGS_MODULUS']
-    # find indexes for input features in the feature names list
     inputs_indexes = [feature_names.index(input) for input in inputs_lookup]
     # find indexes for output
     outputs_lookup = ['total_displacement_stage_3']
-
-    # find indexes for output features in the feature names list
     outputs_indexes = [feature_names.index(output) for output in outputs_lookup]
-    # get the input and output data from the dataset
     inputs_dataset = dataset_all[:, inputs_indexes, :, :]
     outputs_dataset = dataset_all[:, outputs_indexes, :, :]
-
     # reshape the data from (number_of_inputs, number_of_features, 256, 256) to (number_of_inputs, 256, 256, number_of_features)
     inputs_dataset = np.moveaxis(inputs_dataset, 1, -1)
     outputs_dataset = np.moveaxis(outputs_dataset, 1, -1)
@@ -114,8 +201,10 @@ def set_up_data_as_input(directory_inputs):
     test_dataset = _input_fn(test_input_dataset, test_output_dataset)
     return train_dataset, test_dataset
 
+
+
 def set_up_and_train_2d_model():
-    directory_inputs = "D:/sheetpile/ai_model/inputs_geometry_re/"
+    directory_inputs = "D:/schemaGAN/data"
     train_dataset, test_dataset = set_up_data_as_input(directory_inputs)
 
     fit(train_dataset, test_dataset, None,  steps=50000)
@@ -143,51 +232,28 @@ def set_up_and_train_2d_model():
     print(f"stats mean abserror {mean_error} std : {std_error}")
 
 
-BATCH_SIZE = 1
-import os
-AMAX = 4.5
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-import tensorflow as tf
-OUTPUT_CHANNELS = 1
-LAMBDA = 100
-IMAGE_SIZE = 256
-IMAGE_IDX = 255
 
 
-
-
+"""
 if __name__ == "__main__":
     # The batch size of 1 produced better results for the U-Net in the original pix2pix experiment
 
-    # Define optimizers for the generator and discriminator
+
+    # define optimizers
     generator_optimizer = tf.keras.optimizers.Adam(1e-4, beta_1=0.5)
     discriminator_optimizer = tf.keras.optimizers.Adam(1e-4, beta_1=0.5)
-
-    # Define the log directory
     log_dir = "logs_geometry_re/"
 
-    # Create a summary writer
     summary_writer = tf.summary.create_file_writer(
         log_dir + "fit_train_geometry_re/keep" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     )
-
-    # Define the loss object to be used for calculating the loss
     loss_object = tf.keras.losses.MeanSquaredError()
 
-    # Define the generator models
-    generator = Generator_modular(input_size=(256, 256),
-                                  no_inputs=4,
-                                  OUTPUT_CHANNELS=1,
-                                  base_filters=64,
-                                  dropout_layers=3)
+    # Create the generator and discriminator models
+    generator = Generator_modular()
+    discriminator = Discriminator_modular()
 
-    # Define the discriminator model
-    discriminator = Discriminator_modular(input_size=(256, 256),
-                                          no_inputs=4,
-                                          base_filters=64)
-
-    # Define the checkpoint directory
-    checkpoint_dir = "D:\sheetpile\\ai_model\\training_checkpoints_2d_geometry_refined"
+    checkpoint_dir = "D:/schemaGAN/tests"
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
     checkpoint = tf.train.Checkpoint(
         generator_optimizer=generator_optimizer,
@@ -195,11 +261,10 @@ if __name__ == "__main__":
         generator=generator,
         discriminator=discriminator,
     )
-
-
-    # Create output directory if it does not exist
+    # create output directory if it does not exist
     if not os.path.exists("output_geometry_re"):
         os.makedirs("output_geometry_re")
 
-    # Setup and train the model
     set_up_and_train_2d_model()
+
+"""
