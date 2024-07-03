@@ -5,7 +5,7 @@
 
 This repository contains the code and results related to a novel Generative Adversarial Network application called SchemaGAN. SchemaGAN has been adapted from the Pix2Pix architecture to take Cone Penetration Test (CPT) data as a conditional input and generate subsoil schematizations.
 
-For a detailed description and findings, please refer to the [official thesis](https://repository.tudelft.nl/islandora/object/uuid:c18cb6cf-3574-484d-aacc-dabd882341de?collection=education).
+For a detailed description and findings, please refer to the [official thesis]([https://repository.tudelft.nl/islandora/object/uuid:c18cb6cf-3574-484d-aacc-dabd882341de?collection=education](https://repository.tudelft.nl/record/uuid:c18cb6cf-3574-484d-aacc-dabd882341de)).
 
 **Keywords:** Deep learning, machine learning, generative adversarial network, schematization, cone penetration test, interpolation, stratigraphy.
 
