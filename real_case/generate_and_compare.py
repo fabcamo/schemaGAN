@@ -254,9 +254,9 @@ if __name__ == "__main__":
 
     # FOR THE SCHEMAGAN MODEL
     # Path to the generator models
-    path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
+    path_to_model_to_evaluate = 'P:\schemagan\original_model'
     # Input the name of the generator model to use
-    name_of_model_to_use = 'model_000051.h5'
+    name_of_model_to_use = 'model_000036.h5'
 
     # Pull the Generator model
     # Iterate over each file in the directory to find the requested model

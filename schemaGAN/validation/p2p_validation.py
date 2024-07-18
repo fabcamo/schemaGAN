@@ -19,9 +19,9 @@ time_current = time.strftime("%d/%m/%Y %H:%M:%S")
 #path_to_model_to_evaluate = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010'
 #path_results = r'/scratch/fcamposmontero/results_p2p/512x32_e1000_s9000/99.51_9010/val_w5'
 # For local
-path_validation = 'C:\\inpt\\synthetic_data\\512x32\\validation'
-path_to_model_to_evaluate = 'C:\\inpt\\GAN_p2p\\results\\test'
-path_results = 'C:\\inpt\\GAN_p2p\\results\\test\\validation'
+path_validation = 'D:/schemaGAN/tests/test4eleni/test_data'
+path_to_model_to_evaluate = 'D:/schemaGAN/tests/test4eleni/schemagan_model'
+path_results = 'D:/schemaGAN/tests/test4eleni/schemagan_inference'
 
 
 ########################################################################################################################
