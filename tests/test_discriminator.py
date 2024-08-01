@@ -4,7 +4,7 @@ schemaGAN_generator = define_discriminator(image_shape=(32, 512, 1))
 print(schemaGAN_generator.summary())
 
 
-from models.generator import Discriminator_modular
+from models.discriminator import Discriminator_modular
 
 discriminator = Discriminator_modular(input_size=(32, 512), no_inputs=1)
 print(discriminator.summary())

@@ -6,15 +6,16 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 
 from schemaGAN.functions.utils import read_all_csv_files, apply_miss_rate_per_rf, IC_normalization
-from schemaGAN.functions.summarize import plot_images_error
+from schemaGAN.functions.summarize import plot_images_error_two_cols
 
 
 # For local
 path_validation = 'D:/schemaGAN/tests/test4eleni/test_data' # This is CSV data
+#path_validation = 'P:/schemagan/synthetic_database/512x32_20k/validation'8 # This is very slow
 path_to_model = 'D:/schemaGAN/tests/test4eleni/schemagan_model/model_000036.h5'
 path_results = 'D:/schemaGAN/tests/test4eleni/schemagan_inference' # Just were to save the data
 
-# Generate a random seed using NumPy
+# Generate a random seed using NumPyseed = np.random.randint(20220412, 20230412)
 seed = np.random.randint(20220412, 20230412)
 # Set the seed for NumPy's random number generator
 np.random.seed(seed)
@@ -76,8 +77,11 @@ for i in range(len(input_img)):
     rmse = np.sqrt(mse)
     rmse_list.append(rmse)
 
-    plot_images_error(src_image, gen_image, tar_image)
-    plt.show()
+    plot_images_error_two_cols(src_image, gen_image, tar_image)
+    # Save the plot as a pdf in the results folder
+    plot_acc = os.path.join(path_results, f'plot_acc_{i:06d}.pdf')
+    plt.savefig(plot_acc, bbox_inches='tight')
+
     plt.close()
 
     print(f">Validation no. {i} completed for model {path_to_model}")
