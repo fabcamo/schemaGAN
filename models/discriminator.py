@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-from models.layers import downsample
+from utils.layers import downsample
 
 
 def Discriminator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, base_filters: int = 64):

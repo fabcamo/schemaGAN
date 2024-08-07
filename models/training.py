@@ -1,9 +1,11 @@
 import tensorflow as tf
 import time
 
-from IPython import display
-
-from models.generator import Generator_modular
+#from IPython import display
+from utils.plots import generate_images
+from models.generator import Generator_modular, generator_loss
+from models.discriminator import Discriminator_modular, discriminator_loss
+from utils.plots import one_one_plot_validation
 
 @tf.function
 def train_step(input_image: tf.Tensor, target: tf.Tensor, step):
@@ -37,7 +39,7 @@ def train_step(input_image: tf.Tensor, target: tf.Tensor, step):
         disc_loss = discriminator_loss(disc_real_output, disc_generated_output)
 
         # Calculate the gradients for generator and discriminator
-        generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
+        generator_gradients = gen_tape.gradient(gen_total_loss, generator.trainable_variables)
         discriminator_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
 
         # Apply the gradients to the optimizer
@@ -86,14 +88,17 @@ def fit(train_ds: tf.data.Dataset, test_ds: tf.data.Dataset, validation_ds: tf.d
         # If not the first step, print the time taken for the last 1000 steps
         if step != 0:
             print(f'Time taken for 1000 steps: {time.time()-start:.2f} sec\n')
-
         # Reset the start time for the next interval
         start = time.time()
-
         # Generate and display images using the generator model and the example input and target images
         generate_images(generator, example_input, example_target)
         # Print the step number
         print(f"step: {step//1000}k")
+
+        # If a validation dataset is provided, generate and display images using the generator model and the example
+        if validation_ds is not None:
+            one_one_plot_validation(validation_ds, generator)
+        print(f"Step: {step // 1000}k")
 
     # Perform a single training step for the generator and discriminator, updating the model
     train_step(input_image=input_image, target=target, step=step)
@@ -105,3 +110,5 @@ def fit(train_ds: tf.data.Dataset, test_ds: tf.data.Dataset, validation_ds: tf.d
     # Save (checkpoint) the model every 5000 steps to preserve the training progress
     if (step + 1) % 5000 == 0:
         checkpoint.save(file_prefix=checkpoint_prefix)
+
+

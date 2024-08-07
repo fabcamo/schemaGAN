@@ -60,7 +60,7 @@ rmse_list = list()
 for i in range(len(input_img)):
     # Choose a cross-section to run through the generator
     cross_section_number = i
-    # Choose a given cross-seciton
+    # Choose a given cross-section
     ix = np.array([cross_section_number])
     src_image, tar_image = input_img[ix], orig_img[ix]
 

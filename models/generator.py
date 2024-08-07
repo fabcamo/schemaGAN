@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-from models.layers import downsample, upsample
+from utils.layers import downsample, upsample
 
 """
 This is a script to build the generator model for the GAN based on a pix2pix Generator U-Net architecture,
