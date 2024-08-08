@@ -11,8 +11,8 @@ print(discriminator.summary())
 
 
 
-from utils.gen_dis_eleni import Discriminator, DiscriminatorTF
-discriminator = Discriminator()
+#from utils.gen_dis_eleni import Discriminator, DiscriminatorTF
+#discriminator = Discriminator()
 #print(discriminator.summary())
 
 discriminatorTF = DiscriminatorTF()

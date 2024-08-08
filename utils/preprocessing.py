@@ -190,6 +190,9 @@ def create_dataset(cs_folder: str, cptlike_folder: str, height: int, width: int,
     val_dataset = _input_fn(val_inputs, val_targets, batch_size) if val_inputs is not None else None
     test_dataset = _input_fn(test_inputs, test_targets, batch_size) if test_inputs is not None else None
 
+    # Print message about database creation
+    print(f"Created dataset with {num_samples} samples.")
+
     return train_dataset, test_dataset, val_dataset
 
 

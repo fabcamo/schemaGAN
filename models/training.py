@@ -1,7 +1,7 @@
 import tensorflow as tf
 import time
 
-#from IPython import display
+from IPython import display
 from utils.plots import generate_images
 from models.generator import Generator_modular, generator_loss
 from models.discriminator import Discriminator_modular, discriminator_loss

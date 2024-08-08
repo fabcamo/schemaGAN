@@ -6,10 +6,11 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from matplotlib import pyplot as plt
-#from IPython import display
+from IPython import display
 from models.generator import Generator_modular, generator_loss
 from models.discriminator import Discriminator_modular, discriminator_loss
-from models.training import train_step, fit, generate_images, one_one_plot_validation
+#from models.training import train_step, fit, generate_images, one_one_plot_validation
+from utils.preprocessing import create_dataset
 
 ##### USER DEFINED PARAMETERS FOR SCHEMAGAN ############################################################################
 BATCH_SIZE = 1
@@ -19,6 +20,15 @@ LAMBDA = 100
 IMAGE_SIZE = 256
 IMAGE_IDX = 255
 
+train_folder_cs = r"D:\GeoSchemaGen\tests\outputs\train\cs"
+train_folder_cptlike = r"D:\GeoSchemaGen\tests\outputs\train\cptlike"
+height = 32
+width = 512
+channels = 1
+BATCH_SIZE = 1
+TEST_PERCENTAGE = 0.2  # 20% for testing
+VAL_PERCENTAGE = 0.2   # 20% for validation
+
 ########################################################################################################################
 
 
@@ -26,13 +36,28 @@ IMAGE_IDX = 255
 @tf.function
 def train_step(input_image, target, step):
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+        print("Input Image Shape:", input_image.shape)
+        print("Target Image Shape:", target.shape)
+        print("step:", step)
+        # Generate the output
         gen_output = generator(input_image, training=True)
+        # Print the shape of the generated output
+        tf.print("Generated Output Shape:", gen_output.shape)
+
+        # Calculate the generator loss
         disc_real_output = discriminator([input_image, target], training=True)
         disc_generated_output = discriminator([input_image, gen_output], training=True)
+        # Print the shape of discriminator outputs
+        tf.print("Discriminator Real Output Shape:", disc_real_output.shape)
+        tf.print("Discriminator Generated Output Shape:", disc_generated_output.shape)
+
         gen_total_loss, gen_gan_loss, gen_l1_loss = generator_loss(
             disc_generated_output, gen_output, target
         )
+        # Calculate the discriminator loss
         disc_loss = discriminator_loss(disc_real_output, disc_generated_output)
+
+    # Calculate the gradients for generator and discriminator
     generator_gradients = gen_tape.gradient(
         gen_total_loss, generator.trainable_variables
     )
@@ -146,66 +171,18 @@ def one_one_plot_validation(validation_dataset, model):
     plt.savefig("Validation_output.png")
 
 
-
-
-
-def _input_fn(inputs, target):
-
-    input_dataset = tf.convert_to_tensor(tf.constant(inputs))
-    train_input_dataset = tf.data.Dataset.from_tensor_slices(input_dataset)
-    train_input_dataset = train_input_dataset.batch(BATCH_SIZE)
-    target_dataset = tf.convert_to_tensor(tf.constant(target))
-    train_target_dataset = tf.data.Dataset.from_tensor_slices(target_dataset)
-    train_target_dataset = train_target_dataset.batch(BATCH_SIZE)
-    train_dataset = tf.data.Dataset.zip((train_input_dataset, train_target_dataset))
-    return train_dataset
-
-def load_from_pickle(file):
-    model = pickle.load(open(file, "rb"))
-    feature_names = model['feature_names']
-    all_data = model['all_data']
-    return feature_names, np.array(all_data).astype(np.float32)
-
-def set_up_data_as_input(directory_inputs):
-    pickle_names = [o for o in os.listdir(directory_inputs) if os.path.isfile(os.path.join(directory_inputs,o)) and o.endswith(".p")]
-    global_data = []
-    for pickle_name in pickle_names:
-        feature_names_loc, all_data = load_from_pickle(os.path.join(directory_inputs, pickle_name))
-        if len(feature_names_loc) == 6:
-            feature_names = feature_names_loc
-        global_data.append(all_data)
-
-    # remove empty lists
-    global_data = [data for data in global_data if len(data) > 0]
-    dataset_all = np.concatenate(global_data, axis=0)
-    # find indexes for input
-    inputs_lookup = ['FRICTION_ANGLE', 'geometry', 'water_level', 'YOUNGS_MODULUS']
-    inputs_indexes = [feature_names.index(input) for input in inputs_lookup]
-    # find indexes for output
-    outputs_lookup = ['total_displacement_stage_3']
-    outputs_indexes = [feature_names.index(output) for output in outputs_lookup]
-    inputs_dataset = dataset_all[:, inputs_indexes, :, :]
-    outputs_dataset = dataset_all[:, outputs_indexes, :, :]
-    # reshape the data from (number_of_inputs, number_of_features, 256, 256) to (number_of_inputs, 256, 256, number_of_features)
-    inputs_dataset = np.moveaxis(inputs_dataset, 1, -1)
-    outputs_dataset = np.moveaxis(outputs_dataset, 1, -1)
-
-    # split the data into train and test
-    percentage_train = 0.8
-    number_of_inputs = inputs_dataset.shape[1]
-    train_input_dataset = inputs_dataset[int(percentage_train * number_of_inputs):, :, :, :]
-    train_output_dataset = outputs_dataset[int(percentage_train * number_of_inputs):]
-    test_input_dataset = inputs_dataset[int(percentage_train * number_of_inputs):, :, :, :]
-    test_output_dataset = outputs_dataset[int(percentage_train * number_of_inputs):, :, :]
-
-    train_dataset = _input_fn(train_input_dataset, train_output_dataset)
-    test_dataset = _input_fn(test_input_dataset, test_output_dataset)
-    return train_dataset, test_dataset
-
 def set_up_and_train_2d_model():
-    directory_inputs = "D:/sheetpile/ai_model/inputs_geometry_re/"
-    train_dataset, test_dataset = set_up_data_as_input(directory_inputs)
+    #directory_inputs = "D:/sheetpile/ai_model/inputs_geometry_re/"
+    #train_dataset, test_dataset = set_up_data_as_input(directory_inputs)
 
+    train_folder_cs = r"D:\GeoSchemaGen\tests\outputs\train\cs"
+    train_folder_cptlike = r"D:\GeoSchemaGen\tests\outputs\train\cptlike"
+
+    train_dataset, test_dataset, val_dataset = create_dataset(
+        train_folder_cs, train_folder_cptlike, height, width, channels,
+        BATCH_SIZE, TEST_PERCENTAGE)
+
+    print(f"Fitting the model with {len(train_dataset)} training samples and {len(test_dataset)} test samples")
     fit(train_dataset, test_dataset, None,  steps=50000)
 
     # TODO plot against all the training inputs
@@ -248,9 +225,14 @@ if __name__ == "__main__":
     # We already have the loss object defined in the LOSS equation.
     #loss_object = tf.keras.losses.MeanSquaredError()
 
-    generator = Generator_modular()
+    print("Setting up the generator......")
+    generator = Generator_modular(input_size=(32, 512), no_inputs=1)
+    #print generator summary
+    print(generator.summary())
 
-    discriminator = Discriminator_modular()
+    print("Setting up the discriminator......")
+    discriminator = Discriminator_modular(input_size=(32, 512), no_inputs=1)
+    print(discriminator.summary())
 
     checkpoint_dir = "D:\sheetpile\\ai_model\\training_checkpoints_2d_geometry_refined"
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
