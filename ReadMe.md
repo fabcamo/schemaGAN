@@ -28,10 +28,12 @@ schemaGAN supports Python 3.10.
 ## Usage
 
 1. **Download the Model:**
-   - Download the schemaGAN model from [Zenodo](https://zenodo.org/records/13143431/files/schemaGAN.h5). This model is freely available.
+
+   Download the schemaGAN model from [Zenodo](https://zenodo.org/records/13143431/files/schemaGAN.h5). This model is freely available.
 
 2. **Prepare the Images:**
-   - The subsoil schematisations used in this work were generated using [GeoSchemaGen](https://github.com/fabcamo/GeoSchemaGen). The dataset for training, validation, and testing is available on [Zenodo](https://zenodo.org/records/13143431/files/data.zip).
+
+   The subsoil schematisations used in this work were generated using [GeoSchemaGen](https://github.com/fabcamo/GeoSchemaGen). The dataset for training, validation, and testing is available on [Zenodo](https://zenodo.org/records/13143431/files/data.zip).
 
       Ensure that the images are in CSV file format. The images must be 2D and have dimensions (512, 32).
 
@@ -45,6 +47,7 @@ schemaGAN supports Python 3.10.
 
 
 3. **Run schemaGAN:**
+
    To run schemaGAN first you need to import the necessary packages:
 
    ```python
@@ -153,6 +156,7 @@ schemaGAN supports Python 3.10.
    ![Schemations](results/plot_acc_000000.png)
 
 3. **Run schemaGAN for the entire dataset:**
+
    To process the entire dataset and compare it against the different interpolations models, please refer to [load_and_generate.py](schemaGAN/load_and_generate.py).
 
 
