@@ -147,7 +147,7 @@ schemaGAN supports Python 3.10.
    At the end of the script the results will be saved on the results folder.
 
    Example of the results:
-   ![Schemations](results/plot_acc_000000.png)
+   ![Schemations](static/plot_acc_000000.png)
 
 3. **Run schemaGAN for the entire dataset:**
 
