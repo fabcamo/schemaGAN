@@ -59,17 +59,17 @@ def train_step(input_image, target, step):
 
     # Calculate the gradients for generator and discriminator
     generator_gradients = gen_tape.gradient(
-        gen_total_loss, generator.trainable_variables
-    )
+        gen_total_loss, generator.trainable_variables)
+
     discriminator_gradients = disc_tape.gradient(
-        disc_loss, discriminator.trainable_variables
-    )
+        disc_loss, discriminator.trainable_variables)
+
     generator_optimizer.apply_gradients(
-        zip(generator_gradients, generator.trainable_variables)
-    )
+        zip(generator_gradients, generator.trainable_variables))
+
     discriminator_optimizer.apply_gradients(
-        zip(discriminator_gradients, discriminator.trainable_variables)
-    )
+        zip(discriminator_gradients, discriminator.trainable_variables))
+
     with summary_writer.as_default():
         tf.summary.scalar("gen_total_loss", gen_total_loss, step=step)
         tf.summary.scalar("gen_gan_loss", gen_gan_loss, step=step)
@@ -227,7 +227,6 @@ if __name__ == "__main__":
 
     print("Setting up the generator......")
     generator = Generator_modular(input_size=(32, 512), no_inputs=1)
-    #print generator summary
     print(generator.summary())
 
     print("Setting up the discriminator......")

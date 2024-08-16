@@ -30,10 +30,11 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     # Create the input_shape
     input_shape = (*input_size, no_inputs)
 
-    # Calculate the number of layers based on both dimensions of the input shape
+    # Calculate the number of layers based on both dimensions of the input shape as powers of 2 with the log2 function
     num_layers_width = int(np.log2(input_shape[0]))
     num_layers_height = int(np.log2(input_shape[1]))
-    # Assign the number of layers to a min a max dimension, needed for irregular shapes
+
+    # Assign the number of layers to a min a max dimension, this is needed for irregular shapes
     big_dimension = max(num_layers_width, num_layers_height)
     short_dimension = min(num_layers_width, num_layers_height)
 
@@ -55,7 +56,7 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
             strides = (2, 2)
         else:
             strides = (2, 2)
-        # Add a encoder layer to the encoder stack with batch normalization after the first layer
+        # Add an encoder layer to the encoder stack with batch normalization after the first layer
         encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
 
     # Create the decoder stack

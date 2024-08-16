@@ -36,6 +36,7 @@ def Discriminator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, ba
     # Calculate the number of layers based on both dimensions of the input shape
     num_layers_width = int(np.log2(input_size[0]))
     num_layers_height = int(np.log2(input_size[1]))
+
     # Assign the number of layers to a min and max dimension, needed for irregular shapes
     big_dimension = max(num_layers_width, num_layers_height)
     short_dimension = min(num_layers_width, num_layers_height)
