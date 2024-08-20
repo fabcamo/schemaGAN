@@ -196,7 +196,7 @@ def create_dataset(cs_folder: str, cptlike_folder: str, height: int, width: int,
     return train_dataset, test_dataset, val_dataset
 
 
-
+"""
 
 
 train_folder_cs = r"D:\GeoSchemaGen\tests\outputs\train\cs"
@@ -250,3 +250,5 @@ if test_dataset:
 # Example usage
 num_samples = 5  # Number of pairs to plot
 plot_input_and_target_from_dataset(train_dataset, num_samples)
+
+"""

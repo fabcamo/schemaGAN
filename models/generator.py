@@ -100,7 +100,7 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     last_layer = tf.keras.layers.Conv2DTranspose(
         filters=OUTPUT_CHANNELS,
         kernel_size=4,
-        strides=2,
+        strides=(1, 2),
         padding="same",
         kernel_initializer=initializer,
         activation="tanh",
