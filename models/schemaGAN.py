@@ -13,7 +13,7 @@ from models.generator import Generator_modular, generator_loss
 from models.discriminator import Discriminator_modular, discriminator_loss
 from utils.preprocessing import create_dataset
 
-import tensorflow as tf
+
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 
@@ -26,8 +26,12 @@ IMAGE_SIZE = 256
 IMAGE_IDX = 255
 
 # Directories for training data
-train_folder_cs = r"D:\GeoSchemaGen\tests\outputs\train\cs"
-train_folder_cptlike = r"D:\GeoSchemaGen\tests\outputs\train\cptlike"
+train_folder_cs = r"D:/GeoSchemaGen/tests/outputs/train/cs"
+train_folder_cptlike = r"D:/GeoSchemaGen/tests/outputs/train/cptlike"
+
+# Directories for Eleni's training data
+train_folder = r"D:/GeoSchemaGen/tests/outputs/train"
+test_folder = r"D:/GeoSchemaGen/tests/outputs/test"
 
 # Image dimensions and other settings
 height = 32
@@ -69,6 +73,7 @@ def train_step(input_image, target, step):
         tf.summary.scalar("gen_gan_loss", gen_gan_loss, step=step)
         tf.summary.scalar("gen_l1_loss", gen_l1_loss, step=step)
         tf.summary.scalar("disc_loss", disc_loss, step=step)
+        tf.summary.scalar("step", step, step=step)
 
 
 def generate_images(model, test_input, tar, savefig=True, step=None):
@@ -83,7 +88,7 @@ def generate_images(model, test_input, tar, savefig=True, step=None):
         plt.imshow(display_list[i] * 0.5 + 0.5, cmap='gray')
         plt.axis("off")
     if savefig:
-        plt.savefig(f"output_geometry_re\\train_pix2pix{step}.png")
+        plt.savefig(f"D:/schemaGAN/tests/test_schemaGAN/output/train_pix2pix{step}.png")
     else:
         plt.show()
     plt.clf()
@@ -92,7 +97,7 @@ def generate_images(model, test_input, tar, savefig=True, step=None):
     plt.legend(loc="upper right")
     plt.title(f"Results at step {step}")
     if savefig:
-        plt.savefig(f"output_geometry_re\\train_pix2pix_dist{step}.png")
+        plt.savefig(f"D:/schemaGAN/tests/test_schemaGAN/output/train_pix2pix_dist{step}.png")
     else:
         plt.show()
 
@@ -218,9 +223,9 @@ if __name__ == "__main__":
     discriminator_optimizer = tf.keras.optimizers.Adam(1e-4, beta_1=0.5)
 
     # Set up logging
-    log_dir = "logs_geometry_re/"
+    log_dir = "D:/schemaGAN/tests/test_schemaGAN/logs/"
     summary_writer = tf.summary.create_file_writer(
-        log_dir + "fit_train_geometry_re/keep" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        log_dir + "fit_train/keep" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     )
 
     # Initialize models
@@ -233,7 +238,7 @@ if __name__ == "__main__":
     #print(discriminator.summary())
 
     # Set up checkpointing
-    checkpoint_dir = "D:\sheetpile\\ai_model\\training_checkpoints_2d_geometry_refined"
+    checkpoint_dir = "D:/schemaGAN/tests/test_schemaGAN/checkpoints/training_checkpoints_2d_geometry_refined"
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
     checkpoint = tf.train.Checkpoint(
         generator_optimizer=generator_optimizer,
@@ -242,9 +247,12 @@ if __name__ == "__main__":
         discriminator=discriminator
     )
 
+    # Path to save results
+    path_results = "D:/schemaGAN/tests/test_schemaGAN"
+
     # Create output directory if it does not exist
-    if not os.path.exists("output_geometry_re"):
-        os.makedirs("output_geometry_re")
+    if not os.path.exists("D:/schemaGAN/tests/test_schemaGAN/output_geometry_re"):
+        os.makedirs("D:/schemaGAN/tests/test_schemaGAN/output_geometry_re")
 
     # Start training
     print("Starting training...")
