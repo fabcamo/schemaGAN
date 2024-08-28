@@ -31,12 +31,20 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     input_shape = (*input_size, no_inputs)
 
     # Calculate the number of layers based on both dimensions of the input shape as powers of 2 with the log2 function
-    num_layers_width = int(np.log2(input_shape[0]))
-    num_layers_height = int(np.log2(input_shape[1]))
+    log2_width = int(np.log2(input_shape[0]))
+    log2_height = int(np.log2(input_shape[1]))
+
+    # Calculate the ratio between the width and height
+    ratio = np.abs(log2_width - log2_height)
+    print(f"Width: {log2_width}, Height: {log2_height}, Ratio: {ratio}")
+    # Calculate the inverse ratio as the maximum number of layers minus the ratio to reach a square shape
+    inverse_ratio = np.abs(max(log2_width, log2_height) - ratio)
 
     # Assign the number of layers to a min a max dimension, this is needed for irregular shapes
-    no_layer_big_dim = max(num_layers_width, num_layers_height)
-    no_layer_small_dim = min(num_layers_width, num_layers_height)
+    no_layer_big_dim = max(log2_width, log2_height)
+    no_layer_small_dim = min(log2_width, log2_height)
+    # Worked out number of layers needed to reach a dimension of 1x1 (2^0)
+    no_layers = max(log2_width, log2_height)
 
     # Define the input tensor to the generator
     generator_inputs = tf.keras.layers.Input(shape=input_shape)
@@ -47,7 +55,7 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     # Create the encoder/downsample stack
     encoder_layers = []
     # Loop through the layers needed to reach a dimension of 1x1
-    for i in range(no_layer_big_dim):
+    for i in range(no_layers):
         # If the shape is squared, use stride (2, 2) for all layers
         if input_shape[0] == input_shape[1]:
             strides = (2, 2)
@@ -55,7 +63,7 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
         # If the shape is not squared, use stride (2, 1) or (1, 2) to reach a size of 2x2
         elif input_shape[0] != input_shape[1]:
             # Loop first through the short dimension to get it to size 2 with square strides
-            if i < no_layer_small_dim - 1:
+            if i < ratio:
                 # Use either stride (2, 1) or (1, 2) to reach 2x2 depending on the shape
                 if input_shape[0] > input_shape[1]:
                     strides = (2, 1)
@@ -63,7 +71,7 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
                     strides = (1, 2)
 
             # After the shape is squared, we can use stride (2, 2) for all layers
-            elif no_layer_small_dim - 1 <= i <= no_layer_big_dim - 1:
+            elif i >= ratio:
                 strides = (2, 2)
 
         # Else, print an error message
@@ -77,7 +85,8 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
 
     # Create the decoder stack
     decoder_layers = []
-    for i in range(no_layer_big_dim):
+    # Calculate the number of steps needed in reverse to reach the original irregular shape
+    for i in range(no_layers):
         # If the shape is squared, use stride (2, 2) for all layers
         if input_shape[0] == input_shape[1]:
             strides = (2, 2)
@@ -85,16 +94,22 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
         # If the shape is not squared, first scale squared with stride (2, 2)
         elif input_shape[0] != input_shape[1]:
             # Loop first through the short dimension to get it to size 2 with square strides
-            if i <= no_layer_small_dim - 1:
+            if i < inverse_ratio:
                 strides = (2, 2)
 
             # After we reach the original size in the short dimension, we can use stride (2, 1) or (1, 2) to reach the original size
-            elif no_layer_small_dim - 1 < i <= no_layer_big_dim - 1:
+            elif i >= inverse_ratio:
                 # Use either stride (2, 1) or (1, 2) to reach 2x2 depending on the shape
                 if input_shape[0] > input_shape[1]:
                     strides = (2, 1)
                 elif input_shape[0] < input_shape[1]:
                     strides = (1, 2)
+
+        # Calculate the number of filters for the current layer
+        if i < no_layers - 4:
+            filters = base_filters * 8
+        else:
+            filters = base_filters * min(8, 2 ** (no_layers - i - 2))
 
         # Add a decoder layer to the decoder stack
         decoder_layers.append(
@@ -105,8 +120,6 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     for encoder_layer in encoder_layers:
         # Pass the current output through the encoder layer and update it
         current_layer_output = encoder_layer(current_layer_output)
-        # Print the shape of the current layer output
-        print(current_layer_output.shape)
         # Add the current output to the list of skip connections
         skip_connections.append(current_layer_output)
 
@@ -119,7 +132,6 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
         current_layer_output = decoder_layer(current_layer_output)
         # Concatenate the current output with the corresponding skip connection
         current_layer_output = tf.keras.layers.Concatenate()([current_layer_output, skip_connection])
-
 
     # Check the last layer and adjust the stride accordingly
     # If it is squared, use stride (2, 2)
@@ -192,88 +204,3 @@ def generator_loss(disc_generated_output: tf.Tensor, gen_output: tf.Tensor, targ
     return total_gen_loss, gan_loss, l1_loss
 
 
-
-
-"""
-
-    # Create the encoder/downsample stack
-    encoder_layers = []
-    for i in range(big_dimension):
-        # Double the number of filters with each layer (min 64, max 512)
-        filters = base_filters * min(8, 2 ** i)
-        # Adjust the strides to make the output square
-        if i < short_dimension - 1 and short_dimension != big_dimension:
-            strides = (1, 2)
-        elif i >= short_dimension - 1:
-            strides = (2, 2)
-        else:
-            strides = (2, 2)
-        # Add an encoder layer to the encoder stack with batch normalization after the first layer
-        encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
-        
-        
-        
-        
-        
-        
-            # Create the encoder/downsample stack
-    encoder_layers = []
-    regular_step_counter = 0
-    # Loop through the layers needed to reach a dimension of 1x1
-    for i in range(max_layers):
-        # Check if the shape of the current layer is squared
-        if current_layer_output.shape[1] == current_layer_output.shape[2]:
-            strides = (2, 2)
-            regular_step_counter += 1
-        # If the shape is not squared, adjust the strides to make it squared
-        elif current_layer_output.shape[1] > current_layer_output.shape[2]:
-            strides = (2, 1)
-        elif current_layer_output.shape[1] < current_layer_output.shape[2]:
-            strides = (1, 2)
-        # Double the number of filters with each layer (min 64, max 512)
-        filters = base_filters * min(8, 2 ** i)
-        # Add an encoder layer to the encoder stack with batch normalization after the first layer
-        encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
-        
-        
-        
-        
-        
-        
-
-        # Calculate the number of filters for the current layer
-        if i < big_dimension - 4:
-            filters = base_filters * 8
-        else:
-            filters = base_filters * min(8, 2 ** (big_dimension - i - 2))
-        # Adjust the strides to make the output square
-        if i <= short_dimension - 1:
-            strides = (2, 2)
-        elif i > short_dimension - 1 and short_dimension != big_dimension:
-            strides = (1, 2)
-        else:
-            strides = (2, 2)
-            
-            
-            
-            
-                # Create the encoder/downsample stack
-    encoder_layers = []
-    # Loop through the layers needed to reach a dimension of 1x1
-    for i in range(big_dimension):
-        # Encode the layer with regular stride until one of the dimensions reach size 2
-        if current_layer_output[1] != 2 and current_layer_output[2] != 2:
-            strides = (2, 2)
-        # If one of the dimensions is 2, use stride (2, 1) or (1, 2) to reach 2x2
-        elif current_layer_output[1] == 2 and current_layer_output[2] != 2:
-            strides = (1, 2)
-        elif current_layer_output[1] != 2 and current_layer_output[2] == 2:
-            strides = (2, 1)
-        # If both dimensions are 2, use stride (1, 1) to reach 1x1
-        else:
-            strides = (2, 2)
-        # Calculate the number of filters for the current layer
-        filters = base_filters * min(8, 2 ** i)
-        # Add an encoder layer to the encoder stack with batch normalization after the first layer
-        encoder_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
-"""
