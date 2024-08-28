@@ -40,9 +40,6 @@ def Generator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, OUTPUT
     # Calculate the inverse ratio as the maximum number of layers minus the ratio to reach a square shape
     inverse_ratio = np.abs(max(log2_width, log2_height) - ratio)
 
-    # Assign the number of layers to a min a max dimension, this is needed for irregular shapes
-    no_layer_big_dim = max(log2_width, log2_height)
-    no_layer_small_dim = min(log2_width, log2_height)
     # Worked out number of layers needed to reach a dimension of 1x1 (2^0)
     no_layers = max(log2_width, log2_height)
 

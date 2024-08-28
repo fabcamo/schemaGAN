@@ -33,31 +33,42 @@ def Discriminator_modular(input_size: tuple = (256, 256), no_inputs: int = 4, ba
     x = tf.keras.layers.concatenate([inp, tar]) # (batch_size, 256, 256, no_inputs+1)
 
     # Define the discriminator architecture
-    # Calculate the number of layers based on both dimensions of the input shape
-    num_layers_width = int(np.log2(input_size[0]))
-    num_layers_height = int(np.log2(input_size[1]))
 
-    # Assign the number of layers to a min and max dimension, needed for irregular shapes
-    big_dimension = max(num_layers_width, num_layers_height)
-    short_dimension = min(num_layers_width, num_layers_height)
+    # Calculate the number of layers based on both dimensions of the input shape as powers of 2 with the log2 function
+    log2_width = int(np.log2(input_shape[0]))
+    log2_height = int(np.log2(input_shape[1]))
 
-    # Calculate the number of downsample layers as the big_dimension - 5 in order to have a 32x32 output
-    # before going into the final convolutional layers
-    num_downsample_layers = big_dimension - 5
+    # Calculate the ratio between the width and height
+    ratio = np.abs(log2_width - log2_height)
+
+    # Calculate the number of layers needed to reach a final size of 16x16
+    # We do (-4) because 1x1>step 1>2x2>step 2>4x4>step 3>8x8>step 4>16x16 are 4 steps
+    no_layers = max(log2_width, log2_height) - 4
 
     # Create the downsample stack
     down_layers = []
-    for i in range(big_dimension - num_downsample_layers):
+    for i in range(no_layers):
         # Double the number of filters with each layer (min 64, max 512)
         filters = base_filters * min(8, 2 ** i)
-        # Adjust the strides to make the output square
-        if i < short_dimension - 1 and short_dimension != big_dimension:
-            strides = (1, 2)
-        elif i >= short_dimension - 1:
+
+        # If the shape is squared, use stride (2, 2) for all layers
+        if input_shape[0] == input_shape[1]:
             strides = (2, 2)
-        else:
-            strides = (2, 2)
-        # Add a downsample layer to the stack with batch normalization after the first layer
+
+        # If the shape is not squared, first scale squared with stride (2, 2)
+        elif input_shape[0] != input_shape[1]:
+            # Loop first through the short dimension to get it to size 2 with square strides
+            if i < ratio:
+                # Use either stride (2, 1) or (1, 2) to reach 2x2 depending on the shape
+                if input_shape[0] > input_shape[1]:
+                    strides = (2, 1)
+                elif input_shape[0] < input_shape[1]:
+                    strides = (1, 2)
+
+            # After we reach the original size in the short dimension, we can use stride (2, 1) or (1, 2) to reach the original size
+            elif i >= ratio:
+                strides = (2, 2)
+
         down_layers.append(downsample(filters=filters, kernel=4, strides=strides, batchnorm=(i != 0)))
 
     # Apply the downsample layers
