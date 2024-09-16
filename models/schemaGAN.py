@@ -3,9 +3,6 @@ import time
 import datetime
 import numpy as np
 import tensorflow as tf
-import wandb
-
-from wandb.integration.keras import WandbCallback
 
 from matplotlib import pyplot as plt
 from IPython import display
