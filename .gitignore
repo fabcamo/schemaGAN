@@ -48,3 +48,7 @@ Thumbs.db
 *.mov
 *.wmv
 
+/tests/test4eleni/
+/tests/test_schemaGAN/
+/data/
+/py310venv/

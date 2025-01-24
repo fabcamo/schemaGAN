@@ -40,22 +40,27 @@ def process_cpts(cpts):
     -------
     data: dict
     """
-    data = {"IC": [],
-            "depth": [],
-            "coordinates": [],
-            }
+    data = {
+        "IC": [],
+        "depth": [],
+        "coordinates": [],
+        "name": [],  # Add a list to store CPT names
+    }
 
     for cpt in cpts:
-        # initialize models
+        # Initialize models
         cpt_gef = GefCpt()
 
-        # read the cpt for each type of file
+        # Read the CPT for each type of file
         cpt_gef.read(cpt)
 
-        # do pre-processing
+        # Store the name of the CPT
+        data["name"].append(cpt_gef.name)
+
+        # Do pre-processing
         cpt_gef.pre_process_data()
 
-        # do pre-processing
+        # Interpret CPT
         interpreter = RobertsonCptInterpretation()
         interpreter.unitweightmethod = UnitWeightMethod.LENGKEEK
 
@@ -69,79 +74,89 @@ def process_cpts(cpts):
         data["coordinates"].append(cpt_gef.coordinates)
     return data
 
+
 if __name__ == "__main__":
-    cpts_g = read_files(r"cptdata/2422-220749_Sonderingen_GEF")
-    data_cpts1 = process_cpts(cpts_g)
+    cpts_g = read_files(r"D:\schemaGAN\data\eindhoven")
+    data_cpt = process_cpts(cpts_g)
 
+    print(data_cpt['coordinates'])
 
-    print(data_cpts1['coordinates'])
-
-    plt.plot(np.array(data_cpts1["coordinates"])[:, 0],
-             np.array(data_cpts1["coordinates"])[:, 1],
-             marker="o", linewidth=0)
+    # Plot coordinates
+    plt.plot(
+        np.array(data_cpt["coordinates"])[:, 0],
+        np.array(data_cpt["coordinates"])[:, 1],
+        marker="o", linewidth=0
+    )
     plt.show()
     plt.clf()
 
-    # Save coordinates as CSV
-    output_filename = r"cptdata/data_cpts1_coordinates.csv"
+    # Save coordinates as CSV with CPT names
+    output_filename = r"D:\schemaGAN\real_case\eindhoven\coordinates.csv"
     with open(output_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["x", "y"])  # Write column headers
-        writer.writerows(data_cpts1["coordinates"])
+        writer.writerow(["cpt_name", "x", "y"])  # Write column headers
+        for name, coord in zip(data_cpt["name"], data_cpt["coordinates"]):
+            writer.writerow([name, coord[0], coord[1]])
 
     print(f"Coordinates saved to '{output_filename}'")
+
+"""
+    # Get the number of CPTs in the folder
+    num_cpts = len(data_cpt["IC"])
 
     fig, axes = plt.subplots(1, 30, figsize=(20, 2), sharey=True)  # Create subplots with 1 row and 30 columns
     # Plot each element in its own subplot
     for i in range(30):
-        axes[i].plot(data_cpts1["IC"][i], data_cpts1["depth"][i], color='navy', label="IC")
+        axes[i].plot(data_cpt["IC"][i], data_cpt["depth"][i], color='navy', label="IC")
         axes[i].set_title(f"CPT{i + 1}")  # Set a title for each subplot
-        axes[i].set_ylim(-35, 0)  # Set the y-axis range
-        axes[i].set_xlim(1, 4)  # Set the y-axis range
+        #axes[i].set_ylim(-35, 0)  # Set the y-axis range
+        #axes[i].set_xlim(1, 4)  # Set the y-axis range
 
     plt.tight_layout()  # Adjust spacing between subplots
     plt.show()
     plt.clf()
 
-    cpts_g = read_files(r"cptdata/cpts_BRO_in_embankment")
-    data_cpts2 = process_cpts(cpts_g)
-
-    plt.plot(np.array(data_cpts2["coordinates"])[:, 0],
-             np.array(data_cpts2["coordinates"])[:, 1],
-              marker="o", linewidth=0)
-    plt.show()
-    plt.clf()
-
-    # Save coordinates as CSV
-    output_filename = r"cptdata/data_cpts2_coordinates.csv"
-    with open(output_filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["x", "y"])  # Write column headers
-        writer.writerows(data_cpts2["coordinates"])
-    print(f"Coordinates saved to '{output_filename}'")
-
-
-    fig, axes = plt.subplots(1, 24, figsize=(15, 3), sharey=True)  # Create subplots with 1 row and 30 columns
-    # Plot each element in its own subplot
-    for i in range(24):
-        axes[i].plot(data_cpts2["IC"][i], data_cpts2["depth"][i], color='darkred', label="IC")
-        axes[i].set_title(f"CPT{i + 1}")  # Set a title for each subplot
-        axes[i].set_ylim(-35, 0)  # Set the y-axis range
-        axes[i].set_xlim(1, 4)  # Set the y-axis range
-
-    plt.tight_layout()  # Adjust spacing between subplots
-    plt.show()
-    plt.clf()
+    # cpts_g = read_files(r"cptdata/cpts_BRO_in_embankment")
+    # data_cpts2 = process_cpts(cpts_g)
+    #
+    # plt.plot(np.array(data_cpts2["coordinates"])[:, 0],
+    #          np.array(data_cpts2["coordinates"])[:, 1],
+    #           marker="o", linewidth=0)
+    # plt.show()
+    # plt.clf()
+    #
+    # # Save coordinates as CSV
+    # output_filename = r"cptdata/data_cpts2_coordinates.csv"
+    # with open(output_filename, 'w', newline='') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     writer.writerow(["x", "y"])  # Write column headers
+    #     writer.writerows(data_cpts2["coordinates"])
+    # print(f"Coordinates saved to '{output_filename}'")
 
 
+    # fig, axes = plt.subplots(1, 24, figsize=(15, 3), sharey=True)  # Create subplots with 1 row and 30 columns
+    # # Plot each element in its own subplot
+    # for i in range(24):
+    #     axes[i].plot(data_cpts2["IC"][i], data_cpts2["depth"][i], color='darkred', label="IC")
+    #     axes[i].set_title(f"CPT{i + 1}")  # Set a title for each subplot
+    #     axes[i].set_ylim(-35, 0)  # Set the y-axis range
+    #     axes[i].set_xlim(1, 4)  # Set the y-axis range
+    #
+    # plt.tight_layout()  # Adjust spacing between subplots
+    # plt.show()
+    # plt.clf()
 
 
 
-# Create a 2D array filled with zeros
-array = np.zeros((32, 512))
-# Convert numpy array to pandas DataFrame
-df = pd.DataFrame(array)
-# Add an index column to the left
-df.reset_index(drop=False, inplace=True)
-# Save DataFrame to csv
-df.to_csv(r'cptdata/zeros.csv', index=False)
+
+#
+# # Create a 2D array filled with zeros
+# array = np.zeros((32, 512))
+# # Convert numpy array to pandas DataFrame
+# df = pd.DataFrame(array)
+# # Add an index column to the left
+# df.reset_index(drop=False, inplace=True)
+# # Save DataFrame to csv
+# df.to_csv(r'D:\schemaGAN\real_case\eindhoven\zeros.csv', index=False)
+    
+"""
