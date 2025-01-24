@@ -251,31 +251,45 @@ def compress_to_32px(equalized_cpts, method="mean"):
 
 def save_cpt_to_csv(data_cpts: list, output_dir: str):
     """
-    Takes a list of CPT data dictionaries and saves them to a single csv file where there is a single column
-    of depth (because all depth is the same 0 to 31) and a column for each CPT, using the CPT name as the column header
-    and storing the IC value as for each depth value.
+    Save the compressed CPT data (32 pixels) to a CSV file.
 
-    Args:
-        data_cpts (list): List of dictionaries containing CPT data after processing.
-        output_dir (str): Directory where the CSV file will be saved.
+    The CSV will have 33 rows: one for depth indices (0 to 31) and 32 depth bins,
+    and one for each CPT with IC values.
 
-    Returns:
-        None
+    Parameters
+    ----------
+    data_cpts: list
+        List of dictionaries containing compressed CPT data (32 depth and IC values).
+    output_dir: str
+        Directory where the CSV file will be saved.
+
+    Returns
+    -------
+    None
     """
-    # Create a DataFrame to store the CPT data
-    df = pd.DataFrame(columns=[cpt['Name'] for cpt in data_cpts])
+    # Ensure the output directory exists
+    os.makedirs(output_dir, exist_ok=True)
 
-    # Create a depth column with values from 0 to 31
-    df['Depth'] = np.arange(32)
+    # Initialize a DataFrame for storing depth and IC data
+    df = pd.DataFrame()
 
-    # Add IC values for each CPT to the DataFrame
+    # The first column is the depth (from 0 to 31)
+    df["Depth_Index"] = range(32)
+
+    # Add each CPT's compressed IC values as a column
     for cpt in data_cpts:
-        df[cpt['Name']] = np.interp(df['Depth'], cpt['depth'], cpt['IC'], left=0, right=0)
+        cpt_name = cpt["Name"]  # Use the CPT name as the column header
+        # Add the compressed IC values to the DataFrame in inverse order
+        df[cpt_name] = cpt["IC"][::-1]
 
-    # Save the DataFrame to a CSV file
-    output_file = os.path.join(output_dir, "32px_cptdata.csv")
+    # Define the output file path
+    output_file = os.path.join(output_dir, "compressed_cpt_data.csv")
+
+    # Save the DataFrame to CSV
     df.to_csv(output_file, index=False)
-    print(f"Data saved to {output_file}")
+    print(f"Compressed CPT data saved to: {output_file}")
+
+
 
 
 def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_32px, num_to_plot=10, lowest_min_depth=0, lowest_max_depth=0):
@@ -386,7 +400,7 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
 
 if __name__ == "__main__":
     # Directory containing the CPT files
-    cpts_path = read_files(r"D:\schemaGAN\data\groningen")
+    cpts_path = read_files(r"D:\schemaGAN\data\eindhoven")
 
     # Process CPT files
     data_cpts = process_cpts(cpts_path)
@@ -426,5 +440,5 @@ if __name__ == "__main__":
     plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=10)
 
     # Save the compressed data to a CSV file
-    output_dir = r"D:\schemaGAN\real_case\groningen"
+    output_dir = r"D:\schemaGAN\real_case\eindhoven"
     save_cpt_to_csv(compressed_cpts, output_dir)
