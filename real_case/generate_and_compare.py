@@ -3,13 +3,28 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 from tensorflow.keras.models import load_model
-from GAN_p2p.functions.p2p_process_data import IC_normalization, reverse_IC_normalization
-from GAN_p2p.interpolation.interpolation_utils import generate_nearnei_images, generate_krig_images
+from schemaGAN.functions.utils import IC_normalization, reverse_IC_normalization
+from interpol_compare.functions.utils import generate_nearnei_images, generate_krig_images
 
-# Generate a random seed using NumPy
-seed = np.random.randint(20220412, 20230412)
-# Set the seed for NumPy's random number generator
-#np.random.seed(20232023)
+import tensorflow as tf
+
+physical_devices = tf.config.list_physical_devices('GPU')
+if len(physical_devices) == 0:
+    print("No GPU available, using CPU.")
+else:
+    print(f"{len(physical_devices)} GPU(s) available: {physical_devices}")
+
+
+physical_devices = tf.config.list_physical_devices('GPU')
+if physical_devices:
+    try:
+        # Restrict TensorFlow to only use a fraction of the memory
+        for device in physical_devices:
+            tf.config.experimental.set_memory_growth(device, True)
+    except RuntimeError as e:
+        print(e)
+
+
 
 
 def mean_absolute_error(y_true, y_pred):
@@ -140,6 +155,8 @@ def run_and_get_mean_mae(csv_file):
     """
     # Load the data from the csv file
     df_all_cpt = pd.read_csv(csv_file, header=None)
+    # Print progress message
+    #print(f"Data loaded from '{csv_file}'")
 
     # Remove the first two rows and the first column
     df_all_cpt = df_all_cpt.iloc[2:, 1:].reset_index(drop=True)
@@ -147,16 +164,32 @@ def run_and_get_mean_mae(csv_file):
     df_all_cpt.columns = range(len(df_all_cpt.columns))
     # Convert the entire DataFrame to floats
     df_all_cpt = df_all_cpt.astype(float)
+    # Print progress message
+    #print("Data cleaned and converted to float")
 
     # Find the index numbers of columns where the data is different than zero
     cpt_index_locations = df_all_cpt.columns[df_all_cpt.ne(0).any()].tolist()
 
-    # Select 6 elements from cpt_index_locations with at least 51 spaces between them
-    cpt_index_remaining = []
-    while len(cpt_index_remaining) < 6:
-        selected_index = np.random.choice(cpt_index_locations)
-        if all(abs(selected_index - existing_index) >= 50 for existing_index in cpt_index_remaining):
-            cpt_index_remaining.append(selected_index)
+    # Retry mechanism for selecting 6 CPTs
+    max_retries = 25  # Maximum number of retries before failing
+    for attempt in range(max_retries):
+        cpt_index_remaining = []
+        while len(cpt_index_remaining) < 6:
+            selected_index = np.random.choice(cpt_index_locations)
+            if all(abs(selected_index - existing_index) >= 50 for existing_index in cpt_index_remaining):
+                cpt_index_remaining.append(selected_index)
+
+        # Print debug info for this attempt
+        print(f"Attempt {attempt + 1}: Selected CPTs - {cpt_index_remaining}")
+
+        # Check if we successfully selected 6 CPTs
+        if len(cpt_index_remaining) == 6:
+            print(f"Successfully selected 6 CPTs on attempt {attempt + 1}")
+            break  # Exit retry loop if successful
+    else:
+        # If retries fail, print a message and raise an exception
+        print(f"Failed to select 6 CPTs with spacing >= 51 after {max_retries} attempts.")
+        raise RuntimeError("Unable to select valid CPTs for this run.")
 
     # Sort the after_removal list in ascending order
     cpt_index_remaining.sort()
@@ -183,6 +216,7 @@ def run_and_get_mean_mae(csv_file):
     # Generate the images with a random number of CPT and locations given
     # Run the SchemaGAN
     gan_res = model.predict(cs_to_evaluate_normalized)
+    #print("SchemaGAN generated image")
     # Reverse normalization (from [-1,1] to [0,255]) of the generated GAN image
     gan_res = reverse_IC_normalization(gan_res)
     # Remove the singular dimensions
@@ -194,11 +228,13 @@ def run_and_get_mean_mae(csv_file):
     nearnei_res = np.squeeze(nearnei_res)
     # Convert to dataframe and save it
     df_nn = pd.DataFrame(nearnei_res)
+    #print("Nearest Neighbour generated image")
     # Run the Kriging interpol_compare
     krig_res = generate_krig_images(SIZE_Y, SIZE_X, cs_to_evaluate)
     krig_res = np.squeeze(krig_res)
     # Convert to dataframe and save it
     df_krig = pd.DataFrame(krig_res)
+    #print("Kriging generated image")
 
     # Find the index of the row where zero starts to appear in the specified columns and save them in a list
     zero_start_rows_per_column = df_all_cpt[df_all_cpt.columns[cpt_index_deleted]].apply(find_zero_start_row_index).tolist()
@@ -222,6 +258,9 @@ def run_and_get_mean_mae(csv_file):
     mean_mae_gan = sum(mae_gan_results.values()) / len(mae_gan_results)
     mean_mae_nearnei = sum(mae_near_results.values()) / len(mae_near_results)
     mean_mae_kriging = sum(mae_krig_results.values()) / len(mae_krig_results)
+    #print(f"Mean MAE for SchemaGAN: {mean_mae_gan}")
+    #print(f"Mean MAE for Nearest Neighbour: {mean_mae_nearnei}")
+    #print(f"Mean MAE for Kriging: {mean_mae_kriging}")
 
     # Create empty dictionaries to hold the MSE
     mse_gan_results = {}
@@ -238,6 +277,9 @@ def run_and_get_mean_mae(csv_file):
     mean_mse_gan = sum(mse_gan_results.values()) / len(mse_gan_results)
     mean_mse_nearnei = sum(mse_near_results.values()) / len(mse_near_results)
     mean_mse_kriging = sum(mse_krig_results.values()) / len(mse_krig_results)
+    #print(f"Mean MSE for SchemaGAN: {mean_mse_gan}")
+    #print(f"Mean MSE for Nearest Neighbour: {mean_mse_nearnei}")
+    #print(f"Mean MSE for Kriging: {mean_mse_kriging}")
 
     return mean_mae_gan, mean_mae_nearnei, mean_mae_kriging, mean_mse_gan, mean_mse_nearnei, mean_mse_kriging
 
@@ -250,13 +292,13 @@ if __name__ == "__main__":
     SIZE_Y = 32
 
     # Number of runs
-    num_runs = 10
+    num_runs = 1000
 
     # FOR THE SCHEMAGAN MODEL
     # Path to the generator models
-    path_to_model_to_evaluate = 'P:\schemagan\original_model'
+    path_to_model_to_evaluate = 'D:\schemaGAN\h5'
     # Input the name of the generator model to use
-    name_of_model_to_use = 'model_000036.h5'
+    name_of_model_to_use = 'schemaGAN.h5'
 
     # Pull the Generator model
     # Iterate over each file in the directory to find the requested model
@@ -283,10 +325,10 @@ if __name__ == "__main__":
     avg_mse_near = []
     avg_mse_krig = []
 
-    # Perform num_runs runs
+    # Perform num_runs runs for EINDHOVEN DATA #######################################################################
     for run in range(num_runs):
         print(f"Run {run + 1}/{num_runs}")
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae('cptdata/A4A18_mean.csv')
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:/schemaGAN/data/eindhoven/eind01_512x32.csv")
 
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
@@ -295,13 +337,19 @@ if __name__ == "__main__":
         avg_mse_near.append(mean_mse_near)
         avg_mse_krig.append(mean_mse_krig)
 
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae('cptdata/A19A29_mean.csv')
+        # print progress message
+        #print(f"Run {run + 1}/{num_runs} completed for first file")
+
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:/schemaGAN/data/eindhoven/eind02_512x32.csv")
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
         avg_mae_krig.append(mean_mae_krig)
         avg_mse_gan.append(mean_mse_gan)
         avg_mse_near.append(mean_mse_near)
         avg_mse_krig.append(mean_mse_krig)
+
+        # print progress message
+        #print(f"Run {run + 1}/{num_runs} completed for second file")
 
 
     # Save the average MAE results to a CSV file
@@ -313,7 +361,7 @@ if __name__ == "__main__":
         "Average_MSE_NEAR": avg_mse_near,
         "Average_MSE_KRIG": avg_mse_krig
     })
-    df_average_mae.to_csv("average_mae_results.csv", index=False)
+    df_average_mae.to_csv("D:/schemaGAN/real_case/eindhoven/average_mae_results.csv", index=False)
 
     # Calculate the total average MAE for each method
     total_average_mae_gan = np.mean(avg_mae_gan)
@@ -327,14 +375,100 @@ if __name__ == "__main__":
     # Plot the histogram of MAE errors
     generate_boxplot(avg_mae_gan, avg_mae_near, avg_mae_krig, method='Mean absolute error')
     # Save the plot to the specified path
-    plt.savefig(os.path.join('boxplot_mae.pdf'), format='pdf')
+    plt.savefig(os.path.join('D:/schemaGAN/real_case/eindhoven/boxplot_mae.pdf'), format='pdf')
     plt.close()
 
     # Plot the histogram of MSE errors
     generate_boxplot(avg_mse_gan, avg_mse_near, avg_mse_krig, method='Mean squared error')
     # Save the plot to the specified path
-    plt.savefig(os.path.join('boxplot_mse.pdf'), format='pdf')
+    plt.savefig(os.path.join('D:/schemaGAN/real_case/eindhoven/boxplot_mse.pdf'), format='pdf')
     plt.close()
+
+
+    # Perform num_runs runs for GRONINGEN DATA #######################################################################
+
+
+    # Lists to store the average MAE results from each run
+    avg_mae_gan = []
+    avg_mae_near = []
+    avg_mae_krig = []
+    # Lists to store the average MSE results from each run
+    avg_mse_gan = []
+    avg_mse_near = []
+    avg_mse_krig = []
+
+
+    for run in range(num_runs):
+        print(f"Run {run + 1}/{num_runs}")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
+            "D:/schemaGAN/data/groningen/gro01_512x32.csv")
+
+        avg_mae_gan.append(mean_mae_gan)
+        avg_mae_near.append(mean_mae_near)
+        avg_mae_krig.append(mean_mae_krig)
+        avg_mse_gan.append(mean_mse_gan)
+        avg_mse_near.append(mean_mse_near)
+        avg_mse_krig.append(mean_mse_krig)
+
+        # print progress message
+        # print(f"Run {run + 1}/{num_runs} completed for first file")
+
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
+            "D:/schemaGAN/data/groningen/gro02_512x32.csv")
+        avg_mae_gan.append(mean_mae_gan)
+        avg_mae_near.append(mean_mae_near)
+        avg_mae_krig.append(mean_mae_krig)
+        avg_mse_gan.append(mean_mse_gan)
+        avg_mse_near.append(mean_mse_near)
+        avg_mse_krig.append(mean_mse_krig)
+
+        # print progress message
+        # print(f"Run {run + 1}/{num_runs} completed for second file")
+
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
+            "D:/schemaGAN/data/groningen/gro03_512x32.csv")
+        avg_mae_gan.append(mean_mae_gan)
+        avg_mae_near.append(mean_mae_near)
+        avg_mae_krig.append(mean_mae_krig)
+        avg_mse_gan.append(mean_mse_gan)
+        avg_mse_near.append(mean_mse_near)
+        avg_mse_krig.append(mean_mse_krig)
+
+        # print progress message
+        # print(f"Run {run + 1}/{num_runs} completed for second file")
+
+    # Save the average MAE results to a CSV file
+    df_average_mae = pd.DataFrame({
+        "Average_MAE_GAN": avg_mae_gan,
+        "Average_MAE_NEAR": avg_mae_near,
+        "Average_MAE_KRIG": avg_mae_krig,
+        "Average_MSE_GAN": avg_mse_gan,
+        "Average_MSE_NEAR": avg_mse_near,
+        "Average_MSE_KRIG": avg_mse_krig
+    })
+    df_average_mae.to_csv("D:/schemaGAN/real_case/groningen/average_mae_results.csv", index=False)
+
+    # Calculate the total average MAE for each method
+    total_average_mae_gan = np.mean(avg_mae_gan)
+    total_average_mae_near = np.mean(avg_mae_near)
+    total_average_mae_krig = np.mean(avg_mae_krig)
+    # Calculate the total average MSE for each method
+    total_average_mse_gan = np.mean(avg_mae_gan)
+    total_average_mse_near = np.mean(avg_mae_near)
+    total_average_mse_krig = np.mean(avg_mae_krig)
+
+    # Plot the histogram of MAE errors
+    generate_boxplot(avg_mae_gan, avg_mae_near, avg_mae_krig, method='Mean absolute error')
+    # Save the plot to the specified path
+    plt.savefig(os.path.join('D:/schemaGAN/real_case/groningen/boxplot_mae.pdf'), format='pdf')
+    plt.close()
+
+    # Plot the histogram of MSE errors
+    generate_boxplot(avg_mse_gan, avg_mse_near, avg_mse_krig, method='Mean squared error')
+    # Save the plot to the specified path
+    plt.savefig(os.path.join('D:/schemaGAN/real_case/groningen/boxplot_mse.pdf'), format='pdf')
+    plt.close()
+
 
     # ####################################################################################################################
     # # FOR CS no.1

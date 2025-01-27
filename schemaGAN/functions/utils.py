@@ -255,7 +255,7 @@ def IC_normalization(data):
     Returns:
     list: A list containing the normalized source and target data.
     """
-    print('Normalizing the IC data...')
+    #print('Normalizing the IC data...')
 
     # Define the maximum and minimum values of IC in the source and target images
     max_IC_value = 4.3  # Maximum expected IC value

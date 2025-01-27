@@ -52,3 +52,4 @@ Thumbs.db
 /tests/test_schemaGAN/
 /data/
 /py310venv/
+/h5/

@@ -138,12 +138,13 @@ def kriging_interpolation(training_points, training_data, gridx, gridy):
     # z = training_data
 
     # Create the Gaussian process regressor
-    kernel = RBF(length_scale=(50, 0.5)) + WhiteKernel()  # You can adjust the length_scale parameter as needed
-    regressor = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, normalize_y=True)
+    kernel = RBF(length_scale=(50, 0.5), length_scale_bounds=(1e-2, 1e3)) + \
+             WhiteKernel(noise_level=1, noise_level_bounds=(1e-3, 1e1))  # You can adjust the length_scale parameter as needed
+    regressor = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=20, normalize_y=True)
 
     # Fit the regressor to the data
     regressor.fit(X, training_data)
-    print(f"Kernel parameters: {regressor.kernel_}")
+    #print(f"Kernel parameters: {regressor.kernel_}")
 
     # Flatten the meshgrid for prediction
     XX, YY = np.meshgrid(gridx, gridy)
