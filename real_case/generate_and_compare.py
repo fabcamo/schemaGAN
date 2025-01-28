@@ -172,23 +172,38 @@ def run_and_get_mean_mae(csv_file):
 
     # Retry mechanism for selecting 6 CPTs
     max_retries = 25  # Maximum number of retries before failing
+    max_retries_per_index = 30  # Maximum retries for finding a valid index
+    min_spacing = 50  # Minimum spacing between indices
+
     for attempt in range(max_retries):
         cpt_index_remaining = []
-        while len(cpt_index_remaining) < 6:
+        retries = 0
+
+        while len(cpt_index_remaining) < 4:
+            if retries >= max_retries_per_index:
+                print(f"Restarting after {retries} retries (attempt {attempt + 1})")
+                break  # Restart the process
+
+            # Randomly pick a candidate index
             selected_index = np.random.choice(cpt_index_locations)
-            if all(abs(selected_index - existing_index) >= 50 for existing_index in cpt_index_remaining):
+
+            # Check if the candidate index satisfies the minimum spacing criteria
+            if all(abs(selected_index - existing_index) >= min_spacing for existing_index in cpt_index_remaining):
                 cpt_index_remaining.append(selected_index)
+                retries = 0  # Reset retries after a successful selection
+            else:
+                retries += 1
 
         # Print debug info for this attempt
         print(f"Attempt {attempt + 1}: Selected CPTs - {cpt_index_remaining}")
 
         # Check if we successfully selected 6 CPTs
-        if len(cpt_index_remaining) == 6:
-            print(f"Successfully selected 6 CPTs on attempt {attempt + 1}")
+        if len(cpt_index_remaining) == 5:
+            print(f"Successfully selected 5 CPTs on attempt {attempt + 1}")
             break  # Exit retry loop if successful
     else:
         # If retries fail, print a message and raise an exception
-        print(f"Failed to select 6 CPTs with spacing >= 51 after {max_retries} attempts.")
+        print(f"Failed to select 5 CPTs with spacing >= {min_spacing} after {max_retries} attempts.")
         raise RuntimeError("Unable to select valid CPTs for this run.")
 
     # Sort the after_removal list in ascending order
@@ -384,10 +399,9 @@ if __name__ == "__main__":
     plt.savefig(os.path.join('D:/schemaGAN/real_case/eindhoven/boxplot_mse.pdf'), format='pdf')
     plt.close()
 
-
-    # Perform num_runs runs for GRONINGEN DATA #######################################################################
-
-
+    ######################## GRONINGEN ############################################################################################################
+    # Number of runs
+    num_runs = 1000
     # Lists to store the average MAE results from each run
     avg_mae_gan = []
     avg_mae_near = []
@@ -397,11 +411,10 @@ if __name__ == "__main__":
     avg_mse_near = []
     avg_mse_krig = []
 
-
+    # Perform num_runs runs for EINDHOVEN DATA #######################################################################
     for run in range(num_runs):
         print(f"Run {run + 1}/{num_runs}")
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
-            "D:/schemaGAN/data/groningen/gro01_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:/schemaGAN/data/groningen/gro01_512x32.csv")
 
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
@@ -411,10 +424,9 @@ if __name__ == "__main__":
         avg_mse_krig.append(mean_mse_krig)
 
         # print progress message
-        # print(f"Run {run + 1}/{num_runs} completed for first file")
+        #print(f"Run {run + 1}/{num_runs} completed for first file")
 
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
-            "D:/schemaGAN/data/groningen/gro02_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:/schemaGAN/data/groningen/gro02_512x32.csv")
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
         avg_mae_krig.append(mean_mae_krig)
@@ -423,10 +435,9 @@ if __name__ == "__main__":
         avg_mse_krig.append(mean_mse_krig)
 
         # print progress message
-        # print(f"Run {run + 1}/{num_runs} completed for second file")
+        #print(f"Run {run + 1}/{num_runs} completed for second file")
 
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae(
-            "D:/schemaGAN/data/groningen/gro03_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:/schemaGAN/data/groningen/gro03_512x32.csv")
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
         avg_mae_krig.append(mean_mae_krig)
@@ -435,7 +446,8 @@ if __name__ == "__main__":
         avg_mse_krig.append(mean_mse_krig)
 
         # print progress message
-        # print(f"Run {run + 1}/{num_runs} completed for second file")
+        #print(f"Run {run + 1}/{num_runs} completed for second file")
+
 
     # Save the average MAE results to a CSV file
     df_average_mae = pd.DataFrame({
@@ -468,7 +480,6 @@ if __name__ == "__main__":
     # Save the plot to the specified path
     plt.savefig(os.path.join('D:/schemaGAN/real_case/groningen/boxplot_mse.pdf'), format='pdf')
     plt.close()
-
 
     # ####################################################################################################################
     # # FOR CS no.1
