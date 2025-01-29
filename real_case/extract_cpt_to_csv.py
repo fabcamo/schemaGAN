@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 
@@ -180,7 +181,6 @@ def equalize_depth(data_cpts, lowest_min_depth):
     return equalized_depth_cpts
 
 
-#TODO: Compress to 32 pixels
 def compress_to_32px(equalized_cpts, method="mean"):
     """
     Compress CPT data to 32 pixels by dividing the depth into 32 equal groups
@@ -354,9 +354,10 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
     plt.close()
 
 
+
 def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
     """
-    Plot the results of compression for comparison.
+    Plot the results of compression for comparison in a 3-row layout.
 
     Parameters
     ----------
@@ -369,13 +370,19 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
     num_to_plot: int
         Number of CPTs to plot (default is 10).
     """
-    fig, axs = plt.subplots(1, num_to_plot, figsize=(num_to_plot * 4, 6), sharey=True)
+    # Calculate the number of columns and rows
+    rows = 3
+    cols = math.ceil(num_to_plot / rows)
+
+    # Create the figure and axes
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 4, rows * 6), sharey=True)
+    axs = axs.flatten()  # Flatten the 2D array of axes for easier indexing
 
     for i in range(num_to_plot):
         eq_cpt = equalized_cpts[i]
         comp_cpt = compressed_cpts[i]
 
-        ax = axs[i] if num_to_plot > 1 else axs
+        ax = axs[i]
 
         # Plot equalized CPT
         ax.plot(eq_cpt['IC'], eq_cpt['depth'], label='Equalized', color='blue')
@@ -387,20 +394,25 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
         # Formatting
         ax.invert_yaxis()  # Depth increases downward
         ax.set_title(f"CPT-{eq_cpt['Name']}", fontsize=10)
-        if i == 0:
+        if i % cols == 0:
             ax.set_ylabel("Depth (m)")
 
         ax.set_xlabel("IC (Equalized)")
         ax_twin.set_ylabel("Depth (Compressed)")
+
+    # Turn off unused subplots
+    for j in range(num_to_plot, len(axs)):
+        fig.delaxes(axs[j])
 
     plt.tight_layout()
     plt.show()
     plt.close()
 
 
+
 if __name__ == "__main__":
     # Directory containing the CPT files
-    cpts_path = read_files(r"D:\schemaGAN\data\eindhoven")
+    cpts_path = read_files(r"D:\schemaGAN\data\eemskanaal")
 
     # Process CPT files
     data_cpts = process_cpts(cpts_path)
@@ -437,8 +449,8 @@ if __name__ == "__main__":
     )
 
     # Plot the results of compression
-    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=10)
+    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=100)
 
     # Save the compressed data to a CSV file
-    output_dir = r"D:\schemaGAN\real_case\eindhoven"
+    output_dir = r"D:\schemaGAN\real_case\eemskanaal"
     save_cpt_to_csv(compressed_cpts, output_dir)

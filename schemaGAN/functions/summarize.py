@@ -255,3 +255,75 @@ def plot_images_error_two_cols(src_img, gen_img, tar_img):
             cbar.set_label(cbar_titles[i], fontsize=9)
             cbar.locator = matplotlib.ticker.MaxNLocator(nbins=6)
             cbar.update_ticks()
+
+
+def plot_images_error_three_rows(src_img, gen_img, bcs_img, tar_img):
+    """
+    Plot the source image, generated image, target image, and their absolute error.
+
+    Args:
+        src_img (numpy.ndarray): Source image.
+        gen_img (numpy.ndarray): Generated image.
+        bcs_img (numpy.ndarray): BCS image.
+        tar_img (numpy.ndarray): Target image.
+
+    Returns:
+        None
+    """
+
+    # Set the font family to Arial
+    plt.rcParams['font.family'] = 'Arial'
+
+    # Scale from [-1,1] to [0,255]
+    src_img = reverse_IC_normalization(src_img)
+    tar_img = reverse_IC_normalization(tar_img)
+    gen_img = reverse_IC_normalization(gen_img)
+    bcs_img = reverse_IC_normalization(bcs_img)
+
+    # Calculate the Mean absolute error between the target image and the generated one
+    mae_gan = np.mean(np.abs(tar_img - gen_img))
+    # Calculate the Mean absolute error between the target image and the BCS one
+    mae_bcs = np.mean(np.abs(tar_img - bcs_img))
+
+
+    # Stack all the images
+    images = np.vstack((tar_img, src_img, gen_img, np.abs(gen_img - tar_img), bcs_img, np.abs(bcs_img - tar_img)))
+
+    # Set plot titles
+    titles = ['Original Schematization', 'CPT-like input', 'SchemaGAN Generation', f'Mean absolute error: {mae_gan:.2f}', 'BCS Interpolation', f'Mean absolute error: {mae_bcs:.2f}']
+    # Set the cbar range
+    ranges_vmin_vmax = [[1, 4.5], [0, 4.5], [1, 4.5],  [0, 1], [1, 4.5],  [0, 1]]
+    # Set the cbar titles
+    cbar_titles = ['IC', 'IC', 'IC', 'IC error', 'IC', 'IC error']
+
+    # Create a figure with a size of 10 inches by 15 inches
+    fig = plt.figure(figsize=(10, 6))
+    # Plot images row by row
+    for i in range(len(images)):
+        # Define subplot
+        ax = fig.add_subplot(3, 2, 1 + i)
+        im = ax.imshow(images[i, :, :, 0], cmap='viridis', vmin=ranges_vmin_vmax[i][0], vmax=ranges_vmin_vmax[i][1])
+
+        # Set title with fontsize
+        ax.set_title(titles[i], fontsize=10)
+
+        # Set tick_params with fontsize
+        ax.tick_params(axis='both', which='major', labelsize=9)
+        ax.tick_params(axis='both', which='minor', labelsize=9)
+
+        # Set x and y labels
+        ax.set_xlabel('Distance', fontsize=9)
+        ax.set_ylabel('Depth', fontsize=9)
+
+        # Manually set tick mark spacing
+        ax.set_xticks(np.arange(0, images.shape[2], 40))
+        ax.set_yticks(np.arange(0, images.shape[1], 20))
+
+        # Add colorbar only to the plots in the last row
+        if i >= 2:  # indices 2 and 3 are in the last row
+            cbar = fig.colorbar(im, ax=ax, orientation='horizontal', pad=0.40, shrink=0.7)
+            cbar.ax.tick_params(labelsize=9)
+            cbar.set_label(cbar_titles[i], fontsize=9)
+            cbar.locator = matplotlib.ticker.MaxNLocator(nbins=6)
+            cbar.update_ticks()
+

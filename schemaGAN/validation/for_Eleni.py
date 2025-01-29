@@ -10,7 +10,7 @@ from schemaGAN.functions.summarize import plot_images_error_two_cols
 
 
 # For local
-path_validation = 'D:/schemaGAN/tests/test4eleni/test_data' # This is CSV data
+path_validation = r"D:\GeoSchemaGen\tests\BCS" # This is CSV data
 #path_validation = 'P:/schemagan/synthetic_database/512x32_20k/validation'8 # This is very slow
 path_to_model = 'D:/schemaGAN/tests/test4eleni/schemagan_model/model_000036.h5'
 path_results = 'D:/schemaGAN/tests/test4eleni/schemagan_inference' # Just were to save the data
