@@ -1,8 +1,8 @@
 import csv
 
 # Input and output file paths
-input_file = r"D:\schemaGAN\data\BCS\missing\cptlike_81.csv"  # Replace with your actual CSV file path
-output_file = r"D:\schemaGAN\data\BCS\bcs\cptlike_81_BCS.txt"  # Replace with your desired output file name
+input_file = r"D:\schemaGAN\data\BCS\cptlike\cs_2400_cptlike.csv"  # Replace with your actual CSV file path
+output_file = r"D:\schemaGAN\data\BCS\cptlike\cs_2400_cptlike.txt"  # Replace with your desired output file name
 
 # Step 1: Read the CSV file and invert the z axis
 with open(input_file, "r") as csvfile:

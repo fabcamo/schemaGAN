@@ -238,6 +238,7 @@ def run_and_get_mean_mae(csv_file):
     gan_res = np.squeeze(gan_res)
     # Convert to dataframe and save it
     df_gan = pd.DataFrame(gan_res)
+
     # Run the Nearest Neighbour interpol_compare
     nearnei_res = generate_nearnei_images(SIZE_Y, SIZE_X, cs_to_evaluate)
     nearnei_res = np.squeeze(nearnei_res)
@@ -296,7 +297,7 @@ def run_and_get_mean_mae(csv_file):
     #print(f"Mean MSE for Nearest Neighbour: {mean_mse_nearnei}")
     #print(f"Mean MSE for Kriging: {mean_mse_kriging}")
 
-    return mean_mae_gan, mean_mae_nearnei, mean_mae_kriging, mean_mse_gan, mean_mse_nearnei, mean_mse_kriging
+    return mean_mae_gan, mean_mae_nearnei, mean_mae_kriging, mean_mse_gan, mean_mse_nearnei, mean_mse_kriging, df_gan
 
 
 #############################################################################################################
@@ -343,7 +344,7 @@ if __name__ == "__main__":
     # Perform num_runs runs for EINDHOVEN DATA #######################################################################
     for run in range(num_runs):
         print(f"Run {run + 1}/{num_runs}")
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm01_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm01_512x32.csv")
 
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
@@ -355,7 +356,14 @@ if __name__ == "__main__":
         # print progress message
         #print(f"Run {run + 1}/{num_runs} completed for first file")
 
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm02_512x32.csv")
+        # Save the generated GAN image to a 32x512 pdf image with the run number
+        gan_image = gan_image.values
+        plt.imshow(gan_image, cmap='viridis')
+        plt.axis('on')
+        plt.savefig(f"D:/schemaGAN/real_case/eemskanaal/gan_images/gan_image_01_{run + 1}.pdf", format='pdf')
+        plt.close()
+
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm02_512x32.csv")
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
         avg_mae_krig.append(mean_mae_krig)
@@ -365,6 +373,14 @@ if __name__ == "__main__":
 
         # print progress message
         #print(f"Run {run + 1}/{num_runs} completed for second file")
+
+        # Save the generated GAN image to a 32x512 pdf image with the run number
+        gan_image = gan_image.values
+        plt.imshow(gan_image, cmap='viridis')
+        plt.axis('on')
+        plt.savefig(f"D:/schemaGAN/real_case/eemskanaal/gan_images/gan_image_02_{run + 1}.pdf", format='pdf')
+        plt.close()
+
 
 
     # Save the average MAE results to a CSV file

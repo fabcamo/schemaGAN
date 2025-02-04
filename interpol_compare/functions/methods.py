@@ -43,7 +43,7 @@ def nearest_interpolation(training_points, training_data, prediction_points):
 
 
 
-def idw_interpolation(training_points, training_data, prediction_points):
+def idw_interpolation_(training_points, training_data, prediction_points):
     """
     Performs Inverse Distance Weighting (IDW) interpol_compare on the provided data.
 
@@ -111,6 +111,61 @@ def idw_interpolation(training_points, training_data, prediction_points):
 
     return zn
 
+
+import numpy as np
+from scipy.spatial import cKDTree
+
+
+def idw_interpolation(training_points, training_data, prediction_points, power=1.0, tol=1e-9, nb_near_points=10):
+    """
+    Performs Inverse Distance Weighting (IDW) interpolation on the provided data.
+
+    Parameters:
+        training_points (np.ndarray): Known data points (x, y coordinates).
+        training_data (np.ndarray): Known data values corresponding to the points.
+        prediction_points (np.ndarray): Points where to interpolate.
+        power (float): The power parameter for IDW interpolation.
+        tol (float): Small value added to distances to prevent division by zero.
+        nb_near_points (int): Number of nearest training points to consider for each prediction.
+
+    Returns:
+        np.ndarray: Interpolated values at each point in the prediction_points.
+    """
+
+    # Convert inputs to numpy arrays if they're not already
+    training_points = np.array(training_points)
+    training_data = np.array(training_data)
+    prediction_points = np.array(prediction_points)
+
+    # Create a k-d tree for fast nearest neighbor search
+    tree = cKDTree(training_points)
+
+    # Initialize list to store interpolated values
+    zn = []
+
+    # Loop through each prediction point
+    for p in prediction_points:
+        # Find the nearest training points (nb_near_points nearest neighbors)
+        dist, idx = tree.query(p, k=nb_near_points)
+
+        # Add small tolerance to avoid division by zero
+        dist += tol
+
+        # Weights are the inverse of the distance raised to the power
+        weights = 1 / dist ** power
+
+        # Get the training data values for the nearest neighbors
+        nearest_data = training_data[idx]
+
+        # Perform the IDW interpolation (weighted average)
+        weighted_sum = np.sum(nearest_data * weights)
+        sum_weights = np.sum(weights)
+
+        # Interpolated value is the weighted sum of the training data values
+        zn.append(weighted_sum / sum_weights)
+
+    # Convert the list of interpolated values to a numpy array
+    return np.array(zn)
 
 
 def kriging_interpolation(training_points, training_data, gridx, gridy):

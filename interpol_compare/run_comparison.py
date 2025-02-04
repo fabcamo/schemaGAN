@@ -19,7 +19,7 @@ from schemaGAN.functions.utils import load_remove_reshape_data, IC_normalization
 #   USER INPUT FOR THE VALIDATION
 ########################################################################################################################
 # Initial input
-name_of_model_to_use = 'model_000010.h5'  # Input the name of the generator model to use
+name_of_model_to_use = 'schemaGAN.h5'  # Input the name of the generator model to use
 SIZE_X = 512  # Image size in the X dimension
 SIZE_Y = 32   # Image size in the Y dimension
 miss_rate = 0.99  # Choose missing rate
@@ -29,14 +29,15 @@ min_distance = 51  # Minimum distance for missing rate
 rcParams['font.family'] = 'Arial'
 
 # Generate a seed
-seed = np.random.randint(20220412, 20230412)  # Generate a random seed using NumPy
-np.random.seed(20232023)  # Set the seed for NumPy's random number generator
+# Generate a seed
+seed = np.random.randint(20532524)  # Generate a random seed using NumPy
+np.random.seed(20234023)  # Set the seed for NumPy's random number generator
 
 # Set the paths
-path_validation = 'C:\\schemaGAN\\synthetic_data\\512x32\\validation'  # Path to the validation images
-path_to_model_to_evaluate = 'C:\\schemaGAN\\schemaGAN\\results\\test'  # Path to the generator models
-path_results = 'C:\\schemaGAN\\interpol_compare\\results'  # Path to save the results of the validation
-output_file = 'C:\\schemaGAN\\interpol_compare\\results\\times.txt'  # Specify the output file
+path_validation = 'D:\schemaGAN\data\compare'  # Path to the validation images
+path_to_model_to_evaluate = 'D:/schemaGAN/h5'  # Path to the generator models
+path_results = 'D:/schemaGAN/tests/compare'  # Path to save the results of the validation
+output_file = 'D:/schemaGAN/tests/compare/times.txt'  # Specify the output file
 
 ########################################################################################################################
 
@@ -136,16 +137,16 @@ mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, mse_means = compute_ms
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
 # Plots five MAE histograms in a row to compare each method with the GAN
-plot_histograms_mae(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
+#plot_histograms_mae(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'histograms_row_mae.pdf'), format='pdf')
-plt.close()
+#plt.savefig(os.path.join(path_results, 'histograms_row_mae.pdf'), format='pdf')
+#plt.close()
 
 # MAE box plot for the comparison of the methods
-generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, method='Mean absolute error')
+#generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, method='Mean absolute error')
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'boxplot_mae.pdf'), format='pdf')
-plt.close()
+#plt.savefig(os.path.join(path_results, 'boxplot_mae.pdf'), format='pdf')
+#plt.close()
 
 # Big 7x2 MAE comparison plot with all methods and errors
 for i in range(no_validation_images):
@@ -162,28 +163,28 @@ for i in range(no_validation_images):
     plt.close()
 
 # Plots five MSE histograms in a row to compare each method with the GAN
-plot_histograms_mse(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt)
+#plot_histograms_mse(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt)
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'histograms_row_mse.pdf'), format='pdf')
-plt.close()
+#plt.savefig(os.path.join(path_results, 'histograms_row_mse.pdf'), format='pdf')
+#plt.close()
 
 # MSE box plot for the comparison of the methods
-generate_boxplot(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, method='Mean squared error')
+#generate_boxplot(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, method='Mean squared error')
 # Save the plot to the specified path
-plt.savefig(os.path.join(path_results, 'boxplot_mse.pdf'), format='pdf')
-plt.close()
+#plt.savefig(os.path.join(path_results, 'boxplot_mse.pdf'), format='pdf')
+#plt.close()
 
 # Big 7x2 MSE comparison plot with all methods and errors
-for i in range(no_validation_images):
-    # Get the validation image MSE for each method
-    mse_per_img = [mse_gan[i], mse_nn[i], mse_idw[i], mse_krig[i], mse_natnei[i], mse_inpt[i]]
-
-    # Plots 10 images for a given validation image, with errors
-    plot_comparison_of_methods_mse(cptlike_img[i], gan_images[i],
-                                   original_images[i], nearnei_images[i],
-                                   idw_images[i], krig_images[i],
-                                   natnei_images[i], inpt_images[i], mse_per_img)
-    # Save the plot to the specified path with a dynamic figure name
-    plt.savefig(os.path.join(path_results, f'comparMSE_{i}_of_4000.pdf'), format='pdf')
-    plt.close()
+# for i in range(no_validation_images):
+#     # Get the validation image MSE for each method
+#     mse_per_img = [mse_gan[i], mse_nn[i], mse_idw[i], mse_krig[i], mse_natnei[i], mse_inpt[i]]
+#
+#     # Plots 10 images for a given validation image, with errors
+#     plot_comparison_of_methods_mse(cptlike_img[i], gan_images[i],
+#                                    original_images[i], nearnei_images[i],
+#                                    idw_images[i], krig_images[i],
+#                                    natnei_images[i], inpt_images[i], mse_per_img)
+#     # Save the plot to the specified path with a dynamic figure name
+#     plt.savefig(os.path.join(path_results, f'comparMSE_{i}_of_4000.pdf'), format='pdf')
+#     plt.close()
 

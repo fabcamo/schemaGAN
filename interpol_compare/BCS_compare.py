@@ -9,9 +9,9 @@ from schemaGAN.functions.summarize import plot_images_error_two_cols, plot_image
 
 
 # For local paths
-path_full_images = r"D:\schemaGAN\data\BCS\full"  # Path to full images (CSV)
-path_missing_images = r"D:\schemaGAN\data\BCS\missing"  # Path to missing images (CSV)
-path_bcs_image = r"D:\schemaGAN\data\BCS\bcs_results\bcs_81\bcs_best_estimate.txt"
+path_full_images = r"D:\schemaGAN\data\compare"  # Path to full images (CSV)
+path_missing_images = r"D:\schemaGAN\data\BCS\cptlike"  # Path to missing images (CSV)
+path_bcs_image = r"D:\schemaGAN\data\BCS\bcs_results\17276\bcs_best_estimate.txt"
 
 path_to_model = 'D:\schemaGAN\h5\schemaGAN.h5'
 path_results = 'D:/schemaGAN/tests/BCS'
