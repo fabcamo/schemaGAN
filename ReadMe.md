@@ -5,10 +5,18 @@
 
 This repository contains the code and results related to a novel Generative Adversarial Network application called SchemaGAN. SchemaGAN has been adapted from the Pix2Pix architecture to take Cone Penetration Test (CPT) data as a conditional input and generate subsoil schematizations.
 
-For a detailed description and findings, please refer to the [official thesis](https://repository.tudelft.nl/record/uuid:c18cb6cf-3574-484d-aacc-dabd882341de).
+For a detailed description and findings, please refer to the following publication:
+
+**Campos Montero, F.A., Zuada Coelho, B., Smyrniou, E., Taormina, R., & Vardon, P.J. (2025)**  
+*SchemaGAN: A conditional Generative Adversarial Network for geotechnical subsurface schematisation*  
+Computers and Geotechnics, 183, 107177  
+[https://doi.org/10.1016/j.compgeo.2025.107177](https://doi.org/10.1016/j.compgeo.2025.107177)
+
+If you use SchemaGAN in your work, please cite this paper.
 
 **Keywords:** Deep learning, machine learning, generative adversarial network, schematization, cone penetration test, interpolation, stratigraphy.
 
+---
 
 ## Installation
 
@@ -153,6 +161,33 @@ schemaGAN supports Python 3.10.
 
    To process the entire dataset and compare it against the different interpolations models, please refer to [load_and_generate.py](schemaGAN/load_and_generate.py).
 
+---
 
 ## Summary
 After extensive testing and evaluation, SchemaGAN was found to outperform traditional interpolation methods (Nearest Neighbour, Inverse Distance Weight, Kriging, Natural Neighbour) as well as newer methods such as Inpainting. SchemaGAN results are characterized by clearer layer boundaries and accurate anisotropy within the layers. The superior performance of SchemaGAN is further confirmed through a blind survey, where it ranked as the top-performing method in 78% of cases as per experts in the field. For a comprehensive analysis of the results and findings, please refer to the [official thesis](https://repository.tudelft.nl/record/uuid:c18cb6cf-3574-484d-aacc-dabd882341de).
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 📚 Third-Party Licenses
+
+SchemaGAN uses third-party Python packages under permissive open-source licenses (MIT, BSD, Apache 2.0, etc.). Notably, it depends on:
+
+- [GSTools](https://github.com/GeoStat-Framework/GSTools) (MIT License) — via its dependency on [GeoSyn](https://github.com/fabcamo/GeoSyn), a tool used for generating training data  
+- [TensorFlow](https://github.com/tensorflow/tensorflow) (Apache 2.0 License) — for training and inference
+
+Please ensure you comply with these licenses when using or modifying SchemaGAN.
+
+For a full list of dependencies, see [`requirements.txt`](./requirements.txt).
+
+To review license information for installed packages, you can use:
+
+```bash
+pip install pip-licenses
+pip-licenses
+```
