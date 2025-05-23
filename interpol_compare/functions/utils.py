@@ -82,13 +82,13 @@ def format_source_images(dataset):
 
 
 
-def generate_gan_image(generator_path, dataset):
+def generate_gan_image(model, dataset):
     """
     Generates GAN images by passing the source images through the loaded generator model.
     Also, performs reverse normalization on the generated images.
 
     Parameters:
-    generator_path (str): Path to the saved generator model.
+    model (tf.keras.Model): The generator model used to generate images.
     dataset (tuple): A tuple where the first element is an array of source images
                      and the second element is an array of target images.
 
@@ -97,9 +97,6 @@ def generate_gan_image(generator_path, dataset):
     """
     # Extract source (input_img) and target (orig_img) images from the dataset
     input_img, orig_img = dataset
-
-    # Load the generator model from path
-    model = load_model(generator_path)
 
     gan_images = []
 

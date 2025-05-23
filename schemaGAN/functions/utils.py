@@ -392,3 +392,116 @@ def generate_fake_samples(g_model, samples, patch_shape):
 
     return X, y
 
+def get_real_cs_into_image_for_gan(csv_file, pixel_dropout_rate=0.2):
+    """
+    Run the interpol_compare methods and calculate the mean MAE for each.
+
+    Parameters:
+        csv_file (str): The path to the CSV file containing data.
+
+    Returns:
+        tuple: A tuple containing mean MAE for GAN, Near Nei, and Kriging.
+    """
+    # Load the data from the csv file
+    df_all_cpt = pd.read_csv(csv_file, header=None)
+    # Print progress message
+    # print(f"Data loaded from '{csv_file}'")
+
+    # Remove the first two rows and the first column
+    df_all_cpt = df_all_cpt.iloc[2:, 1:].reset_index(drop=True)
+    # Update column indexes to start from zero
+    df_all_cpt.columns = range(len(df_all_cpt.columns))
+    # Convert the entire DataFrame to floats
+    df_all_cpt = df_all_cpt.astype(float)
+    # Print progress message
+    # print("Data cleaned and converted to float")
+
+    # Find the index numbers of columns where the data is different than zero
+    cpt_index_locations = df_all_cpt.columns[df_all_cpt.ne(0).any()].tolist()
+
+    # Retry mechanism for selecting 6 CPTs
+    max_retries = 25  # Maximum number of retries before failing
+    max_retries_per_index = 30  # Maximum retries for finding a valid index
+    min_spacing = 50  # Minimum spacing between indices
+
+    for attempt in range(max_retries):
+        cpt_index_remaining = []
+        retries = 0
+
+        while len(cpt_index_remaining) < 5:
+            if retries >= max_retries_per_index:
+                print(f"Restarting after {retries} retries (attempt {attempt + 1})")
+                break  # Restart the process
+
+            # Randomly pick a candidate index
+            selected_index = np.random.choice(cpt_index_locations)
+
+            # Check if the candidate index satisfies the minimum spacing criteria
+            if all(abs(selected_index - existing_index) >= min_spacing for existing_index in cpt_index_remaining):
+                cpt_index_remaining.append(selected_index)
+                retries = 0  # Reset retries after a successful selection
+            else:
+                retries += 1
+
+        # Print debug info for this attempt
+        print(f"Attempt {attempt + 1}: Selected CPTs - {cpt_index_remaining}")
+
+        # Check if we successfully selected 6 CPTs
+        if len(cpt_index_remaining) == 5:
+            print(f"Successfully selected 5 CPTs on attempt {attempt + 1}")
+            break  # Exit retry loop if successful
+    else:
+        # If retries fail, print a message and raise an exception
+        print(f"Failed to select 5 CPTs with spacing >= {min_spacing} after {max_retries} attempts.")
+        raise RuntimeError("Unable to select valid CPTs for this run.")
+
+    # Sort the after_removal list in ascending order
+    cpt_index_remaining.sort()
+
+    # Create a new list of all the deleted cpt indexes
+    # This list of indexes will be used to compare with the original data
+    cpt_index_deleted = [cpt for cpt in cpt_index_locations if cpt not in cpt_index_remaining]
+
+    # Create a new DataFrame df_reduced with all zeros BUT the reduced columns remain
+    df_reduced = df_all_cpt.copy()
+    df_reduced[df_reduced.columns[~df_reduced.columns.isin(cpt_index_remaining)]] = 0.0
+
+    # Apply pixel-level dropout to remaining CPT columns
+    df_reduced = add_random_pixel_dropout(df_reduced, cpt_index_remaining, pixel_dropout_rate)
+
+    # In order to use the already programmed generator scripts, reshape
+    # Convert the dataframes to numpy arrays
+    cs_to_evaluate = df_reduced.values.astype(float)  # Convert to float
+    # Reshape them to the format that the other functions know how to handle
+    cs_to_evaluate = cs_to_evaluate.reshape(1, 32, 512, 1)
+
+    # Dirty way of making the normalization script run
+    data_to_norm = [cs_to_evaluate, cs_to_evaluate]
+    normalized_data = IC_normalization(data_to_norm)
+    [cs_to_evaluate_normalized, cs_to_evaluate_normalized] = normalized_data
+
+    return normalized_data, cpt_index_remaining
+
+
+
+def add_random_pixel_dropout(df, kept_columns, pixel_dropout_rate=0.2):
+    """
+    Randomly zero out a percentage of pixels in specified columns of a DataFrame.
+
+    Args:
+        df (pd.DataFrame): DataFrame with shape (32, 512) where columns represent CPTs.
+        kept_columns (list): List of column indexes (CPTs) that were kept.
+        pixel_dropout_rate (float): Percentage of pixels (rows) to set to zero in each kept column.
+
+    Returns:
+        pd.DataFrame: Modified DataFrame with additional pixel dropout.
+    """
+    df = df.copy()
+    num_rows = df.shape[0]
+    num_to_zero = int(num_rows * pixel_dropout_rate)
+
+    for col in kept_columns:
+        zero_indices = np.random.choice(num_rows, size=num_to_zero, replace=False)
+        df.iloc[zero_indices, col] = 0.0
+
+    return df

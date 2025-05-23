@@ -7,16 +7,38 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import pandas as pd
 
+from tensorflow.keras.models import load_model
+
 from interpol_compare.functions.utils import (
     get_cptlike_data, format_source_images, compute_mae, generate_gan_image
 )
-from schemaGAN.functions.utils import load_remove_reshape_data, IC_normalization
+from schemaGAN.functions.utils import load_remove_reshape_data, IC_normalization, get_real_cs_into_image_for_gan, \
+    reverse_IC_normalization, add_random_pixel_dropout
 
 import tensorflow as tf
 
 # seed = 12345
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
+
+def get_fixed_column_positions(csv_file, min_spacing=50, n_cols=5):
+    df = pd.read_csv(csv_file, header=None).iloc[2:, 1:].reset_index(drop=True).astype(float)
+    df.columns = range(df.shape[1])
+    nonzero_columns = df.columns[df.ne(0).any()].tolist()
+
+    max_retries = 25
+    for attempt in range(max_retries):
+        selected = []
+        while len(selected) < n_cols:
+            candidate = np.random.choice(nonzero_columns)
+            if all(abs(candidate - c) >= min_spacing for c in selected):
+                selected.append(candidate)
+        selected.sort()
+        return df, selected  # <- the full DataFrame and fixed CPT column indices
+
+    raise RuntimeError("Unable to select valid CPT columns")
+
+
 
 
 def plot_schemagan_variability_vertical(
@@ -140,6 +162,7 @@ min_distance = 51
 runs = 10
 
 path_validation = 'D:/schemaGAN/data/compare'
+path_real_images = 'D:\schemaGAN\data\eemskanaal\emm02_512x32.csv'
 path_to_model = 'D:/schemaGAN/h5'
 path_results = 'D:/schemaGAN/tests/schemaGAN_variability'
 os.makedirs(path_results, exist_ok=True)
@@ -171,53 +194,77 @@ idx = 0
 gan_imgs = []
 mae_imgs = []
 
-for run in range(runs):
-    seed = np.random.randint(100000)
-    np.random.seed(seed)
-    print(f"Run {run + 1}/{runs} - Seed: {seed}")
+model = load_model(generator)
+#real_cs = get_real_cs_into_image_for_gan(path_real_images, pixel_dropout_rate=0)
+df_all_cpt, kept_columns = get_fixed_column_positions(path_real_images)
 
-    start_time = time.time()
-    gan_images = generate_gan_image(generator, dataset)
-    elapsed = time.time() - start_time
-    print(f"  GAN generation took {elapsed:.2f} seconds")
 
-    mae_gan, *_ = compute_mae(
-        original_images, gan_images, gan_images, gan_images, gan_images, gan_images, gan_images,
-        path_results
+pixel_dropout_rates = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25]
+
+for dropout_rate in pixel_dropout_rates:
+    print(f"\n### Running for pixel dropout rate = {dropout_rate} ###")
+
+    # Reset for each dropout level
+    gan_imgs = []
+    mae_imgs = []
+    all_mae = []
+
+    for run in range(runs):
+        seed = np.random.randint(100000)
+        np.random.seed(seed)
+        print(f"Run {run + 1}/{runs} - Seed: {seed}")
+
+        start_time = time.time()
+        df_reduced = df_all_cpt.copy()
+        df_reduced[df_reduced.columns[~df_reduced.columns.isin(kept_columns)]] = 0.0
+
+        df_noisy = add_random_pixel_dropout(df_reduced, kept_columns, dropout_rate)
+        cs_to_evaluate = df_noisy.values.astype(float).reshape(1, 32, 512, 1)
+        real_cs = IC_normalization([cs_to_evaluate, cs_to_evaluate])
+        gan_images = generate_gan_image(model, real_cs)
+
+        elapsed = time.time() - start_time
+        print(f"  GAN generation took {elapsed:.2f} seconds")
+
+        mae_gan, *_ = compute_mae(
+            original_images, gan_images, gan_images, gan_images, gan_images, gan_images, gan_images,
+            path_results
+        )
+
+        all_mae.append({
+            "dropout": dropout_rate,
+            "run": run + 1,
+            "seed": seed,
+            "mae_mean": np.mean(mae_gan)
+        })
+
+        gan_img = gan_images[idx]
+        mae_img = np.abs(gan_img - original_images[idx])
+        gan_imgs.append(gan_img)
+        mae_imgs.append(mae_img)
+
+    # Save and plot results for this dropout level
+    df = pd.DataFrame(all_mae)
+    df.to_csv(os.path.join(path_results, f'mae_dropout_{dropout_rate:.2f}.csv'), index=False)
+
+    # plot_schemagan_variability_vertical(
+    #     target_img=original_images[idx],
+    #     cpt_img=cptlike_img[idx],
+    #     gan_images=gan_imgs,
+    #     mae_images=mae_imgs,
+    #     path_out=path_results,
+    #     img_index=idx
+    # )
+
+
+    plot_schemagan_variability_vs_first(
+        cpt_img=cptlike_img[idx],
+        gan_images=gan_imgs,
+        path_out=os.path.join(path_results, f"dropout_{int(dropout_rate * 100):02d}"),
+        img_index=idx
     )
 
-    # Save MAE stats
-    all_mae.append({
-        "run": run + 1,
-        "seed": seed,
-        "mae_mean": np.mean(mae_gan)
-    })
 
-    # Store image for selected index
-    gan_img = gan_images[idx]
-    mae_img = np.abs(gan_img - original_images[idx])
-    gan_imgs.append(gan_img)
-    mae_imgs.append(mae_img)
 
-# ---------------- SAVE RESULTS ----------------
-df = pd.DataFrame(all_mae)
-csv_path = os.path.join(path_results, 'mae_schemaGAN_runs.csv')
-df.to_csv(csv_path, index=False)
-print("Saved MAE summary to:", csv_path)
 
-# ---------------- PLOT FINAL COMPARISON ----------------
-plot_schemagan_variability_vertical(
-    target_img=original_images[idx],
-    cpt_img=cptlike_img[idx],
-    gan_images=gan_imgs,
-    mae_images=mae_imgs,
-    path_out=path_results,
-    img_index=idx
-)
 
-plot_schemagan_variability_vs_first(
-    cpt_img=cptlike_img[idx],
-    gan_images=gan_imgs,
-    path_out=path_results,
-    img_index=idx
-)

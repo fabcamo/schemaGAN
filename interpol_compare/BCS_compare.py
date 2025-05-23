@@ -1,4 +1,5 @@
 import os
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import os
@@ -10,10 +11,6 @@ import matplotlib.pyplot as plt
 
 from schemaGAN.functions.utils import IC_normalization
 from schemaGAN.functions.summarize import plot_images_error_two_cols, plot_images_error_three_rows
-
-
-
-
 
 # For local paths
 path_full_images = r"D:\schemaGAN\data\compare"  # Path to full images (CSV)
@@ -38,12 +35,14 @@ SIZE_Y = 32
 no_rows = SIZE_Y
 no_cols = SIZE_X
 
+
 def read_bcs_image(file_path):
     # Load the BCS image from the file and reshape it
     data = np.loadtxt(file_path)
     data_reshaped = data[:512, :32].T
     data_reshaped = data_reshaped[::-1, :]  # Flip along x-axis if needed
     return data_reshaped
+
 
 # Helper function to read CSV files from a folder
 def read_csv_files_from_folder(path):
@@ -57,12 +56,12 @@ def read_csv_files_from_folder(path):
         images.append(image_data)
     return np.array(images)
 
+
 # Function to normalize IC values
 def IC_normalization_bcs(images):
     images = np.array(images)
     images = (images - 1) / (4.5 - 1)  # Normalize between 0 and 1
     return images
-
 
 
 # Load full data and missing data from CSV files
