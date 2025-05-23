@@ -1,11 +1,18 @@
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import os
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 
 from schemaGAN.functions.utils import IC_normalization
 from schemaGAN.functions.summarize import plot_images_error_two_cols, plot_images_error_three_rows
+
+
+
 
 
 # For local paths
@@ -20,6 +27,10 @@ path_results = 'D:/schemaGAN/tests/BCS'
 seed = np.random.randint(20220412, 20230412)
 # Set the seed for NumPy's random number generator
 np.random.seed(seed)
+
+# Set random seeds for reproducibility
+np.random.seed(42)
+tf.random.set_seed(42)
 
 #   CHOOSE THE DIMENSIONS AND MISSING RATE
 SIZE_X = 512

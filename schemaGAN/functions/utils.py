@@ -2,6 +2,13 @@ import os
 import numpy as np
 import pandas as pd
 
+import tensorflow as tf
+
+# seed = 12345
+# np.random.seed(seed)
+# tf.random.set_seed(seed)
+
+
 
 
 def read_all_csv_files(directory):

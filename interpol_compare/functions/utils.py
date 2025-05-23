@@ -7,6 +7,14 @@ from tensorflow.keras.models import load_model
 from schemaGAN.functions.utils import reverse_IC_normalization
 from interpol_compare.functions.methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
 
+import tensorflow as tf
+
+# seed = 12345
+# np.random.seed(seed)
+# tf.random.set_seed(seed)
+
+
+
 
 def get_cptlike_data(src_images):
     """
@@ -104,11 +112,13 @@ def generate_gan_image(generator_path, dataset):
         # Extract the i-th source and target images
         src_image, tar_image = input_img[ix], orig_img[ix]
 
+        gan_res = model(src_image, training=True)  # Dropout active
+
         # Generate the GAN image with the chosen generator
-        gan_res = model.predict(src_image)
+        #gan_res = model.predict(src_image)
 
         # Reverse normalization (from [-1,1] to [0,255]) of the generated GAN image
-        gan_res = reverse_IC_normalization(gan_res)
+        gan_res = reverse_IC_normalization(gan_res.numpy())
 
         # Append the reversed-normalized GAN images to the list
         gan_images.append(gan_res)
