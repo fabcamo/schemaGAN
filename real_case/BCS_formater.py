@@ -30,9 +30,6 @@ with open(output_file, "w") as txtfile:
 
 print(f"File converted, z-axis inverted, and saved as {output_file}.")
 
-
-
-
 #
 #
 # import random
@@ -52,4 +49,3 @@ print(f"File converted, z-axis inverted, and saved as {output_file}.")
 #
 # print(f"Random coordinate file created: {output_file}")
 #
-

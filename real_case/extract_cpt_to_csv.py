@@ -9,7 +9,6 @@ import numpy as np
 import math
 
 
-
 def read_files(path):
     """
     Read all .gef files in a directory.
@@ -290,9 +289,8 @@ def save_cpt_to_csv(data_cpts: list, output_dir: str):
     print(f"Compressed CPT data saved to: {output_file}")
 
 
-
-
-def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_32px, num_to_plot=10, lowest_min_depth=0, lowest_max_depth=0):
+def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_32px, num_to_plot=10,
+                              lowest_min_depth=0, lowest_max_depth=0):
     """
     Plot individual CPTs before and after equalization in a 3-row, 10-column layout.
     Depth is plotted on the y-axis, IC on the x-axis, with a dotted line indicating the lowest min depth and max depth.
@@ -336,7 +334,7 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
 
         # Plot individual CPT in the bottom row (after depth equalization to lowest_min_depth)
         axs[2, i].plot(data_cpts_32px[i]['IC'], data_cpts_32px[i]['depth'], label="Equalized Bottom")
-        #axs[2, i].invert_yaxis()  # Depth increases downward
+        # axs[2, i].invert_yaxis()  # Depth increases downward
         axs[2, i].tick_params(axis='x', labelsize=8)
         axs[2, i].tick_params(axis='y', labelsize=8)
 
@@ -352,7 +350,6 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
     plt.close()
-
 
 
 def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
@@ -409,7 +406,6 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
     plt.close()
 
 
-
 if __name__ == "__main__":
     # Directory containing the CPT files
     cpts_path = read_files(r"D:\schemaGAN\data\eemskanaal")
@@ -436,7 +432,6 @@ if __name__ == "__main__":
 
     # Compress data to 32 points
     compressed_cpts = compress_to_32px(equalized_depth_cpts, method='mean')
-
 
     # Plot the original, equalized, and compressed data
     plot_equalized_depth_cpts(

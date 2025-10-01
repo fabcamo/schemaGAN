@@ -18,5 +18,3 @@ plt.colorbar()  # Show color bar for value mapping
 # Save the image
 plt.savefig('output_image_with_axis.png', bbox_inches='tight', pad_inches=0)
 plt.show()
-
-

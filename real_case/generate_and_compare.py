@@ -14,7 +14,6 @@ if len(physical_devices) == 0:
 else:
     print(f"{len(physical_devices)} GPU(s) available: {physical_devices}")
 
-
 physical_devices = tf.config.list_physical_devices('GPU')
 if physical_devices:
     try:
@@ -23,8 +22,6 @@ if physical_devices:
             tf.config.experimental.set_memory_growth(device, True)
     except RuntimeError as e:
         print(e)
-
-
 
 
 def mean_absolute_error(y_true, y_pred):
@@ -41,7 +38,6 @@ def mean_absolute_error(y_true, y_pred):
     return abs(y_true - y_pred).mean()
 
 
-
 def mean_squared_error(y_true, y_pred):
     """
     Calculate the Mean Squared Error (MSE) between true and predicted values.
@@ -56,7 +52,6 @@ def mean_squared_error(y_true, y_pred):
     return ((y_true - y_pred) ** 2).mean()
 
 
-
 def find_zero_start_row_index(column):
     """
     Find the index of the row where zero starts to appear in a column.
@@ -69,7 +64,6 @@ def find_zero_start_row_index(column):
     """
     zero_start_row = next((i for i, val in enumerate(column) if val == 0), len(column))
     return zero_start_row
-
 
 
 def update_dataframe(df, columns_to_check, zero_start_row_indices):
@@ -88,7 +82,6 @@ def update_dataframe(df, columns_to_check, zero_start_row_indices):
     for col_idx, start_row_idx in zip(columns_to_check, zero_start_row_indices):
         df_copy.loc[start_row_idx:, col_idx] = 0
     return df_copy
-
 
 
 def generate_boxplot(gan, nearnei, krig, method):
@@ -142,7 +135,6 @@ def generate_boxplot(gan, nearnei, krig, method):
     ax.set_title('Comparison of Interpolation Methods')
 
 
-
 def run_and_get_mean_mae(csv_file):
     """
     Run the interpol_compare methods and calculate the mean MAE for each.
@@ -156,7 +148,7 @@ def run_and_get_mean_mae(csv_file):
     # Load the data from the csv file
     df_all_cpt = pd.read_csv(csv_file, header=None)
     # Print progress message
-    #print(f"Data loaded from '{csv_file}'")
+    # print(f"Data loaded from '{csv_file}'")
 
     # Remove the first two rows and the first column
     df_all_cpt = df_all_cpt.iloc[2:, 1:].reset_index(drop=True)
@@ -165,7 +157,7 @@ def run_and_get_mean_mae(csv_file):
     # Convert the entire DataFrame to floats
     df_all_cpt = df_all_cpt.astype(float)
     # Print progress message
-    #print("Data cleaned and converted to float")
+    # print("Data cleaned and converted to float")
 
     # Find the index numbers of columns where the data is different than zero
     cpt_index_locations = df_all_cpt.columns[df_all_cpt.ne(0).any()].tolist()
@@ -231,7 +223,7 @@ def run_and_get_mean_mae(csv_file):
     # Generate the images with a random number of CPT and locations given
     # Run the SchemaGAN
     gan_res = model.predict(cs_to_evaluate_normalized)
-    #print("SchemaGAN generated image")
+    # print("SchemaGAN generated image")
     # Reverse normalization (from [-1,1] to [0,255]) of the generated GAN image
     gan_res = reverse_IC_normalization(gan_res)
     # Remove the singular dimensions
@@ -244,16 +236,17 @@ def run_and_get_mean_mae(csv_file):
     nearnei_res = np.squeeze(nearnei_res)
     # Convert to dataframe and save it
     df_nn = pd.DataFrame(nearnei_res)
-    #print("Nearest Neighbour generated image")
+    # print("Nearest Neighbour generated image")
     # Run the Kriging interpol_compare
     krig_res = generate_krig_images(SIZE_Y, SIZE_X, cs_to_evaluate)
     krig_res = np.squeeze(krig_res)
     # Convert to dataframe and save it
     df_krig = pd.DataFrame(krig_res)
-    #print("Kriging generated image")
+    # print("Kriging generated image")
 
     # Find the index of the row where zero starts to appear in the specified columns and save them in a list
-    zero_start_rows_per_column = df_all_cpt[df_all_cpt.columns[cpt_index_deleted]].apply(find_zero_start_row_index).tolist()
+    zero_start_rows_per_column = df_all_cpt[df_all_cpt.columns[cpt_index_deleted]].apply(
+        find_zero_start_row_index).tolist()
 
     # Update the second DataFrame based on the zero_start_rows_per_column list
     df_gan_to_compare = update_dataframe(df_gan, cpt_index_deleted, zero_start_rows_per_column)
@@ -274,9 +267,9 @@ def run_and_get_mean_mae(csv_file):
     mean_mae_gan = sum(mae_gan_results.values()) / len(mae_gan_results)
     mean_mae_nearnei = sum(mae_near_results.values()) / len(mae_near_results)
     mean_mae_kriging = sum(mae_krig_results.values()) / len(mae_krig_results)
-    #print(f"Mean MAE for SchemaGAN: {mean_mae_gan}")
-    #print(f"Mean MAE for Nearest Neighbour: {mean_mae_nearnei}")
-    #print(f"Mean MAE for Kriging: {mean_mae_kriging}")
+    # print(f"Mean MAE for SchemaGAN: {mean_mae_gan}")
+    # print(f"Mean MAE for Nearest Neighbour: {mean_mae_nearnei}")
+    # print(f"Mean MAE for Kriging: {mean_mae_kriging}")
 
     # Create empty dictionaries to hold the MSE
     mse_gan_results = {}
@@ -293,9 +286,9 @@ def run_and_get_mean_mae(csv_file):
     mean_mse_gan = sum(mse_gan_results.values()) / len(mse_gan_results)
     mean_mse_nearnei = sum(mse_near_results.values()) / len(mse_near_results)
     mean_mse_kriging = sum(mse_krig_results.values()) / len(mse_krig_results)
-    #print(f"Mean MSE for SchemaGAN: {mean_mse_gan}")
-    #print(f"Mean MSE for Nearest Neighbour: {mean_mse_nearnei}")
-    #print(f"Mean MSE for Kriging: {mean_mse_kriging}")
+    # print(f"Mean MSE for SchemaGAN: {mean_mse_gan}")
+    # print(f"Mean MSE for Nearest Neighbour: {mean_mse_nearnei}")
+    # print(f"Mean MSE for Kriging: {mean_mse_kriging}")
 
     return mean_mae_gan, mean_mae_nearnei, mean_mae_kriging, mean_mse_gan, mean_mse_nearnei, mean_mse_kriging, df_gan
 
@@ -344,7 +337,8 @@ if __name__ == "__main__":
     # Perform num_runs runs for EINDHOVEN DATA #######################################################################
     for run in range(num_runs):
         print(f"Run {run + 1}/{num_runs}")
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm01_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae(
+            "D:\schemaGAN\data\eemskanaal\emm01_512x32.csv")
 
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
@@ -354,7 +348,7 @@ if __name__ == "__main__":
         avg_mse_krig.append(mean_mse_krig)
 
         # print progress message
-        #print(f"Run {run + 1}/{num_runs} completed for first file")
+        # print(f"Run {run + 1}/{num_runs} completed for first file")
 
         # Save the generated GAN image to a 32x512 pdf image with the run number
         gan_image = gan_image.values
@@ -363,7 +357,8 @@ if __name__ == "__main__":
         plt.savefig(f"D:/schemaGAN/real_case/eemskanaal/gan_images/gan_image_01_{run + 1}.pdf", format='pdf')
         plt.close()
 
-        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae("D:\schemaGAN\data\eemskanaal\emm02_512x32.csv")
+        mean_mae_gan, mean_mae_near, mean_mae_krig, mean_mse_gan, mean_mse_near, mean_mse_krig, gan_image = run_and_get_mean_mae(
+            "D:\schemaGAN\data\eemskanaal\emm02_512x32.csv")
         avg_mae_gan.append(mean_mae_gan)
         avg_mae_near.append(mean_mae_near)
         avg_mae_krig.append(mean_mae_krig)
@@ -372,7 +367,7 @@ if __name__ == "__main__":
         avg_mse_krig.append(mean_mse_krig)
 
         # print progress message
-        #print(f"Run {run + 1}/{num_runs} completed for second file")
+        # print(f"Run {run + 1}/{num_runs} completed for second file")
 
         # Save the generated GAN image to a 32x512 pdf image with the run number
         gan_image = gan_image.values
@@ -380,8 +375,6 @@ if __name__ == "__main__":
         plt.axis('on')
         plt.savefig(f"D:/schemaGAN/real_case/eemskanaal/gan_images/gan_image_02_{run + 1}.pdf", format='pdf')
         plt.close()
-
-
 
     # Save the average MAE results to a CSV file
     df_average_mae = pd.DataFrame({
@@ -415,7 +408,6 @@ if __name__ == "__main__":
     plt.savefig(os.path.join('D:/schemaGAN/real_case/eemskanaal/boxplot_mse.pdf'), format='pdf')
     plt.close()
 
-
     # ####################################################################################################################
     # # FOR CS no.1
     #
@@ -448,4 +440,3 @@ if __name__ == "__main__":
     # # Show the plot
     # plt.show()
     # plt.clf()
-
