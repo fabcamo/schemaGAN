@@ -9,21 +9,29 @@ import numpy as np
 import math
 
 
-def read_files(path):
+
+def read_files(path: str, extension: str = ".gef") -> list[Path]:
     """
-    Read all .gef files in a directory.
+    Read all files with a given extension (case-insensitive) in a directory.
 
     Parameters
     ----------
-    path: str
+    path : str
         Path to the directory containing the files.
+    extension : str, optional
+        File extension to search for (default: ".gef")
 
     Returns
     -------
-    cpt_files: list
-        List of file paths to .gef files.
+    list[Path]
+        List of file paths matching the extension.
     """
-    return [Path(path, f) for f in os.listdir(path) if f.endswith('.gef')]
+    extension = extension.lower()
+    return [
+        Path(path, f)
+        for f in os.listdir(path)
+        if Path(path, f).is_file() and f.lower().endswith(extension)
+    ]
 
 
 def process_cpts(cpts):
@@ -408,7 +416,7 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
 
 if __name__ == "__main__":
     # Directory containing the CPT files
-    cpts_path = read_files(r"D:\schemaGAN\data\eemskanaal")
+    cpts_path = read_files(path=r"C:\VOW\data\Site_A\O\CPT", extension=".gef")
 
     # Process CPT files
     data_cpts = process_cpts(cpts_path)
@@ -447,5 +455,5 @@ if __name__ == "__main__":
     plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=100)
 
     # Save the compressed data to a CSV file
-    output_dir = r"D:\schemaGAN\real_case\eemskanaal"
+    output_dir = r"C:\VOW\data\Site_A"
     save_cpt_to_csv(compressed_cpts, output_dir)
