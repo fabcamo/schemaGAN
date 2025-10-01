@@ -7,8 +7,6 @@ from matplotlib import rcParams
 rcParams['font.family'] = 'Arial'
 
 
-
-
 def plot_histograms_mae(gan, NeNI, idw, krig, NatNI, inpt):
     """
     Plots three histograms in a row for GAN, Nearest Neighbor, IDW and Kriging.
@@ -57,7 +55,6 @@ def plot_histograms_mae(gan, NeNI, idw, krig, NatNI, inpt):
     axs[2].set_xlim(0.0, 0.5)
     axs[2].tick_params(axis='both', labelsize=8)
 
-
     # Plot histogram for GAN vs NatNei in fourth subplot
     axs[3].hist(gan, bins=10, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
     axs[3].hist(NatNI, bins=20, alpha=0.5, label='NatNI', color='darkgreen', edgecolor='dimgray')
@@ -69,7 +66,6 @@ def plot_histograms_mae(gan, NeNI, idw, krig, NatNI, inpt):
     axs[3].legend(loc='upper right', fontsize=7)
     axs[3].set_xlim(0.0, 0.5)
     axs[3].tick_params(axis='both', labelsize=8)
-
 
     # Plot histogram for GAN vs Inpt in fifth subplot
     axs[4].hist(gan, bins=10, alpha=0.5, label='GAN', color='gray', edgecolor='dimgray')
@@ -83,10 +79,8 @@ def plot_histograms_mae(gan, NeNI, idw, krig, NatNI, inpt):
     axs[4].set_xlim(0.0, 0.5)
     axs[4].tick_params(axis='both', labelsize=8)
 
-
     # Adjust the spacing between subplots
     plt.tight_layout()
-
 
 
 def plot_histograms_mse(gan, NeNI, idw, krig, NatNI, inpt):
@@ -165,8 +159,6 @@ def plot_histograms_mse(gan, NeNI, idw, krig, NatNI, inpt):
     plt.tight_layout()
 
 
-
-
 def plot_comparison_of_methods_mae(src_img, gen_img, tar_img, nn, idw, kriging, natni, inp, mae_per_img):
     """
     This function plots the comparison of different methods' results including GAN,
@@ -200,7 +192,8 @@ def plot_comparison_of_methods_mae(src_img, gen_img, tar_img, nn, idw, kriging, 
               'Inpainting', f'Inpainting MAE: {mae_per_img[5]:.2f}']
 
     # Set the axis labels for each subplot
-    xlabels = ['Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance']
+    xlabels = ['Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance',
+               'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance']
     ylabels = ['Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '']
 
     # Set the colorbar range for each subplot
@@ -268,8 +261,6 @@ def plot_comparison_of_methods_mae(src_img, gen_img, tar_img, nn, idw, kriging, 
     plt.tight_layout()
 
 
-
-
 def plot_comparison_of_methods_mse(src_img, gen_img, tar_img, nn, idw, kriging, natni, inp, mse_per_img):
     """
     This function plots the comparison of different methods' results including GAN,
@@ -303,7 +294,8 @@ def plot_comparison_of_methods_mse(src_img, gen_img, tar_img, nn, idw, kriging, 
               'Inpainting', f'Inpainting MSE: {mse_per_img[5]:.2f}']
 
     # Set the axis labels for each subplot
-    xlabels = ['Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance']
+    xlabels = ['Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance',
+               'Distance', 'Distance', 'Distance', 'Distance', 'Distance', 'Distance']
     ylabels = ['Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '', 'Depth', '']
 
     # Set the colorbar range for each subplot
@@ -367,8 +359,6 @@ def plot_comparison_of_methods_mse(src_img, gen_img, tar_img, nn, idw, kriging, 
 
     # Adjust the spacing between subplots
     plt.tight_layout()
-
-
 
 
 def generate_boxplot(gan, nearnei, idw, krig, natnei, inpt, method):

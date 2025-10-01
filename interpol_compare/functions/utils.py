@@ -5,15 +5,15 @@ from skimage import metrics
 
 from tensorflow.keras.models import load_model
 from schemaGAN.functions.utils import reverse_IC_normalization
-from interpol_compare.functions.methods import nearest_interpolation, idw_interpolation, kriging_interpolation, natural_nei_interpolation, inpt_interpolation
+from interpol_compare.functions.methods import nearest_interpolation, idw_interpolation, kriging_interpolation, \
+    natural_nei_interpolation, inpt_interpolation
 
 import tensorflow as tf
+
 
 # seed = 12345
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
-
-
 
 
 def get_cptlike_data(src_images):
@@ -28,8 +28,8 @@ def get_cptlike_data(src_images):
     coords_all (list): List of 2D arrays representing non-zero pixel coordinates in each image.
     pixel_values_all (list): List of pixel values corresponding to the non-zero pixel coordinates in each image.
     """
-    coords_all = []         # to store the coordinates
-    pixel_values_all = []   # to store the pixel values
+    coords_all = []  # to store the coordinates
+    pixel_values_all = []  # to store the pixel values
 
     # Loop over each image in src_images to grab the coordinates with IC values
     for i in range(src_images.shape[0]):
@@ -49,8 +49,6 @@ def get_cptlike_data(src_images):
         pixel_values_all.append(coord_pix_value)
 
     return coords_all, pixel_values_all
-
-
 
 
 def format_source_images(dataset):
@@ -78,8 +76,6 @@ def format_source_images(dataset):
         original_img.append(tar_image)
 
     return original_img, cptlike_img
-
-
 
 
 def generate_gan_image(model, dataset):
@@ -112,7 +108,7 @@ def generate_gan_image(model, dataset):
         gan_res = model(src_image, training=True)  # Dropout active
 
         # Generate the GAN image with the chosen generator
-        #gan_res = model.predict(src_image)
+        # gan_res = model.predict(src_image)
 
         # Reverse normalization (from [-1,1] to [0,255]) of the generated GAN image
         gan_res = reverse_IC_normalization(gan_res.numpy())
@@ -121,8 +117,6 @@ def generate_gan_image(model, dataset):
         gan_images.append(gan_res)
 
     return gan_images
-
-
 
 
 def generate_nearnei_images(no_rows, no_cols, src_images):
@@ -163,8 +157,6 @@ def generate_nearnei_images(no_rows, no_cols, src_images):
         nearnei_images.append(nearnei_res)
 
     return nearnei_images
-
-
 
 
 def generate_idw_images(no_rows, no_cols, src_images):
@@ -208,8 +200,6 @@ def generate_idw_images(no_rows, no_cols, src_images):
     return idw_images
 
 
-
-
 def generate_krig_images(no_rows, no_cols, src_images):
     """
     Generates images using Kriging interpol_compare.
@@ -234,7 +224,6 @@ def generate_krig_images(no_rows, no_cols, src_images):
 
     # Iterate over each source image
     for i in range(src_images.shape[0]):
-
         # Extract the i-th coordinates with pixels and pixel values
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
@@ -248,8 +237,6 @@ def generate_krig_images(no_rows, no_cols, src_images):
         krig_images.append(krig_res)
 
     return krig_images
-
-
 
 
 def generate_natnei_images(no_rows, no_cols, src_images):
@@ -277,7 +264,6 @@ def generate_natnei_images(no_rows, no_cols, src_images):
 
     # Iterate over each source image
     for i in range(src_images.shape[0]):
-
         # Extract the i-th coordinates with pixels and pixel values
         coords, pixel_values = coords_all[i], pixel_values_all[i]
 
@@ -291,8 +277,6 @@ def generate_natnei_images(no_rows, no_cols, src_images):
         natnei_images.append(natnei_res)
 
     return natnei_images
-
-
 
 
 def generate_inpainting_images(no_rows, no_cols, src_images):
@@ -333,8 +317,6 @@ def generate_inpainting_images(no_rows, no_cols, src_images):
         inpt_images.append(inpt_res)
 
     return inpt_images
-
-
 
 
 def compute_mae(original, gan, nn, idw, krig, natnei, inpt, path):
@@ -411,8 +393,6 @@ def compute_mae(original, gan, nn, idw, krig, natnei, inpt, path):
     return mae_gan_list, mae_nn_list, mae_idw_list, mae_krig_list, mae_natnei_list, mae_inpt_list, mae_means
 
 
-
-
 def compute_mse(original, gan, nn, idw, krig, natnei, inpt, path):
     """
     This function computes the Mean Squared Errors (MSE) for different algorithms
@@ -485,11 +465,3 @@ def compute_mse(original, gan, nn, idw, krig, natnei, inpt, path):
     print("Index of maximum value in mse_gan_list:", max_index)
 
     return mse_gan_list, mse_nn_list, mse_idw_list, mse_krig_list, mse_natnei_list, mse_inpt_list, mse_means
-
-
-
-
-
-
-
-

@@ -4,11 +4,10 @@ import pandas as pd
 
 import tensorflow as tf
 
+
 # seed = 12345
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
-
-
 
 
 def read_all_csv_files(directory):
@@ -43,8 +42,6 @@ def read_all_csv_files(directory):
 
     # Return the list of dataframes
     return csv_data
-
-
 
 
 def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
@@ -93,8 +90,6 @@ def apply_miss_rate_per_rf(dfs, miss_rate, min_distance):
     return missing_data, full_data
 
 
-
-
 def remove_random_columns(data_z, miss_rate, min_distance):
     """
     Remove a random number of columns from the matrix at a specified rate,
@@ -138,8 +133,6 @@ def remove_random_columns(data_z, miss_rate, min_distance):
     return miss_list
 
 
-
-
 def check_min_spacing(data_z, miss_rate, min_distance):
     """
     Select the columns to keep for each cross-section based on a missing rate and minimum distance between data points.
@@ -180,8 +173,6 @@ def check_min_spacing(data_z, miss_rate, min_distance):
     return columns_to_keep_index
 
 
-
-
 def remove_random_depths(data_z, data_m):
     """
     Remove a random amount of data from the bottom of each column in the input matrix.
@@ -210,8 +201,6 @@ def remove_random_depths(data_z, data_m):
 
     # Return the updated data_m matrix, which indicates where data has been removed
     return data_m
-
-
 
 
 def load_remove_reshape_data(path_to_images, miss_rate, min_distance, no_rows, no_cols):
@@ -250,8 +239,6 @@ def load_remove_reshape_data(path_to_images, miss_rate, min_distance, no_rows, n
     return original_img, cptlike_img
 
 
-
-
 def IC_normalization(data):
     """
     Normalize IC values in the data from [0 - MaxIC] to [-1 - 1].
@@ -262,7 +249,7 @@ def IC_normalization(data):
     Returns:
     list: A list containing the normalized source and target data.
     """
-    #print('Normalizing the IC data...')
+    # print('Normalizing the IC data...')
 
     # Define the maximum and minimum values of IC in the source and target images
     max_IC_value = 4.3  # Maximum expected IC value
@@ -282,8 +269,6 @@ def IC_normalization(data):
     tar_normalized = 2 * (tar_data / data_range) - 1
 
     return [src_normalized, tar_normalized]
-
-
 
 
 def reverse_IC_normalization(data):
@@ -313,7 +298,6 @@ def reverse_IC_normalization(data):
     return X
 
 
-
 def generate_real_samples(dataset, n_samples, patch_shape):
     """
     Generate real samples from a dataset for training.
@@ -337,7 +321,6 @@ def generate_real_samples(dataset, n_samples, patch_shape):
     y = np.ones((n_samples, patch_shape, patch_shape, 1))
 
     return [X1, X2], y
-
 
 
 def generate_real_samples_fix(dataset, n_samples, patch_shape, random_seed=14):
@@ -371,7 +354,6 @@ def generate_real_samples_fix(dataset, n_samples, patch_shape, random_seed=14):
     return [X1, X2], y
 
 
-
 def generate_fake_samples(g_model, samples, patch_shape):
     """
     Generate fake samples using a generator model.
@@ -391,6 +373,7 @@ def generate_fake_samples(g_model, samples, patch_shape):
     y = np.zeros((len(X), patch_shape, patch_shape, 1))
 
     return X, y
+
 
 def get_real_cs_into_image_for_gan(csv_file, pixel_dropout_rate=0.2):
     """
@@ -481,7 +464,6 @@ def get_real_cs_into_image_for_gan(csv_file, pixel_dropout_rate=0.2):
     [cs_to_evaluate_normalized, cs_to_evaluate_normalized] = normalized_data
 
     return normalized_data, cpt_index_remaining
-
 
 
 def add_random_pixel_dropout(df, kept_columns, pixel_dropout_rate=0.2):

@@ -21,7 +21,7 @@ from schemaGAN.functions.utils import load_remove_reshape_data, IC_normalization
 # Initial input
 name_of_model_to_use = 'schemaGAN.h5'  # Input the name of the generator model to use
 SIZE_X = 512  # Image size in the X dimension
-SIZE_Y = 32   # Image size in the Y dimension
+SIZE_Y = 32  # Image size in the Y dimension
 miss_rate = 0.99  # Choose missing rate
 min_distance = 51  # Minimum distance for missing rate
 
@@ -56,7 +56,6 @@ else:
 # Save seed to the text file
 with open(output_file, 'a') as f:
     f.write(f"Seed number used: {seed}\n")
-
 
 # Create the grid
 no_rows = SIZE_Y  # Number of rows in the grid
@@ -129,7 +128,7 @@ with open(output_file, 'a') as f:
     f.write("Inpainting images generation took {:.2f} seconds.\n".format(end_time - start_time))
 
 # Call for the calculation of the MAE of each interpol_compare method for each validation image
-mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means =  compute_mae(
+mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, mae_means = compute_mae(
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
 # Call for the calculation of the MSE of each interpol_compare method for each validation image
@@ -137,16 +136,16 @@ mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, mse_means = compute_ms
     original_images, gan_images, nearnei_images, idw_images, krig_images, natnei_images, inpt_images, path_results)
 
 # Plots five MAE histograms in a row to compare each method with the GAN
-#plot_histograms_mae(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
+# plot_histograms_mae(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt)
 # Save the plot to the specified path
-#plt.savefig(os.path.join(path_results, 'histograms_row_mae.pdf'), format='pdf')
-#plt.close()
+# plt.savefig(os.path.join(path_results, 'histograms_row_mae.pdf'), format='pdf')
+# plt.close()
 
 # MAE box plot for the comparison of the methods
-#generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, method='Mean absolute error')
+# generate_boxplot(mae_gan, mae_nn, mae_idw, mae_krig, mae_natnei, mae_inpt, method='Mean absolute error')
 # Save the plot to the specified path
-#plt.savefig(os.path.join(path_results, 'boxplot_mae.pdf'), format='pdf')
-#plt.close()
+# plt.savefig(os.path.join(path_results, 'boxplot_mae.pdf'), format='pdf')
+# plt.close()
 
 # Big 7x2 MAE comparison plot with all methods and errors
 for i in range(no_validation_images):
@@ -163,16 +162,16 @@ for i in range(no_validation_images):
     plt.close()
 
 # Plots five MSE histograms in a row to compare each method with the GAN
-#plot_histograms_mse(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt)
+# plot_histograms_mse(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt)
 # Save the plot to the specified path
-#plt.savefig(os.path.join(path_results, 'histograms_row_mse.pdf'), format='pdf')
-#plt.close()
+# plt.savefig(os.path.join(path_results, 'histograms_row_mse.pdf'), format='pdf')
+# plt.close()
 
 # MSE box plot for the comparison of the methods
-#generate_boxplot(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, method='Mean squared error')
+# generate_boxplot(mse_gan, mse_nn, mse_idw, mse_krig, mse_natnei, mse_inpt, method='Mean squared error')
 # Save the plot to the specified path
-#plt.savefig(os.path.join(path_results, 'boxplot_mse.pdf'), format='pdf')
-#plt.close()
+# plt.savefig(os.path.join(path_results, 'boxplot_mse.pdf'), format='pdf')
+# plt.close()
 
 # Big 7x2 MSE comparison plot with all methods and errors
 # for i in range(no_validation_images):
@@ -187,4 +186,3 @@ for i in range(no_validation_images):
 #     # Save the plot to the specified path with a dynamic figure name
 #     plt.savefig(os.path.join(path_results, f'comparMSE_{i}_of_4000.pdf'), format='pdf')
 #     plt.close()
-
