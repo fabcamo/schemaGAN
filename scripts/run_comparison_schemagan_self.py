@@ -17,6 +17,7 @@ from schemaGAN.functions.utils import load_remove_reshape_data, IC_normalization
 
 import tensorflow as tf
 
+
 # seed = 12345
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
@@ -39,15 +40,13 @@ def get_fixed_column_positions(csv_file, min_spacing=50, n_cols=5):
     raise RuntimeError("Unable to select valid CPT columns")
 
 
-
-
 def plot_schemagan_variability_vertical(
-    target_img,
-    cpt_img,
-    gan_images,
-    mae_images,
-    path_out,
-    img_index=0
+        target_img,
+        cpt_img,
+        gan_images,
+        mae_images,
+        path_out,
+        img_index=0
 ):
     """
     Plots an 11x2 grid:
@@ -80,13 +79,13 @@ def plot_schemagan_variability_vertical(
     axs[0, 1].axis('off')
 
     for i in range(10):
-        axs[i+1, 0].imshow(gan_images[i], cmap=cmap_main, vmin=1, vmax=4.5)
-        axs[i+1, 0].set_title(f"SchemaGAN {i+1}", fontsize=10)
-        axs[i+1, 0].axis('off')
+        axs[i + 1, 0].imshow(gan_images[i], cmap=cmap_main, vmin=1, vmax=4.5)
+        axs[i + 1, 0].set_title(f"SchemaGAN {i + 1}", fontsize=10)
+        axs[i + 1, 0].axis('off')
 
-        axs[i+1, 1].imshow(mae_images[i], cmap=cmap_mae, vmin=0, vmax=1)
-        axs[i+1, 1].set_title(f"MAE {i+1}: {np.mean(mae_images[i]):.4f}", fontsize=10)
-        axs[i+1, 1].axis('off')
+        axs[i + 1, 1].imshow(mae_images[i], cmap=cmap_mae, vmin=0, vmax=1)
+        axs[i + 1, 1].set_title(f"MAE {i + 1}: {np.mean(mae_images[i]):.4f}", fontsize=10)
+        axs[i + 1, 1].axis('off')
 
     plt.tight_layout()
     os.makedirs(path_out, exist_ok=True)
@@ -97,10 +96,10 @@ def plot_schemagan_variability_vertical(
 
 
 def plot_schemagan_variability_vs_first(
-    cpt_img,
-    gan_images,
-    path_out,
-    img_index=0
+        cpt_img,
+        gan_images,
+        path_out,
+        img_index=0
 ):
     """
     Plots an 11x2 grid:
@@ -137,13 +136,13 @@ def plot_schemagan_variability_vs_first(
 
     # Rows 1–10
     for i in range(10):
-        axs[i+1, 0].imshow(gan_images[i], cmap=cmap_main, vmin=1, vmax=4.5)
-        axs[i+1, 0].set_title(f"SchemaGAN {i+1}", fontsize=10)
-        axs[i+1, 0].axis('off')
+        axs[i + 1, 0].imshow(gan_images[i], cmap=cmap_main, vmin=1, vmax=4.5)
+        axs[i + 1, 0].set_title(f"SchemaGAN {i + 1}", fontsize=10)
+        axs[i + 1, 0].axis('off')
 
-        axs[i+1, 1].imshow(diff_images[i], cmap=cmap_diff, vmin=0, vmax=1)
-        axs[i+1, 1].set_title(f"Diff vs Run 1: {np.mean(diff_images[i]):.4f}", fontsize=10)
-        axs[i+1, 1].axis('off')
+        axs[i + 1, 1].imshow(diff_images[i], cmap=cmap_diff, vmin=0, vmax=1)
+        axs[i + 1, 1].set_title(f"Diff vs Run 1: {np.mean(diff_images[i]):.4f}", fontsize=10)
+        axs[i + 1, 1].axis('off')
 
     plt.tight_layout()
     os.makedirs(path_out, exist_ok=True)
@@ -151,7 +150,6 @@ def plot_schemagan_variability_vs_first(
     plt.savefig(fig_path, format='pdf')
     plt.close()
     print("Saved variability vs first run plot to:", fig_path)
-
 
 
 # ---------------- USER CONFIG ----------------
@@ -195,9 +193,8 @@ gan_imgs = []
 mae_imgs = []
 
 model = load_model(generator)
-#real_cs = get_real_cs_into_image_for_gan(path_real_images, pixel_dropout_rate=0)
+# real_cs = get_real_cs_into_image_for_gan(path_real_images, pixel_dropout_rate=0)
 df_all_cpt, kept_columns = get_fixed_column_positions(path_real_images)
-
 
 pixel_dropout_rates = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25]
 
@@ -256,15 +253,9 @@ for dropout_rate in pixel_dropout_rates:
     #     img_index=idx
     # )
 
-
     plot_schemagan_variability_vs_first(
         cpt_img=cptlike_img[idx],
         gan_images=gan_imgs,
         path_out=os.path.join(path_results, f"dropout_{int(dropout_rate * 100):02d}"),
         img_index=idx
     )
-
-
-
-
-

@@ -49,7 +49,7 @@ def process_cpts(cpts):
         List of dictionaries with processed CPT data.
     """
     data = []
-
+    coords = []
     for cpt in cpts:
         cpt_gef = GefCpt()
         try:
@@ -80,7 +80,23 @@ def process_cpts(cpts):
             "coordinates": cpt_gef.coordinates
         })
 
-    return data
+        coords.append({
+            "name": cpt_id,
+            "x": cpt_gef.coordinates[0],
+            "y": cpt_gef.coordinates[1]
+        })
+
+    return data, coords
+
+def save_coords_to_csv(coords: list, output_dir: str):
+    """
+    Save CPT coordinates to a CSV file with columns: Name, x, y
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    df = pd.DataFrame(coords)
+    output_file = os.path.join(output_dir, "simple_coords.csv")
+    df.to_csv(output_file, index=False)
+    print(f"CPT coordinates saved to: {output_file}")
 
 
 def equalize_top(data_cpts):
@@ -319,40 +335,46 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
     data_cpts_modified = data_cpts_modified[:num_to_plot]
     data_cpts_32px = data_cpts_32px[:num_to_plot]
 
-    fig, axs = plt.subplots(3, num_to_plot, figsize=(12, 9), sharex=True, sharey=True)
-    fig.suptitle("CPT Data Before and After Depth Equalization", fontsize=16)
+    fig, axs = plt.subplots(3, num_to_plot, figsize=(16, 8), sharex=True, sharey=False)
+    fig.suptitle("CPT Data Before and After Depth Equalization", fontsize=10)
 
     for i in range(num_to_plot):
         # Plot individual CPT in the top row (before equalization)
         axs[0, i].plot(data_cpts_original[i]['IC'], data_cpts_original[i]['depth'], label="Before Equalized Top")
         axs[0, i].axhline(lowest_max_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
         axs[0, i].axhline(lowest_min_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
-        axs[0, i].invert_yaxis()  # Depth increases downward
+        #axs[0, i].invert_yaxis()  # Depth increases downward
         axs[0, i].set_title(f"CPT-{i + 1}")
         axs[0, i].tick_params(axis='x', labelsize=8)
         axs[0, i].tick_params(axis='y', labelsize=8)
+        # add gridlines
+        axs[0, i].grid(True, linewidth=0.5, alpha=0.7)
 
         # Plot individual CPT in the middle row (after equalized top)
         axs[1, i].plot(data_cpts_modified[i]['IC'], data_cpts_modified[i]['depth'], label="Equalized Top")
         axs[1, i].axhline(lowest_max_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
         axs[1, i].axhline(lowest_min_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
-        axs[1, i].invert_yaxis()  # Depth increases downward
+        #axs[1, i].invert_yaxis()  # Depth increases downward
         axs[1, i].tick_params(axis='x', labelsize=8)
         axs[1, i].tick_params(axis='y', labelsize=8)
+        # add gridlines
+        axs[1, i].grid(True, linewidth=0.5, alpha=0.7)
 
         # Plot individual CPT in the bottom row (after depth equalization to lowest_min_depth)
         axs[2, i].plot(data_cpts_32px[i]['IC'], data_cpts_32px[i]['depth'], label="Equalized Bottom")
-        # axs[2, i].invert_yaxis()  # Depth increases downward
+        axs[2, i].invert_yaxis()  # Depth increases downward
         axs[2, i].tick_params(axis='x', labelsize=8)
         axs[2, i].tick_params(axis='y', labelsize=8)
+        # add gridlines
+        axs[2, i].grid(True, linewidth=0.5, alpha=0.7)
 
     # Add labels for rows
-    axs[0, 0].set_ylabel("Depth (Before)", fontsize=12)
-    axs[1, 0].set_ylabel("Depth (Equalized Top)", fontsize=12)
-    axs[2, 0].set_ylabel("Depth (Equalized Bottom)", fontsize=12)
+    axs[0, 0].set_ylabel("Depth (Before)", fontsize=10)
+    axs[1, 0].set_ylabel("Depth (Equalized Top)", fontsize=10)
+    axs[2, 0].set_ylabel("Depth (Equalized Bottom)", fontsize=10)
 
     # Set common x-axis label
-    fig.supxlabel("IC", fontsize=14)
+    fig.supxlabel("IC", fontsize=10)
 
     # Adjust spacing
     plt.tight_layout(rect=[0, 0, 1, 0.95])
@@ -380,7 +402,7 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
     cols = math.ceil(num_to_plot / rows)
 
     # Create the figure and axes
-    fig, axs = plt.subplots(rows, cols, figsize=(cols * 4, rows * 6), sharey=True)
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 2, rows * 3), sharey=True)
     axs = axs.flatten()  # Flatten the 2D array of axes for easier indexing
 
     for i in range(num_to_plot):
@@ -398,12 +420,15 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
 
         # Formatting
         ax.invert_yaxis()  # Depth increases downward
-        ax.set_title(f"CPT-{eq_cpt['Name']}", fontsize=10)
+        ax.set_title(f"CPT-{str(eq_cpt['Name'])[-5:]}", fontsize=10)
         if i % cols == 0:
             ax.set_ylabel("Depth (m)")
 
         ax.set_xlabel("IC (Equalized)")
         ax_twin.set_ylabel("Depth (Compressed)")
+        # Add gridlines
+        ax.grid(True, linewidth=0.5, alpha=0.7)
+
 
     # Turn off unused subplots
     for j in range(num_to_plot, len(axs)):
@@ -416,10 +441,14 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
 
 if __name__ == "__main__":
     # Directory containing the CPT files
-    cpts_path = read_files(path=r"C:\VOW\data\Site_A\O\CPT", extension=".gef")
+    cpts_path = read_files(path=r"C:\VOW\data\Site_A\O\cpt_bro", extension=".gef")
 
     # Process CPT files
-    data_cpts = process_cpts(cpts_path)
+    data_cpts, coords = process_cpts(cpts_path)
+
+    # Save coordinates to CSV
+    output_dir = r"C:\VOW\gis"
+    save_coords_to_csv(coords, output_dir)
 
     # Create a copy of the original data for plotting
     original_data_cpts = [cpt.copy() for cpt in data_cpts]
@@ -452,7 +481,7 @@ if __name__ == "__main__":
     )
 
     # Plot the results of compression
-    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=100)
+    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=36)
 
     # Save the compressed data to a CSV file
     output_dir = r"C:\VOW\data\Site_A"

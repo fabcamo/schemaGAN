@@ -408,35 +408,3 @@ if __name__ == "__main__":
     plt.savefig(os.path.join('D:/schemaGAN/real_case/eemskanaal/boxplot_mse.pdf'), format='pdf')
     plt.close()
 
-    # ####################################################################################################################
-    # # FOR CS no.1
-    #
-    # # Create a subplot for each array
-    # fig, axs = plt.subplots(2, 1, figsize=(10, 5))
-    #
-    # # Plot the contents of crossec1 in the first subplot
-    # im1 = axs[0].imshow(cs_to_evaluate.squeeze(), cmap='viridis')  # using squeeze() to remove singleton dimensions
-    # cbar1 = fig.colorbar(im1, ax=axs[0], orientation='horizontal', fraction=0.08, aspect=40)
-    # cbar1.set_label('Ic values')
-    # axs[0].set_title("CPT input in cross-section A4 - A18")
-    #
-    #
-    # # Plot the contents of gan_res_crossec1 in the second subplot
-    # im2 = axs[1].imshow(gan_res, cmap='viridis')
-    # cbar2 = fig.colorbar(im2, ax=axs[1], orientation='horizontal', fraction=0.08, aspect=40)
-    # cbar2.set_label('Ic values')
-    # axs[1].set_title("SchemaGAN generated cross-section A4 - A18")
-    #
-    # # Plot black lines at the CPT indexes in cpt_index_deleted
-    # for cpt_idx in cpt_index_deleted:
-    #     axs[1].axvline(cpt_idx, color='black', linestyle='dotted', linewidth=2)
-    #
-    # # Automatically adjust subplot parameters to give specified padding
-    # plt.tight_layout()
-    #
-    # # Automatically adjust subplot parameters to give specified padding
-    # plt.tight_layout()
-    #
-    # # Show the plot
-    # plt.show()
-    # plt.clf()
