@@ -11,6 +11,7 @@ MANIFEST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\manifest_sections.csv
 COORDS_WITH_DIST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\coords_with_distances.csv")
 GAN_DIR = Path(r"C:\VOW\res\Site_A\O")  # where the *_gan.csv files are
 OUT_DIR = Path(r"C:\VOW\res\Site_A\O")  # where to save mosaic csv/png
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Section & image constants used earlier
 N_COLS = 512
@@ -18,6 +19,9 @@ N_ROWS = 32
 
 # Optional: global pixel size. If None, use the median section pixel size
 GLOBAL_DX = None  # meters per pixel horizontally
+
+# Top axis appearance: False -> 0..(W-1) px, True -> 0..32 normalized
+TOP_AXIS_0_TO_32 = False
 
 # -------------------
 # LOAD
@@ -57,6 +61,8 @@ if not missing_gan.empty:
 
 # Drop sections w/o GAN to proceed
 man = man.dropna(subset=["gan_csv"]).reset_index(drop=True)
+if man.empty:
+    raise RuntimeError("No sections with GAN CSVs found; cannot build mosaic.")
 
 # -------------------
 # Compute per-section mapping to global x
@@ -83,12 +89,12 @@ man["dx"] = dx_list
 man["x1"] = man["x0"] + (N_COLS - 1) * man["dx"]
 
 # -------------------
-# Decide global grid
+# Decide global grid (meters)
 # -------------------
 XMIN = float(man["x0"].min())
 XMAX = float(man["x1"].max())
 if GLOBAL_DX is None:
-    GLOBAL_DX = float(np.median(man["dx"]))  # robust choice
+    GLOBAL_DX = float(np.median(man["dx"]))  # robust choice across sections
 W = int(round((XMAX - XMIN) / GLOBAL_DX)) + 1
 
 print(f"[INFO] Global extent: {XMIN:.2f}..{XMAX:.2f} m "
@@ -104,7 +110,7 @@ def add_section(sec_row):
     # Load GAN csv (32 x 512)
     arr = pd.read_csv(sec_row["gan_csv"]).to_numpy(dtype=float)
     if arr.shape != (N_ROWS, N_COLS):
-        raise ValueError(f"{sec_row['gan_csv'].name}: expected {(N_ROWS, N_COLS)}, got {arr.shape}")
+        raise ValueError(f"{Path(sec_row['gan_csv']).name}: expected {(N_ROWS, N_COLS)}, got {arr.shape}")
 
     x0 = float(sec_row["x0"])
     dx = float(sec_row["dx"])
@@ -117,10 +123,10 @@ def add_section(sec_row):
 
     # Safeguard indices
     valid = (k0 >= 0) & (k0 < W)
-    # contribute to k0
+    if not np.any(valid):
+        return
     k0v = k0[valid]
     f0 = (1.0 - frac[valid])
-    # right neighbor
     k1 = k0v + 1
     f1 = frac[valid]
 
@@ -136,26 +142,51 @@ def add_section(sec_row):
 for _, row in man.iterrows():
     add_section(row)
 
-# Normalize
+# Normalize (avoid division by zero)
 eps = 1e-12
 mosaic = acc / np.maximum(wts, eps)[None, :]
 
 # -------------------
 # Save outputs
 # -------------------
-OUT_DIR.mkdir(parents=True, exist_ok=True)
 mosaic_csv = OUT_DIR / "schemaGAN_mosaic.csv"
 pd.DataFrame(mosaic).to_csv(mosaic_csv, index=False)
 
+# --------- Dual X-axes plotting ---------
 mosaic_png = OUT_DIR / "schemaGAN_mosaic.png"
 plt.figure(figsize=(min(16, W/64), 4))  # adaptive width, cap to 16 inches
-plt.imshow(mosaic, cmap="viridis", vmin=0, vmax=4.5, aspect="auto")
+
+# Bottom axis: meters via extent; Y inverted so Depth_Index=0 is at top
+plt.imshow(
+    mosaic,
+    cmap="viridis",
+    vmin=0,
+    vmax=4.5,
+    aspect="auto",
+    extent=[XMIN, XMAX, N_ROWS - 1, 0]
+)
 plt.colorbar(label="Value")
+
+ax = plt.gca()
+ax.set_xlabel("Distance along line (m)")
+ax.set_ylabel("Depth Index")
+
+# Top axis: global pixel index or normalized 0..32
+if not TOP_AXIS_0_TO_32:
+    def m_to_px(x): return (x - XMIN) / GLOBAL_DX
+    def px_to_m(p): return XMIN + p * GLOBAL_DX
+    top = ax.secondary_xaxis('top', functions=(m_to_px, px_to_m))
+    top.set_xlabel(f"Pixel index (0…{W-1})")
+else:
+    def m_to_u32(x): return 32.0 * (x - XMIN) / (XMAX - XMIN + 1e-12)
+    def u32_to_m(u): return XMIN + (u / 32.0) * (XMAX - XMIN)
+    top = ax.secondary_xaxis('top', functions=(m_to_u32, u32_to_m))
+    top.set_xlabel("Normalized distance (0…32)")
+
 plt.title("SchemaGAN Mosaic")
-plt.xlabel("Global column (≈ distance)")
-plt.ylabel("Depth Index")
 plt.tight_layout()
 plt.savefig(mosaic_png, dpi=500)
 plt.close()
+# ----------------------------------------
 
 print(f"[DONE] Mosaic saved:\n  CSV → {mosaic_csv}\n  PNG → {mosaic_png}")
