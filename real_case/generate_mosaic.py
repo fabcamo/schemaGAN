@@ -1,4 +1,3 @@
-import math
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -16,6 +15,10 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 # Section & image constants used earlier
 N_COLS = 512
 N_ROWS = 32
+
+# Real-depth range used during equalization/compression (set these!)
+Y_TOP_M    = 6.862       # depth at Depth_Index = 0
+Y_BOTTOM_M = -13.041     # depth at Depth_Index = 31
 
 # Optional: global pixel size. If None, use the median section pixel size
 GLOBAL_DX = None  # meters per pixel horizontally
@@ -45,11 +48,9 @@ man["start_idx"] = man["start_idx"].astype(int)
 # Locate GAN csv per section
 # -------------------
 def find_gan_csv(sec_index: int) -> Path | None:
-    # Pattern based on earlier saving: schemaGAN_section_{sec:03d}_seed*_gan.csv
     cand = list(GAN_DIR.glob(f"schemaGAN_section_{sec_index:03d}_*_gan.csv"))
     if not cand:
         return None
-    # If multiple seeds exist, pick the newest
     cand.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     return cand[0]
 
@@ -65,8 +66,7 @@ if man.empty:
     raise RuntimeError("No sections with GAN CSVs found; cannot build mosaic.")
 
 # -------------------
-# Compute per-section mapping to global x
-# x_global(j) = (cum_along at section-first CPT) - left_pad_m + j * (total_span / (N_COLS-1))
+# Compute per-section mapping to global x (meters)
 # -------------------
 def section_mapping(row):
     total_span = float(row["span_m"] + row["left_pad_m"] + row["right_pad_m"])
@@ -76,11 +76,11 @@ def section_mapping(row):
     m0 = float(coords.loc[start_idx, "cum_along_m"])
     x0 = m0 - float(row["left_pad_m"])
     dx = total_span / (N_COLS - 1)
-    return x0, dx, total_span
+    return x0, dx
 
 x0_list, dx_list = [], []
 for _, r in man.iterrows():
-    x0, dx, total_span = section_mapping(r)
+    x0, dx = section_mapping(r)
     x0_list.append(x0)
     dx_list.append(dx)
 
@@ -89,12 +89,12 @@ man["dx"] = dx_list
 man["x1"] = man["x0"] + (N_COLS - 1) * man["dx"]
 
 # -------------------
-# Decide global grid (meters)
+# Decide global grid (meters on bottom axis)
 # -------------------
 XMIN = float(man["x0"].min())
 XMAX = float(man["x1"].max())
 if GLOBAL_DX is None:
-    GLOBAL_DX = float(np.median(man["dx"]))  # robust choice across sections
+    GLOBAL_DX = float(np.median(man["dx"]))  # robust choice
 W = int(round((XMAX - XMIN) / GLOBAL_DX)) + 1
 
 print(f"[INFO] Global extent: {XMIN:.2f}..{XMAX:.2f} m "
@@ -107,21 +107,18 @@ acc = np.zeros((N_ROWS, W), dtype=float)
 wts = np.zeros(W, dtype=float)
 
 def add_section(sec_row):
-    # Load GAN csv (32 x 512)
     arr = pd.read_csv(sec_row["gan_csv"]).to_numpy(dtype=float)
     if arr.shape != (N_ROWS, N_COLS):
         raise ValueError(f"{Path(sec_row['gan_csv']).name}: expected {(N_ROWS, N_COLS)}, got {arr.shape}")
 
     x0 = float(sec_row["x0"])
     dx = float(sec_row["dx"])
-    # For each local column j, map to global position; distribute to two nearest global bins
     js = np.arange(N_COLS)
     xj = x0 + js * dx
     pos = (xj - XMIN) / GLOBAL_DX
     k0 = np.floor(pos).astype(int)
     frac = pos - k0
 
-    # Safeguard indices
     valid = (k0 >= 0) & (k0 < W)
     if not np.any(valid):
         return
@@ -130,10 +127,8 @@ def add_section(sec_row):
     k1 = k0v + 1
     f1 = frac[valid]
 
-    # accumulate to k0
     acc[:, k0v] += arr[:, valid] * f0
     wts[k0v] += f0
-    # accumulate to k1 when in range
     in_r = k1 < W
     if np.any(in_r):
         acc[:, k1[in_r]] += arr[:, valid][:, in_r] * f1[in_r]
@@ -142,7 +137,7 @@ def add_section(sec_row):
 for _, row in man.iterrows():
     add_section(row)
 
-# Normalize (avoid division by zero)
+# Normalize
 eps = 1e-12
 mosaic = acc / np.maximum(wts, eps)[None, :]
 
@@ -152,11 +147,22 @@ mosaic = acc / np.maximum(wts, eps)[None, :]
 mosaic_csv = OUT_DIR / "schemaGAN_mosaic.csv"
 pd.DataFrame(mosaic).to_csv(mosaic_csv, index=False)
 
-# --------- Dual X-axes plotting ---------
+# --------- Dual axes plotting ---------
 mosaic_png = OUT_DIR / "schemaGAN_mosaic.png"
-plt.figure(figsize=(min(16, W/64), 4))  # adaptive width, cap to 16 inches
+# Real-world spans
+horiz_m = XMAX - XMIN
+vert_m  = abs(Y_BOTTOM_M - Y_TOP_M)  # <-- uses your configured depth bounds
 
-# Bottom axis: meters via extent; Y inverted so Depth_Index=0 is at top
+# Figure size (inches): keep width fixed, scale height by metric ratio
+BASE_WIDTH_IN      = 16         # pick what you like
+MIN_HEIGHT_IN      = 2.0
+MAX_HEIGHT_IN      = 12.0
+height_in = BASE_WIDTH_IN * (vert_m / max(horiz_m, 1e-12))
+height_in = float(np.clip(height_in, MIN_HEIGHT_IN, MAX_HEIGHT_IN))
+
+fig, ax = plt.subplots(figsize=(BASE_WIDTH_IN, height_in))
+
+# Bottom x-axis in meters via extent; Y remains Depth_Index 31..0
 plt.imshow(
     mosaic,
     cmap="viridis",
@@ -171,7 +177,7 @@ ax = plt.gca()
 ax.set_xlabel("Distance along line (m)")
 ax.set_ylabel("Depth Index")
 
-# Top axis: global pixel index or normalized 0..32
+# Top x-axis: pixels or normalized 0..32
 if not TOP_AXIS_0_TO_32:
     def m_to_px(x): return (x - XMIN) / GLOBAL_DX
     def px_to_m(p): return XMIN + p * GLOBAL_DX
@@ -182,6 +188,17 @@ else:
     def u32_to_m(u): return XMIN + (u / 32.0) * (XMAX - XMIN)
     top = ax.secondary_xaxis('top', functions=(m_to_u32, u32_to_m))
     top.set_xlabel("Normalized distance (0…32)")
+
+# Right y-axis: real depth (m)
+def idx_to_meters(y_idx: float) -> float:
+    return Y_TOP_M + (y_idx / (N_ROWS - 1)) * (Y_BOTTOM_M - Y_TOP_M)
+
+def meters_to_idx(y_m: float) -> float:
+    denom = (Y_BOTTOM_M - Y_TOP_M)
+    return 0.0 if abs(denom) < 1e-12 else (y_m - Y_TOP_M) * (N_ROWS - 1) / denom
+
+right = ax.secondary_yaxis('right', functions=(idx_to_meters, meters_to_idx))
+right.set_ylabel("Depth (m)")
 
 plt.title("SchemaGAN Mosaic")
 plt.tight_layout()

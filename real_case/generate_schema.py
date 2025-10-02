@@ -22,8 +22,12 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 SIZE_X = 512
 SIZE_Y = 32
 
-# Set this to True if you want the TOP axis to show 0..32 instead of 0..511.
-TOP_AXIS_0_TO_32 = False  # default shows 0..511 pixels
+# Real-depth range used during equalization/compression (set these!)
+Y_TOP_M    = 6.862       # depth at Depth_Index = 0
+Y_BOTTOM_M = -13.041     # depth at Depth_Index = 31
+
+# Top x-axis appearance: False -> 0..511 px, True -> 0..32 normalized
+TOP_AXIS_0_TO_32 = False
 
 # Make TF not grab all GPU memory
 try:
@@ -50,7 +54,6 @@ model = load_model(PATH_TO_MODEL)
 man = pd.read_csv(MANIFEST_CSV)
 coords = pd.read_csv(COORDS_WITH_DIST_CSV)
 
-# expected columns
 for col in ["section_index", "span_m", "left_pad_m", "right_pad_m", "start_idx"]:
     if col not in man.columns:
         raise ValueError(f"Manifest missing column: {col}")
@@ -69,8 +72,7 @@ def _parse_section_index(path: Path) -> int:
 
 def _sec_x0_dx(sec_index: int) -> tuple[float, float]:
     """
-    Compute mapping for one section:
-    bottom x axis spans meters via:
+    Bottom x axis spans meters via:
       x0 = cum_along(first CPT of section) - left_pad_m
       dx = (span + left_pad + right_pad) / (SIZE_X - 1)
     """
@@ -82,12 +84,16 @@ def _sec_x0_dx(sec_index: int) -> tuple[float, float]:
     start_idx = int(r["start_idx"])
     m0 = float(coords.loc[start_idx, "cum_along_m"])
     x0 = m0 - float(r["left_pad_m"])
-    if total_span <= 0:
-        # degenerate: just map 1 meter per pixel
-        dx = 1.0
-    else:
-        dx = total_span / (SIZE_X - 1)
+    dx = 1.0 if total_span <= 0 else total_span / (SIZE_X - 1)
     return x0, dx
+
+# Y mapping funcs (primary y = Depth_Index, secondary y = meters)
+def idx_to_meters(y_idx: float) -> float:
+    return Y_TOP_M + (y_idx / (SIZE_Y - 1)) * (Y_BOTTOM_M - Y_TOP_M)
+
+def meters_to_idx(y_m: float) -> float:
+    denom = (Y_BOTTOM_M - Y_TOP_M)
+    return 0.0 if abs(denom) < 1e-12 else (y_m - Y_TOP_M) * (SIZE_Y - 1) / denom
 
 # -------------------
 # CORE
@@ -107,13 +113,12 @@ def run_gan_on_section_csv(csv_path: Path) -> tuple[Path, Path]:
     cs = df_vals.to_numpy(dtype=float).reshape(1, SIZE_Y, SIZE_X, 1)
 
     # Normalization trick (your util returns a pair)
-    norm_pair = IC_normalization([cs, cs])
-    cs_norm = norm_pair[0]
+    cs_norm = IC_normalization([cs, cs])[0]
 
     # Predict
     gan_res = model.predict(cs_norm, verbose=0)
 
-    # Reverse normalization to 0..255-ish (as per your utils)
+    # Reverse normalization (back to your plotting range)
     gan_res = reverse_IC_normalization(gan_res)
     gan_res = np.squeeze(gan_res)  # (32, 512)
 
@@ -121,23 +126,22 @@ def run_gan_on_section_csv(csv_path: Path) -> tuple[Path, Path]:
     out_csv = OUT_DIR / f"{csv_path.stem}_seed{seed}_gan.csv"
     pd.DataFrame(gan_res).to_csv(out_csv, index=False)
 
-    # --------- Dual X-axes plotting ---------
+    # --------- Dual axes plotting ---------
     sec_index = _parse_section_index(csv_path)
     x0, dx = _sec_x0_dx(sec_index)
     x1 = x0 + (SIZE_X - 1) * dx
 
     out_png = OUT_DIR / f"{csv_path.stem}_seed{seed}_gan.png"
-    plt.figure(figsize=(10, 2.2))
+    plt.figure(figsize=(10, 2.4))
 
-    # Bottom axis: meters (extent sets the data coordinates)
-    # Y extent sets top=0 (surface) at top of image
+    # Bottom axis: meters (extent sets x in meters; y stays in Depth_Index 31..0)
     plt.imshow(
         gan_res,
         cmap='viridis',
         vmin=0,
         vmax=4.5,
         aspect='auto',
-        extent=[x0, x1, SIZE_Y - 1, 0]  # x in meters, y inverted (0 at top)
+        extent=[x0, x1, SIZE_Y - 1, 0]  # x in meters, y inverted so 0 at top
     )
     plt.colorbar(label='Value')
 
@@ -145,22 +149,25 @@ def run_gan_on_section_csv(csv_path: Path) -> tuple[Path, Path]:
     ax.set_xlabel('Distance along line (m)')
     ax.set_ylabel('Depth Index')
 
-    # Top axis: pixel index (0..511) or (0..32) if desired
+    # Top x-axis (pixels or 0..32 normalized)
     if not TOP_AXIS_0_TO_32:
-        def m_to_px(x): return (x - x0) / dx                     # meters -> pixel index
-        def px_to_m(p): return x0 + p * dx                        # pixel index -> meters
+        def m_to_px(x): return (x - x0) / dx
+        def px_to_m(p): return x0 + p * dx
         top = ax.secondary_xaxis('top', functions=(m_to_px, px_to_m))
         top.set_xlabel(f'Pixel index (0…{SIZE_X-1})')
     else:
-        # Show 0..32 on top (normalized pixel scale)
         def m_to_u32(x): return 32.0 * (x - x0) / (x1 - x0 + 1e-12)
         def u32_to_m(u): return x0 + (u / 32.0) * (x1 - x0)
         top = ax.secondary_xaxis('top', functions=(m_to_u32, u32_to_m))
         top.set_xlabel('Normalized distance (0…32)')
 
+    # Right y-axis: real depth (m)
+    right = ax.secondary_yaxis('right', functions=(idx_to_meters, meters_to_idx))
+    right.set_ylabel('Depth (m)')
+
     plt.title(f'SchemaGAN Generated Image (Section {sec_index:03d}, Seed: {seed})')
     plt.tight_layout()
-    plt.savefig(out_png, dpi=300)
+    plt.savefig(out_png, dpi=220)
     plt.close()
     # ----------------------------------------
 
