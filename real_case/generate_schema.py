@@ -12,11 +12,11 @@ from schemaGAN.functions.utils import IC_normalization, reverse_IC_normalization
 # -------------------
 # CONFIG
 # -------------------
-SECTIONS_DIR = Path(r"C:\VOW\data\Site_A\O\schGAN_sections")  # where the section CSVs are
+SECTIONS_DIR = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north")  # where the section CSVs are
 PATH_TO_MODEL = Path(r"D:\schemaGAN\h5\schemaGAN.h5")          # generator .h5
-MANIFEST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\manifest_sections.csv")
-COORDS_WITH_DIST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\coords_with_distances.csv")
-OUT_DIR = Path(r"C:\VOW\res\Site_A\O")                         # where to save outputs
+MANIFEST_CSV = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north\manifest_sections.csv")
+COORDS_WITH_DIST_CSV = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north\coords_with_distances.csv")
+OUT_DIR = Path(r"C:\VOW\res\betuwepand\dike_north")                         # where to save outputs
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 SIZE_X = 512

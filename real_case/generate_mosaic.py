@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 # -------------------
 # CONFIG – update these paths
 # -------------------
-MANIFEST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\manifest_sections.csv")
-COORDS_WITH_DIST_CSV = Path(r"C:\VOW\data\Site_A\O\schGAN_sections\coords_with_distances.csv")
-GAN_DIR = Path(r"C:\VOW\res\Site_A\O")  # where the *_gan.csv files are
-OUT_DIR = Path(r"C:\VOW\res\Site_A\O")  # where to save mosaic csv/png
+MANIFEST_CSV = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north\manifest_sections.csv")
+COORDS_WITH_DIST_CSV = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north\coords_with_distances.csv")
+GAN_DIR = Path(r"C:\VOW\res\betuwepand\dike_north")  # where the *_gan.csv files are
+OUT_DIR = Path(r"C:\VOW\res\betuwepand\dike_north")  # where to save mosaic csv/png
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Section & image constants used earlier

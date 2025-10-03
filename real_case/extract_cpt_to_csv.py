@@ -7,7 +7,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import logging
 
+# to avoid warnings coming from GeoLib
+initial_logging_level = logging.getLogger().getEffectiveLevel()
+logging.disable(logging.ERROR)
 
 
 def read_files(path: str, extension: str = ".gef") -> list[Path]:
@@ -87,6 +91,7 @@ def process_cpts(cpts):
         })
 
     return data, coords
+
 
 def save_coords_to_csv(coords: list, output_dir: str):
     """
@@ -343,7 +348,7 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
         axs[0, i].plot(data_cpts_original[i]['IC'], data_cpts_original[i]['depth'], label="Before Equalized Top")
         axs[0, i].axhline(lowest_max_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
         axs[0, i].axhline(lowest_min_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
-        #axs[0, i].invert_yaxis()  # Depth increases downward
+        # axs[0, i].invert_yaxis()  # Depth increases downward
         axs[0, i].set_title(f"CPT-{i + 1}")
         axs[0, i].tick_params(axis='x', labelsize=8)
         axs[0, i].tick_params(axis='y', labelsize=8)
@@ -354,7 +359,7 @@ def plot_equalized_depth_cpts(data_cpts_original, data_cpts_modified, data_cpts_
         axs[1, i].plot(data_cpts_modified[i]['IC'], data_cpts_modified[i]['depth'], label="Equalized Top")
         axs[1, i].axhline(lowest_max_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
         axs[1, i].axhline(lowest_min_depth, color='r', linestyle='dotted', label="Lowest Max Depth")
-        #axs[1, i].invert_yaxis()  # Depth increases downward
+        # axs[1, i].invert_yaxis()  # Depth increases downward
         axs[1, i].tick_params(axis='x', labelsize=8)
         axs[1, i].tick_params(axis='y', labelsize=8)
         # add gridlines
@@ -429,7 +434,6 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
         # Add gridlines
         ax.grid(True, linewidth=0.5, alpha=0.7)
 
-
     # Turn off unused subplots
     for j in range(num_to_plot, len(axs)):
         fig.delaxes(axs[j])
@@ -440,15 +444,21 @@ def plot_compression_results(equalized_cpts, compressed_cpts, num_to_plot=10):
 
 
 if __name__ == "__main__":
+    #### USER INPUT ####
+    CPT_FOLDER = Path(r"C:\VOW\data\betuwepand\dike_south")
+    OUT_PATH = Path(r"C:\VOW\data\betuwepand\dike_south")
+    ####################
+
+
     # Directory containing the CPT files
-    cpts_path = read_files(path=r"C:\VOW\data\Site_A\O\cpt_bro", extension=".gef")
+    cpts_path = read_files(path=CPT_FOLDER, extension=".gef")
 
     # Process CPT files
     data_cpts, coords = process_cpts(cpts_path)
 
     # Save coordinates to CSV
-    output_dir = r"C:\VOW\gis"
-    save_coords_to_csv(coords, output_dir)
+    # output_dir = r"C:\VOW\gis"
+    # save_coords_to_csv(coords, output_dir)
 
     # Create a copy of the original data for plotting
     original_data_cpts = [cpt.copy() for cpt in data_cpts]
@@ -481,8 +491,8 @@ if __name__ == "__main__":
     )
 
     # Plot the results of compression
-    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=36)
+    plot_compression_results(equalized_depth_cpts, compressed_cpts, num_to_plot=len(cpts_path))
 
     # Save the compressed data to a CSV file
-    output_dir = r"C:\VOW\data\Site_A"
+    output_dir = OUT_PATH
     save_cpt_to_csv(compressed_cpts, output_dir)

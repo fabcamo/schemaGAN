@@ -15,10 +15,12 @@ import numpy as np
 import pandas as pd
 
 ##### CONFIGURATION #####
-COORDS_CSV = r"C:\VOW\gis\CPT_siteA_O_coord_bro.csv"
-CPT_DATA_CSV = r"C:\VOW\data\Site_A\compressed_cpt_siteA_O.csv"
-OUT_DIR = r"C:\VOW\data\Site_A\O\schGAN_sections"
-OUT_DIR = Path(OUT_DIR)
+COORDS_CSV = r"C:\VOW\gis\coords\betuwepand_dike_north.csv"
+CPT_DATA_CSV = r"C:\VOW\data\betuwepand\dike_north\compressed_cpt_data.csv"
+OUT_DIR = Path(r"C:\VOW\data\schgan_inputs\betuwepand_dike_north")
+
+# If the OUT_DIR does not exist, create it
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 ##### SECTIONING #####
 CPTS_PER_SECTION = 6  # How many CPTs we want per section
